@@ -24,6 +24,7 @@ import org.deidentifier.arx.RowSet;
 import org.deidentifier.arx.framework.data.Data;
 import org.deidentifier.arx.framework.data.Dictionary;
 import org.deidentifier.arx.framework.data.GeneralizationHierarchy;
+import org.deidentifier.arx.framework.data.IMemory;
 
 /**
  * This class represents cardinalities.
@@ -49,21 +50,20 @@ public class Cardinalities implements Serializable {
      */
     public Cardinalities(Data data, RowSet subset, GeneralizationHierarchy[] hierarchies){
 
-        int[][] array = data.getArray();
+        IMemory memory = data.getMemory();
         Dictionary dictionary = data.getDictionary();
         
         // Initialize counts
-        cardinalities = new int[array[0].length][][];
+        cardinalities = new int[memory.getNumColumns()][][];
         for (int i = 0; i < cardinalities.length; i++) {
             cardinalities[i] = new int[dictionary.getMapping()[i].length][hierarchies[i].getArray()[0].length];
         }
 
         // Compute counts
-        for (int i = 0; i < array.length; i++) { 
+        for (int i = 0; i < memory.getNumRows(); i++) { 
             if (subset == null || subset.contains(i)) {
-                final int[] row = array[i];
-                for (int column = 0; column < row.length; column++) {
-                    cardinalities[column][row[column]][0]++;
+                for (int column = 0; column < cardinalities.length; column++) {
+                    cardinalities[column][memory.get(i, column)][0]++;
                 }
             }
         }

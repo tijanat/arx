@@ -19,6 +19,7 @@
 package org.deidentifier.arx.framework.check.groupify;
 
 import org.deidentifier.arx.framework.check.distribution.Distribution;
+import org.deidentifier.arx.framework.data.IMemory;
 
 /**
  * Implements an equivalence class.
@@ -37,9 +38,6 @@ public class HashGroupifyEntry {
     /** The hashcode of this class. */
     public final int         hashcode;
 
-    /** The key of this class. */
-    public final int[]       key;
-
     /** The next element in this bucket. */
     public HashGroupifyEntry next         = null;
 
@@ -54,6 +52,9 @@ public class HashGroupifyEntry {
 
     /** Frequency set for sensitive attributes *. */
     public Distribution[]    distributions;
+    
+    /** The buffer associated with the entry */
+    public final IMemory buffer;
 
     /**
      * Creates a new entry.
@@ -63,8 +64,9 @@ public class HashGroupifyEntry {
      * @param hash
      *            the hash
      */
-    public HashGroupifyEntry(final int[] key, final int hash) {
-        hashcode = hash;
-        this.key = key;
+    public HashGroupifyEntry(final int representant, final int hash, final IMemory buffer) {
+        this.hashcode = hash;
+        this.representant = representant;
+        this.buffer = buffer;
     }
 }

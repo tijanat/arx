@@ -26,6 +26,7 @@ import java.util.List;
 import org.deidentifier.arx.DataHandleStatistics.InterruptHandler;
 import org.deidentifier.arx.aggregates.StatisticsBuilder;
 import org.deidentifier.arx.framework.data.Dictionary;
+import org.deidentifier.arx.framework.data.IMemory;
 
 /**
  * An implementation of the DataHandle interface for input data.
@@ -42,13 +43,13 @@ public class DataHandleInput extends DataHandle {
     protected Dictionary dictionary = null;
 
     /** The data. */
-    private int[][]      dataQI     = null;
+    private IMemory      dataQI     = null;
 
     /** The data. */
-    private int[][]      dataSE     = null;
+    private IMemory      dataSE     = null;
 
     /** The data. */
-    private int[][]      dataIS     = null;
+    private IMemory      dataIS     = null;
     
     /** Is this handle locked?. */
     private boolean      locked     = false;
@@ -287,9 +288,9 @@ public class DataHandleInput extends DataHandle {
 
         // Swap
         swap(row1, row2, data);
-        if (dataQI != null) swap(row1, row2, dataQI);
-        if (dataSE != null) swap(row1, row2, dataSE);
-        if (dataIS != null) swap(row1, row2, dataIS);
+        if (dataQI != null) dataQI.swap(row1,row2);
+        if (dataSE != null) dataSE.swap(row1,row2);
+        if (dataIS != null) dataIS.swap(row1,row2);
     }
 
     /**
@@ -340,7 +341,7 @@ public class DataHandleInput extends DataHandle {
      * @param dataSE
      * @param dataIS
      */
-    protected void update(int[][] dataQI, int[][] dataSE, int[][] dataIS) {
+    protected void update(IMemory dataQI, IMemory dataSE, IMemory dataIS) {
         this.dataQI = dataQI;
         this.dataSE = dataSE;
         this.dataIS = dataIS;

@@ -18,7 +18,6 @@
 
 package org.deidentifier.arx.framework.data;
 
-import java.util.Arrays;
 
 /**
  * Encodes a data object consisting of a dictionary encoded two-dimensional
@@ -28,7 +27,7 @@ import java.util.Arrays;
  * @author Fabian Prasser
  * @author Florian Kohlmayer
  */
-public class Data implements Cloneable{
+public class Data implements Cloneable {
 
     /** The outliers mask. */
     public static final int  OUTLIER_MASK        = 1 << 31;
@@ -36,8 +35,11 @@ public class Data implements Cloneable{
     /** The inverse outliers mask. */
     public static final int  REMOVE_OUTLIER_MASK = ~OUTLIER_MASK;
 
+    /** The inverse outliers mask. */
+    public static final long REMOVE_OUTLIER_LONG_MASK = ~(OUTLIER_MASK << 32);
+
     /** Row, Dimension. */
-    private final int[][]    data;
+    private final IMemory    data;
 
     /** The header. */
     private final String[]   header;
@@ -60,7 +62,7 @@ public class Data implements Cloneable{
      * @param dictionary
      *            The dictionary
      */
-    public Data(final int[][] data,
+    public Data(final IMemory data,
                 final String[] header,
                 final int[] map,
                 final Dictionary dictionary) {
@@ -71,11 +73,11 @@ public class Data implements Cloneable{
     }
 
     /**
-     * Returns the data array.
+     * Returns the memory.
      *
      * @return
      */
-    public int[][] getArray() {
+    public IMemory getMemory() {
         return data;
     }
 
@@ -84,7 +86,7 @@ public class Data implements Cloneable{
      *
      * @return
      */
-    public int[][] getData() {
+    public IMemory getData() {
         return data;
     }
 
@@ -94,7 +96,7 @@ public class Data implements Cloneable{
      * @return the data length
      */
     public int getDataLength() {
-        return data.length;
+        return data.getNumRows();
     }
 
     /**
@@ -123,16 +125,15 @@ public class Data implements Cloneable{
     public int[] getMap() {
         return map;
     }
-    
-    /* (non-Javadoc)
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.lang.Object#clone()
      */
     @Override
-    public Data clone(){
-        int[][] newData = new int[data.length][];
-        for (int i=0; i < data.length; i++){
-            newData[i] = Arrays.copyOf(data[i], header.length);
-        }
-        return new Data(newData, header, map, dictionary);
+    public Data clone() {
+        IMemory clonedMemory = data.clone();
+        return new Data(clonedMemory, header, map, dictionary);
     }
 }

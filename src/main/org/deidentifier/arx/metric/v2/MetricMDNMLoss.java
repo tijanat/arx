@@ -173,7 +173,7 @@ public class MetricMDNMLoss extends AbstractMetricMultiDimensional {
         while (m != null) {
             if (m.count>0) {
                 for (int dimension=0; dimension<dimensions; dimension++){
-                    int value = m.key[dimension];
+                    int value = m.buffer.get(m.representant, dimension);
                     int level = transformation[dimension];
                     double share = (double)m.count * shares[dimension].getShare(value, level);
                     result[dimension] += m.isNotOutlier ? share * gFactor :
@@ -221,7 +221,7 @@ public class MetricMDNMLoss extends AbstractMetricMultiDimensional {
         while (m != null) {
             if (m.count>0) {
                 for (int dimension=0; dimension<dimensions; dimension++){
-                    int value = m.key[dimension];
+                    int value = m.buffer.get(m.representant, dimension);
                     int level = transformation[dimension];
                     double share = (double)m.count * shares[dimension].getShare(value, level);
                     bound[dimension] += share * gFactor;

@@ -41,6 +41,7 @@ import org.deidentifier.arx.framework.check.transformer.Transformer14;
 import org.deidentifier.arx.framework.check.transformer.Transformer15;
 import org.deidentifier.arx.framework.check.transformer.TransformerAll;
 import org.deidentifier.arx.framework.data.GeneralizationHierarchy;
+import org.deidentifier.arx.framework.data.IMemory;
 
 /**
  * The class Transformer.
@@ -51,16 +52,16 @@ import org.deidentifier.arx.framework.data.GeneralizationHierarchy;
 public class Transformer {
 
     /** The buffer. */
-    protected int[][]                          buffer;
+    protected IMemory                          buffer;
 
     /** Sensitive attribute values. */
-    protected int[][]                          sensitive;
+    protected IMemory                          sensitive;
 
     /** The config. */
     protected final ARXConfigurationInternal config;
 
     /** The data. */
-    protected final int[][]                    data;
+    protected final IMemory                    data;
 
     /** The dictionary for the snapshot compression *. */
     protected IntArrayDictionary               dictionarySensFreq;
@@ -87,24 +88,21 @@ public class Transformer {
      * @param dictionarySensValue
      * @param dictionarySensFreq
      */
-    public Transformer(final int[][] data,
+    public Transformer(final IMemory data,
                        final GeneralizationHierarchy[] hierarchies,
-                       final int[][] sensitive,
+                       final IMemory sensitive,
                        final ARXConfigurationInternal config,
                        final IntArrayDictionary dictionarySensValue,
-                       final IntArrayDictionary dictionarySensFreq) {
+                       final IntArrayDictionary dictionarySensFreq,
+                       final IMemory buffer) {
 
         this.config = config;
         this.data = data;
         this.hierarchies = hierarchies;
         this.instances = new AbstractTransformer[16];
-        this.buffer = new int[data.length][];
+        this.buffer = buffer;
         
-        for (int i = 0; i < data.length; i++) {
-            buffer[i] = new int[data[0].length];
-        }
-
-        this.dimensions = data[0].length;
+        this.dimensions = data.getNumColumns();
         this.dictionarySensValue = dictionarySensValue;
         this.dictionarySensFreq = dictionarySensFreq;
         this.sensitive = sensitive;
@@ -189,7 +187,7 @@ public class Transformer {
      * 
      * @return the buffer
      */
-    public int[][] getBuffer() {
+    public IMemory getBuffer() {
         return buffer;
     }
 
@@ -328,7 +326,7 @@ public class Transformer {
         switch (transition) {
         case UNOPTIMIZED:
             startIndex = 0;
-            stopIndex = data.length;
+            stopIndex = data.getNumRows();
             break;
         case ROLLUP:
             startIndex = 0;

@@ -28,6 +28,7 @@ import org.deidentifier.arx.criteria.DPresence;
 import org.deidentifier.arx.framework.check.groupify.IHashGroupify;
 import org.deidentifier.arx.framework.data.Data;
 import org.deidentifier.arx.framework.data.GeneralizationHierarchy;
+import org.deidentifier.arx.framework.data.IMemory;
 import org.deidentifier.arx.framework.lattice.Node;
 import org.deidentifier.arx.metric.MetricConfiguration;
 
@@ -256,8 +257,8 @@ public class MetricMDNUEntropyPrecomputed extends AbstractMetricMultiDimensional
         }
         
         // Create reference to the hierarchies
-        final int[][] data = input.getArray();
-        this.hierarchies = new int[data[0].length][][];
+        final IMemory data = input.getMemory();
+        this.hierarchies = new int[data.getNumColumns()][][];
         for (int i = 0; i < hierarchies.length; i++) {
             this.hierarchies[i] = hierarchies[i].getArray();
         }

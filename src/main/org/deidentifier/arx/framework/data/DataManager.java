@@ -73,7 +73,7 @@ public class DataManager {
     protected final String[]                             header;
 
     /** The research subset, if any. */
-    protected RowSet                           subset     = null;
+    protected RowSet                                     subset     = null;
 
     /** The size of the research subset. */
     protected int                                        subsetSize = 0;
@@ -172,7 +172,7 @@ public class DataManager {
                     if (definition.getAttributeType(name) instanceof Hierarchy) {
                         hierarchiesQI[dictionaryIndex] = new GeneralizationHierarchy(name, definition.getHierarchy(name), dictionaryIndex, dictionaryQI);
                     } else {
-                        throw new IllegalStateException("No hierarchy available for attribute ("+header[i]+")");
+                        throw new IllegalStateException("No hierarchy available for attribute (" + header[i] + ")");
                     }
                     // Initialize hierarchy height and minimum / maximum generalization
                     hierarchyHeights[dictionaryIndex] = hierarchiesQI[dictionaryIndex].getArray()[0].length;
@@ -301,18 +301,18 @@ public class DataManager {
         // TODO: Good idea?
         final int index = indexesSE.get(attribute);
         final int distinct = dataSE.getDictionary().getMapping()[index].length;
-        final int[][] data = dataSE.getArray();
+        final IMemory data = dataSE.getMemory();
 
         // Initialize counts: iterate over all rows or the subset
         final int[] cardinalities = new int[distinct];
-        for (int i = 0; i < data.length; i++) {
+        for (int i = 0; i < data.getNumRows(); i++) {
             if (subset == null || subset.contains(i)) {
-                cardinalities[data[i][index]]++;
+                cardinalities[data.get(i, index)]++;
             }
         }
 
         // compute distribution
-        final double total = subset == null ? data.length : subsetSize;
+        final double total = subset == null ? data.getNumRows() : subsetSize;
         final double[] distribution = new double[cardinalities.length];
         for (int i = 0; i < distribution.length; i++) {
             distribution[i] = (double) cardinalities[i] / total;
@@ -376,10 +376,10 @@ public class DataManager {
      */
     public int[] getTree(String attribute) {
 
-        final int[][] data = dataSE.getArray();
+        final IMemory data = dataSE.getMemory();
         final int index = indexesSE.get(attribute);
         final int[][] hierarchy = hierarchiesSE.get(attribute).map;
-        final int totalElementsP = subset == null ? data.length : subsetSize;
+        final int totalElementsP = subset == null ? data.getNumRows() : subsetSize;
         final int height = hierarchy[0].length - 1;
         final int numLeafs = hierarchy.length;
 
@@ -396,11 +396,11 @@ public class DataManager {
 
         // Count frequencies
         final int offsetLeafs = 3;
-        for (int i = 0; i < data.length; i++) {
+        for (int i = 0; i < data.getNumRows(); i++) {
             if (subset == null || subset.contains(i)) {
-                int previousFreq = treeList.get(data[i][index] + offsetLeafs);
+                int previousFreq = treeList.get(data.get(i, index) + offsetLeafs);
                 previousFreq++;
-                treeList.set(data[i][index] + offsetLeafs, previousFreq);
+                treeList.set(data.get(i, index) + offsetLeafs, previousFreq);
             }
         }
 
@@ -419,7 +419,7 @@ public class DataManager {
         final int offsetsExtras = offsetLeafs + numLeafs;
         final IntObjectOpenHashMap<TNode> nodes = new IntObjectOpenHashMap<TNode>();
         final ArrayList<ArrayList<TNode>> levels = new ArrayList<ArrayList<TNode>>();
-        
+
         // Init levels
         for (int i = 0; i < hierarchy[0].length; i++) {
             levels.add(new ArrayList<TNode>());
@@ -457,14 +457,14 @@ public class DataManager {
                     treeList.add(node.children.size());
                     treeList.add(node.level);
 
-                    final int [] keys = node.children.keys;
-                    final boolean [] allocated = node.children.allocated;
-                    for (int i=0; i<allocated.length; i++){
+                    final int[] keys = node.children.keys;
+                    final boolean[] allocated = node.children.allocated;
+                    for (int i = 0; i < allocated.length; i++) {
                         if (allocated[i]) {
-                            treeList.add(node.level==1 ? keys[i] + offsetsExtras : nodes.get(keys[i]).offset);
+                            treeList.add(node.level == 1 ? keys[i] + offsetsExtras : nodes.get(keys[i]).offset);
                         }
                     }
-                    
+
                     treeList.add(0); // pos_e
                     treeList.add(0); // neg_e
                 }
@@ -509,30 +509,22 @@ public class DataManager {
                           final String[] headerIS) {
 
         // Parse the dataset
-        final int[][] valsQI = new int[data.length][];
-        final int[][] valsSE = new int[data.length][];
-        final int[][] valsIS = new int[data.length][];
+        final IMemory valsQI = new Memory(data.length, headerQI.length);
+        final IMemory valsSE = new Memory(data.length, headerSE.length);
+        final IMemory valsIS = new Memory(data.length, headerIS.length);
 
         int index = 0;
         for (final int[] tuple : data) {
-
             // Process a tuple
-            final int[] tupleQI = new int[headerQI.length];
-            final int[] tupleSE = new int[headerSE.length];
-            final int[] tupleIS = new int[headerIS.length];
-
             for (int i = 0; i < tuple.length; i++) {
                 if (map[i] >= 1000) {
-                    tupleIS[map[i] - 1000] = tuple[i];
+                    valsIS.set(index, map[i] - 1000, tuple[i]);
                 } else if (map[i] > 0) {
-                    tupleQI[map[i] - 1] = tuple[i];
+                    valsQI.set(index, map[i] - 1, tuple[i]);
                 } else if (map[i] < 0) {
-                    tupleSE[-map[i] - 1] = tuple[i];
+                    valsSE.set(index, -map[i] - 1, tuple[i]);
                 }
             }
-            valsQI[index] = tupleQI;
-            valsIS[index] = tupleIS;
-            valsSE[index] = tupleSE;
             index++;
         }
 

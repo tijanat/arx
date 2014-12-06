@@ -21,6 +21,7 @@ package org.deidentifier.arx.framework.check.transformer;
 import org.deidentifier.arx.ARXConfiguration.ARXConfigurationInternal;
 import org.deidentifier.arx.framework.check.distribution.IntArrayDictionary;
 import org.deidentifier.arx.framework.data.GeneralizationHierarchy;
+import org.deidentifier.arx.framework.data.IMemory;
 
 /**
  * The class Transformer02.
@@ -40,9 +41,9 @@ public class Transformer02 extends AbstractTransformer {
      * @param dictionarySensFreq
      * @param config
      */
-    public Transformer02(final int[][] data,
+    public Transformer02(final IMemory data,
                          final GeneralizationHierarchy[] hierarchies,
-                         final int[][] sensitiveValues,
+                         final IMemory sensitiveValues,
                          final IntArrayDictionary dictionarySensValue,
                          final IntArrayDictionary dictionarySensFreq,
                          final ARXConfigurationInternal config) {
@@ -58,13 +59,13 @@ public class Transformer02 extends AbstractTransformer {
     @Override
     protected void processAll() {
         for (int i = startIndex; i < stopIndex; i++) {
-            intuple = data[i];
-            outtuple = buffer[i];
-            outtuple[outindex0] = idindex0[intuple[index0]][generalizationindex0];
-            outtuple[outindex1] = idindex1[intuple[index1]][generalizationindex1];
+
+            // Transform
+            buffer.set(i, outindex0, idindex0[data.get(i, index0)][generalizationindex0]);
+            buffer.set(i, outindex1, idindex1[data.get(i, index1)][generalizationindex1]);
 
             // Call
-            delegate.callAll(outtuple, i);
+            delegate.callAll(i);
         }
     }
 
@@ -80,17 +81,18 @@ public class Transformer02 extends AbstractTransformer {
         int processed = 0;
         while (element != null) {
 
-            intuple = data[element.representant];
-            outtuple = buffer[element.representant];
-            outtuple[outindex0] = idindex0[intuple[index0]][generalizationindex0];
-            outtuple[outindex1] = idindex1[intuple[index1]][generalizationindex1];
+            // Transform
+            buffer.set(element.representant, outindex0, idindex0[data.get(element.representant, index0)][generalizationindex0]);
+            buffer.set(element.representant, outindex1, idindex1[data.get(element.representant, index1)][generalizationindex1]);
 
             // Call
-            delegate.callGroupify(outtuple, element);
+            delegate.callGroupify(element);
 
             // Next element
             processed++;
-            if (processed == numElements) { return; }
+            if (processed == numElements) {
+                return;
+            }
             element = element.nextOrdered;
         }
     }
@@ -108,13 +110,15 @@ public class Transformer02 extends AbstractTransformer {
         stopIndex *= ssStepWidth;
 
         for (int i = startIndex; i < stopIndex; i += ssStepWidth) {
-            intuple = data[snapshot[i]];
-            outtuple = buffer[snapshot[i]];
-            outtuple[outindex0] = idindex0[intuple[index0]][generalizationindex0];
-            outtuple[outindex1] = idindex1[intuple[index1]][generalizationindex1];
+            int row = snapshot[i];
+            
+            // Transform
+            buffer.set(row, outindex0, idindex0[data.get(row, index0)][generalizationindex0]);
+            buffer.set(row, outindex1, idindex1[data.get(row, index1)][generalizationindex1]);
 
+            
             // Call
-            delegate.callSnapshot(outtuple, snapshot, i);
+            delegate.callSnapshot(snapshot, i);
         }
     }
 }

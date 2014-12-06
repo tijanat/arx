@@ -476,9 +476,9 @@ public class ARXAnonymizer {
         final DataManager manager = prepareDataManager(handle, definition, config);
         
         // Attach arrays to data handle
-        ((DataHandleInput)handle).update(manager.getDataQI().getArray(), 
-                                         manager.getDataSE().getArray(),
-                                         manager.getDataIS().getArray());
+        ((DataHandleInput)handle).update(manager.getDataQI().getMemory(), 
+                                         manager.getDataSE().getMemory(),
+                                         manager.getDataIS().getMemory());
 
         // Initialize
         config.initialize(manager);

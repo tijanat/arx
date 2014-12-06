@@ -25,6 +25,7 @@ import org.deidentifier.arx.criteria.Inclusion;
 import org.deidentifier.arx.criteria.PrivacyCriterion;
 import org.deidentifier.arx.framework.check.distribution.Distribution;
 import org.deidentifier.arx.framework.data.Data;
+import org.deidentifier.arx.framework.data.IMemory;
 
 /**
  * A hash groupify operator. It implements a hash table with chaining and keeps
@@ -228,20 +229,30 @@ public class HashGroupify implements IHashGroupify {
 
     /** Criteria. */
     private final PrivacyCriterion[] criteria;
+    
+    /** The buffer */
+    private final IMemory buffer;
 
+    /** The sensitive data */
+    private final IMemory sensitive;
+
+    
     /**
      * Constructs a new hash groupify operator.
      *
      * @param capacity The capacity
      * @param config The config
      */
-    public HashGroupify(int capacity, final ARXConfigurationInternal config) {
+    public HashGroupify(int capacity, final ARXConfigurationInternal config, final IMemory buffer, final IMemory sensitive) {
 
         // Set capacity
         capacity = HashTableUtil.calculateCapacity(capacity);
         this.elementCount = 0;
         this.buckets = new HashGroupifyEntry[capacity];
         this.threshold = HashTableUtil.calculateThreshold(buckets.length, loadFactor);
+        
+        this.buffer = buffer;
+        this.sensitive = sensitive;
 
         this.currentOutliers = 0;
         this.absoluteMaxOutliers = config.getAbsoluteMaxOutliers();
@@ -273,16 +284,16 @@ public class HashGroupify implements IHashGroupify {
      * @see org.deidentifier.arx.framework.check.groupify.IHashGroupify#addAll(int[], int, int, int[], int)
      */
     @Override
-    public void addAll(int[] key, int representant, int count, int[] sensitive, int pcount) {
+    public void addAll(int representant, int count, boolean sensitive, int pcount) {
 
         // Add
-        final int hash = HashTableUtil.hashcode(key);
-        final HashGroupifyEntry entry = addInternal(key, hash, representant, count, pcount);
+        final int hash = buffer.hashCode(representant);
+        final HashGroupifyEntry entry = addInternal(hash, representant, count, pcount);
 
         // Is a sensitive attribute provided
-        if (sensitive != null) {
+        if (sensitive) {
             if (entry.distributions == null) {
-                entry.distributions = new Distribution[sensitive.length];
+                entry.distributions = new Distribution[this.sensitive.getNumColumns()];
                 
                 // TODO: Improve!
                 for (int i=0; i<entry.distributions.length; i++){
@@ -295,7 +306,7 @@ public class HashGroupify implements IHashGroupify {
 
                 // TODO: Improve!
                 for (int i=0; i<entry.distributions.length; i++){
-                    entry.distributions[i].add(sensitive[i]);
+                    entry.distributions[i].add(this.sensitive.get(representant, i));
                 }
             }
         }
@@ -305,11 +316,11 @@ public class HashGroupify implements IHashGroupify {
      * @see org.deidentifier.arx.framework.check.groupify.IHashGroupify#addGroupify(int[], int, int, org.deidentifier.arx.framework.check.distribution.Distribution[], int)
      */
     @Override
-    public void addGroupify(int[] key, int representant, int count, Distribution[] distributions, int pcount) {
+    public void addGroupify(int representant, int count, Distribution[] distributions, int pcount) {
 
         // Add
-        final int hash = HashTableUtil.hashcode(key);
-        final HashGroupifyEntry entry = addInternal(key, hash, representant, count, pcount);
+        final int hash = buffer.hashCode(representant);
+        final HashGroupifyEntry entry = addInternal(hash, representant, count, pcount);
 
         // Is a distribution provided
         if (distributions != null) {
@@ -329,11 +340,11 @@ public class HashGroupify implements IHashGroupify {
      * @see org.deidentifier.arx.framework.check.groupify.IHashGroupify#addSnapshot(int[], int, int, int[][], int[][], int)
      */
     @Override
-    public void addSnapshot(int[] key, int representant, int count, int[][] elements, int[][] frequencies, int pcount) {
+    public void addSnapshot(int representant, int count, int[][] elements, int[][] frequencies, int pcount) {
 
         // Add
-        final int hash = HashTableUtil.hashcode(key);
-        final HashGroupifyEntry entry = addInternal(key, hash, representant, count, pcount);
+        final int hash = buffer.hashCode(representant);
+        final HashGroupifyEntry entry = addInternal(hash, representant, count, pcount);
 
         // Is a distribution provided
         if (elements != null) {
@@ -486,20 +497,22 @@ public class HashGroupify implements IHashGroupify {
      * @see org.deidentifier.arx.framework.check.groupify.IHashGroupify#markOutliers(int[][])
      */
     @Override
-    public void markOutliers(final int[][] data) {
+    public void markOutliers(final IMemory data) {
         
-        for (int row = 0; row < data.length; row++) {
+        //TODO: is the parameter necessary? 
+        //TODO: If, yes, check data.equalsIgnoreOutliers(row, m.representant) !!! Is there maybe a need to compare tow roes in two different memory instances?
+        
+        for (int row = 0; row < data.getNumRows(); row++) {
             if (subset == null || subset.contains(row)){
-                final int[] key = data[row];
-                final int hash = HashTableUtil.hashcode(key);
+                final int hash = data.hashCode(row);
                 final int index = hash & (buckets.length - 1);
                 HashGroupifyEntry m = buckets[index];
-                while ((m != null) && ((m.hashcode != hash) || !equalsIgnoringOutliers(key, m.key))) {
+                while ((m != null) && ((m.hashcode != hash) || !data.equalsIgnoreOutliers(row, m.representant))) {
                     m = m.next;
                 }
                 if (m == null) { throw new RuntimeException("Invalid state! Groupify the data before marking outliers!"); }
                 if (!m.isNotOutlier) {
-                    key[0] |= Data.OUTLIER_MASK;
+                    data.set(row, 0, (data.get(row, 0) | Data.OUTLIER_MASK));
                 }
             }
         }
@@ -537,7 +550,7 @@ public class HashGroupify implements IHashGroupify {
      * @param pcount
      * @return the hash groupify entry
      */
-    private final HashGroupifyEntry addInternal(final int[] key, final int hash, final int representant, int count, final int pcount) {
+    private final HashGroupifyEntry addInternal(final int hash, final int representant, int count, final int pcount) {
 
         // Is the line contained in the research subset
         if (subset != null && !subset.contains(representant)) {
@@ -546,13 +559,13 @@ public class HashGroupify implements IHashGroupify {
 
         // Add entry
         int index = hash & (buckets.length - 1);
-        HashGroupifyEntry entry = findEntry(key, index, hash);
+        HashGroupifyEntry entry = findEntry(representant, index, hash);
         if (entry == null) {
             if (++elementCount > threshold) {
                 rehash();
                 index = hash & (buckets.length - 1);
             }
-            entry = createEntry(key, index, hash, representant);
+            entry = createEntry(index, hash, representant);
         }
         entry.count += count;
 
@@ -699,8 +712,8 @@ public class HashGroupify implements IHashGroupify {
      *            the line
      * @return the hash groupify entry
      */
-    private HashGroupifyEntry createEntry(final int[] key, final int index, final int hash, final int line) {
-        final HashGroupifyEntry entry = new HashGroupifyEntry(key, hash);
+    private HashGroupifyEntry createEntry(final int index, final int hash, final int line) {
+        final HashGroupifyEntry entry = new HashGroupifyEntry(line, hash, buffer);
         entry.next = buckets[index];
         entry.representant = line;
         buckets[index] = entry;
@@ -715,20 +728,6 @@ public class HashGroupify implements IHashGroupify {
     }
 
     /**
-     * TODO: Ugly!.
-     *
-     * @param a
-     * @param a2
-     * @return
-     */
-    private boolean equalsIgnoringOutliers(final int[] a, final int[] a2) {
-        for (int i = 0; i < a.length; i++) {
-            if (a[i] != (a2[i] & Data.REMOVE_OUTLIER_MASK)) { return false; }
-        }
-        return true;
-    }
-
-    /**
      * Returns the according entry.
      * 
      * @param key
@@ -739,9 +738,9 @@ public class HashGroupify implements IHashGroupify {
      *            the key hash
      * @return the hash groupify entry
      */
-    private final HashGroupifyEntry findEntry(final int[] key, final int index, final int keyHash) {
+    private final HashGroupifyEntry findEntry(final int line, final int index, final int keyHash) {
         HashGroupifyEntry m = buckets[index];
-        while ((m != null) && ((m.hashcode != keyHash) || !HashTableUtil.equals(key, m.key))) {
+        while ((m != null) && ((m.hashcode != keyHash) || !buffer.equals(line, m.representant))) {
             m = m.next;
         }
         return m;

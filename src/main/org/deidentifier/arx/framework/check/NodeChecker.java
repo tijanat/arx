@@ -27,6 +27,7 @@ import org.deidentifier.arx.framework.check.groupify.IHashGroupify;
 import org.deidentifier.arx.framework.check.history.History;
 import org.deidentifier.arx.framework.data.Data;
 import org.deidentifier.arx.framework.data.DataManager;
+import org.deidentifier.arx.framework.data.IMemory;
 import org.deidentifier.arx.framework.lattice.Lattice;
 import org.deidentifier.arx.framework.lattice.Node;
 import org.deidentifier.arx.metric.InformationLoss;
@@ -100,7 +101,7 @@ public class NodeChecker implements INodeChecker {
             dictionarySensFreq = new IntArrayDictionary(0);
         }
 
-        this.history = new History(manager.getDataQI().getArray().length,
+        this.history = new History(manager.getDataQI().getDataLength(),
                                    historyMaxSize,
                                    snapshotSizeDataset,
                                    snapshotSizeSnapshot,
@@ -109,14 +110,16 @@ public class NodeChecker implements INodeChecker {
                                    dictionarySensFreq);
         
         this.stateMachine = new StateMachine(history);
-        this.currentGroupify = new HashGroupify(initialSize, config);
-        this.lastGroupify = new HashGroupify(initialSize, config);
-        this.transformer = new Transformer(manager.getDataQI().getArray(),
+        IMemory buffer = data.getMemory().clone();
+        this.currentGroupify = new HashGroupify(initialSize, config, buffer, manager.getDataSE().getMemory());
+        this.lastGroupify = new HashGroupify(initialSize, config, buffer, manager.getDataSE().getMemory());
+        this.transformer = new Transformer(manager.getDataQI().getMemory(),
                                            manager.getHierarchies(),
-                                           manager.getDataSE().getArray(),
+                                           manager.getDataSE().getMemory(),
                                            config,
                                            dictionarySensValue,
-                                           dictionarySensFreq);
+                                           dictionarySensFreq,
+                                           buffer);
     }
 
     /* (non-Javadoc)

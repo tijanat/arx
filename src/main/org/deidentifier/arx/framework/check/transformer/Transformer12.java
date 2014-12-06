@@ -21,6 +21,7 @@ package org.deidentifier.arx.framework.check.transformer;
 import org.deidentifier.arx.ARXConfiguration.ARXConfigurationInternal;
 import org.deidentifier.arx.framework.check.distribution.IntArrayDictionary;
 import org.deidentifier.arx.framework.data.GeneralizationHierarchy;
+import org.deidentifier.arx.framework.data.IMemory;
 
 /**
  * The class Transformer12.
@@ -40,9 +41,9 @@ public class Transformer12 extends AbstractTransformer {
      * @param dictionarySensFreq
      * @param config
      */
-    public Transformer12(final int[][] data,
+    public Transformer12(final IMemory data,
                          final GeneralizationHierarchy[] hierarchies,
-                         final int[][] sensitiveValues,
+                         final IMemory sensitiveValues,
                          final IntArrayDictionary dictionarySensValue,
                          final IntArrayDictionary dictionarySensFreq,
                          final ARXConfigurationInternal config) {
@@ -58,23 +59,22 @@ public class Transformer12 extends AbstractTransformer {
     @Override
     protected void processAll() {
         for (int i = startIndex; i < stopIndex; i++) {
-            intuple = data[i];
-            outtuple = buffer[i];
-            outtuple[outindex0] = idindex0[intuple[index0]][generalizationindex0];
-            outtuple[outindex1] = idindex1[intuple[index1]][generalizationindex1];
-            outtuple[outindex2] = idindex2[intuple[index2]][generalizationindex2];
-            outtuple[outindex3] = idindex3[intuple[index3]][generalizationindex3];
-            outtuple[outindex4] = idindex4[intuple[index4]][generalizationindex4];
-            outtuple[outindex5] = idindex5[intuple[index5]][generalizationindex5];
-            outtuple[outindex6] = idindex6[intuple[index6]][generalizationindex6];
-            outtuple[outindex7] = idindex7[intuple[index7]][generalizationindex7];
-            outtuple[outindex8] = idindex8[intuple[index8]][generalizationindex8];
-            outtuple[outindex9] = idindex9[intuple[index9]][generalizationindex9];
-            outtuple[outindex10] = idindex10[intuple[index10]][generalizationindex10];
-            outtuple[outindex11] = idindex11[intuple[index11]][generalizationindex11];
+            // Transform
+            buffer.set(i, outindex0, idindex0[data.get(i, index0)][generalizationindex0]);
+            buffer.set(i, outindex1, idindex1[data.get(i, index1)][generalizationindex1]);
+            buffer.set(i, outindex2, idindex2[data.get(i, index2)][generalizationindex2]);
+            buffer.set(i, outindex3, idindex3[data.get(i, index3)][generalizationindex3]);
+            buffer.set(i, outindex4, idindex4[data.get(i, index4)][generalizationindex4]);
+            buffer.set(i, outindex5, idindex5[data.get(i, index5)][generalizationindex5]);
+            buffer.set(i, outindex6, idindex6[data.get(i, index6)][generalizationindex6]);
+            buffer.set(i, outindex7, idindex7[data.get(i, index7)][generalizationindex7]);
+            buffer.set(i, outindex8, idindex8[data.get(i, index8)][generalizationindex8]);
+            buffer.set(i, outindex9, idindex9[data.get(i, index9)][generalizationindex9]);
+            buffer.set(i, outindex10, idindex10[data.get(i, index10)][generalizationindex10]);
+            buffer.set(i, outindex11, idindex11[data.get(i, index11)][generalizationindex11]);
 
             // Call
-            delegate.callAll(outtuple, i);
+            delegate.callAll(i);
         }
     }
 
@@ -89,27 +89,28 @@ public class Transformer12 extends AbstractTransformer {
         int processed = 0;
         while (element != null) {
 
-            intuple = data[element.representant];
-            outtuple = buffer[element.representant];
-            outtuple[outindex0] = idindex0[intuple[index0]][generalizationindex0];
-            outtuple[outindex1] = idindex1[intuple[index1]][generalizationindex1];
-            outtuple[outindex2] = idindex2[intuple[index2]][generalizationindex2];
-            outtuple[outindex3] = idindex3[intuple[index3]][generalizationindex3];
-            outtuple[outindex4] = idindex4[intuple[index4]][generalizationindex4];
-            outtuple[outindex5] = idindex5[intuple[index5]][generalizationindex5];
-            outtuple[outindex6] = idindex6[intuple[index6]][generalizationindex6];
-            outtuple[outindex7] = idindex7[intuple[index7]][generalizationindex7];
-            outtuple[outindex8] = idindex8[intuple[index8]][generalizationindex8];
-            outtuple[outindex9] = idindex9[intuple[index9]][generalizationindex9];
-            outtuple[outindex10] = idindex10[intuple[index10]][generalizationindex10];
-            outtuple[outindex11] = idindex11[intuple[index11]][generalizationindex11];
+            // Transform
+            buffer.set(element.representant, outindex0, idindex0[data.get(element.representant, index0)][generalizationindex0]);
+            buffer.set(element.representant, outindex1, idindex1[data.get(element.representant, index1)][generalizationindex1]);
+            buffer.set(element.representant, outindex2, idindex2[data.get(element.representant, index2)][generalizationindex2]);
+            buffer.set(element.representant, outindex3, idindex3[data.get(element.representant, index3)][generalizationindex3]);
+            buffer.set(element.representant, outindex4, idindex4[data.get(element.representant, index4)][generalizationindex4]);
+            buffer.set(element.representant, outindex5, idindex5[data.get(element.representant, index5)][generalizationindex5]);
+            buffer.set(element.representant, outindex6, idindex6[data.get(element.representant, index6)][generalizationindex6]);
+            buffer.set(element.representant, outindex7, idindex7[data.get(element.representant, index7)][generalizationindex7]);
+            buffer.set(element.representant, outindex8, idindex8[data.get(element.representant, index8)][generalizationindex8]);
+            buffer.set(element.representant, outindex9, idindex9[data.get(element.representant, index9)][generalizationindex9]);
+            buffer.set(element.representant, outindex10, idindex10[data.get(element.representant, index10)][generalizationindex10]);
+            buffer.set(element.representant, outindex11, idindex11[data.get(element.representant, index11)][generalizationindex11]);
 
             // Call
-            delegate.callGroupify(outtuple, element);
+            delegate.callGroupify(element);
 
             // Next element
             processed++;
-            if (processed == numElements) { return; }
+            if (processed == numElements) {
+                return;
+            }
             element = element.nextOrdered;
         }
     }
@@ -126,23 +127,24 @@ public class Transformer12 extends AbstractTransformer {
         stopIndex *= ssStepWidth;
 
         for (int i = startIndex; i < stopIndex; i += ssStepWidth) {
-            intuple = data[snapshot[i]];
-            outtuple = buffer[snapshot[i]];
-            outtuple[outindex0] = idindex0[intuple[index0]][generalizationindex0];
-            outtuple[outindex1] = idindex1[intuple[index1]][generalizationindex1];
-            outtuple[outindex2] = idindex2[intuple[index2]][generalizationindex2];
-            outtuple[outindex3] = idindex3[intuple[index3]][generalizationindex3];
-            outtuple[outindex4] = idindex4[intuple[index4]][generalizationindex4];
-            outtuple[outindex5] = idindex5[intuple[index5]][generalizationindex5];
-            outtuple[outindex6] = idindex6[intuple[index6]][generalizationindex6];
-            outtuple[outindex7] = idindex7[intuple[index7]][generalizationindex7];
-            outtuple[outindex8] = idindex8[intuple[index8]][generalizationindex8];
-            outtuple[outindex9] = idindex9[intuple[index9]][generalizationindex9];
-            outtuple[outindex10] = idindex10[intuple[index10]][generalizationindex10];
-            outtuple[outindex11] = idindex11[intuple[index11]][generalizationindex11];
+            int row = snapshot[i];
+
+            // Transform
+            buffer.set(row, outindex0, idindex0[data.get(row, index0)][generalizationindex0]);
+            buffer.set(row, outindex1, idindex1[data.get(row, index1)][generalizationindex1]);
+            buffer.set(row, outindex2, idindex2[data.get(row, index2)][generalizationindex2]);
+            buffer.set(row, outindex3, idindex3[data.get(row, index3)][generalizationindex3]);
+            buffer.set(row, outindex4, idindex4[data.get(row, index4)][generalizationindex4]);
+            buffer.set(row, outindex5, idindex5[data.get(row, index5)][generalizationindex5]);
+            buffer.set(row, outindex6, idindex6[data.get(row, index6)][generalizationindex6]);
+            buffer.set(row, outindex7, idindex7[data.get(row, index7)][generalizationindex7]);
+            buffer.set(row, outindex8, idindex8[data.get(row, index8)][generalizationindex8]);
+            buffer.set(row, outindex9, idindex9[data.get(row, index9)][generalizationindex9]);
+            buffer.set(row, outindex10, idindex10[data.get(row, index10)][generalizationindex10]);
+            buffer.set(row, outindex11, idindex11[data.get(row, index11)][generalizationindex11]);
 
             // Call
-            delegate.callSnapshot(outtuple, snapshot, i);
+            delegate.callSnapshot(snapshot, i);
         }
     }
 }

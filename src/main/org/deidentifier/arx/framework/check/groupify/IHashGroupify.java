@@ -20,6 +20,7 @@ package org.deidentifier.arx.framework.check.groupify;
 
 import org.deidentifier.arx.framework.check.distribution.Distribution;
 import org.deidentifier.arx.framework.check.groupify.HashGroupify.GroupStatistics;
+import org.deidentifier.arx.framework.data.IMemory;
 
 /**
  * 
@@ -35,7 +36,7 @@ public interface IHashGroupify {
      * @param sensitive
      * @param pcount
      */
-    public abstract void addAll(int[] outtuple, int representant, int count, int[] sensitive, int pcount);
+    public abstract void addAll(int representant, int count, boolean sensitive, int pcount);
 
     /**
      * Generic adder for all combinations of criteria in mode transform GROUPIFY.
@@ -46,7 +47,7 @@ public interface IHashGroupify {
      * @param distribution
      * @param pcount
      */
-    public abstract void addGroupify(int[] outtuple, int representant, int count, Distribution[] distribution, int pcount);
+    public abstract void addGroupify(int representant, int count, Distribution[] distribution, int pcount);
 
 
     /**
@@ -59,7 +60,7 @@ public interface IHashGroupify {
      * @param frequencies
      * @param pcount
      */
-    public abstract void addSnapshot(int[] outtuple, int representant, int count, int[][] elements, int[][] frequencies, int pcount);
+    public abstract void addSnapshot(int representant, int count, int[][] elements, int[][] frequencies, int pcount);
     
     /**
      * Computes the anonymity properties and suppressed tuples etc. Must be called
@@ -112,7 +113,7 @@ public interface IHashGroupify {
      *
      * @param buffer
      */
-    public abstract void markOutliers(int[][] buffer);
+    public abstract void markOutliers(IMemory buffer);
 
     /**
      * Resets all flags that indicate that equivalence classes are suppressed.

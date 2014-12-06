@@ -107,7 +107,7 @@ public class MetricMDNUNMEntropyPrecomputed extends MetricMDNUEntropyPrecomputed
             if (!m.isNotOutlier && m.count > 0) {
                 suppressed += m.count;
                 for (int i = 0; i < original.length; i++) {
-                    original[i].putOrAdd(m.key[i], m.count, m.count);
+                    original[i].putOrAdd(m.buffer.get(m.representant, i), m.count, m.count);
                 }
             }
             m = m.nextOrdered;

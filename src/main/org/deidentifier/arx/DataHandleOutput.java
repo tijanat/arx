@@ -30,6 +30,7 @@ import org.deidentifier.arx.framework.data.Data;
 import org.deidentifier.arx.framework.data.DataManager;
 import org.deidentifier.arx.framework.data.Dictionary;
 import org.deidentifier.arx.framework.data.GeneralizationHierarchy;
+import org.deidentifier.arx.framework.data.IMemory;
 
 /**
  * An implementation of the class DataHandle for output data.
@@ -57,7 +58,7 @@ public class DataHandleOutput extends DataHandle {
          */
         @Override
         public boolean hasNext() {
-            return row < dataQI.getArray().length;
+            return row < dataQI.getMemory().getNumRows();
         }
 
         /*
@@ -115,7 +116,7 @@ public class DataHandleOutput extends DataHandle {
     protected Data        dataSE;
 
     /** An inverse map to data arrays. */
-    private int[][][]     inverseData;
+    private IMemory[]     inverseData;
 
     /** An inverse map to dictionaries. */
     private Dictionary[]  inverseDictionaries;
@@ -198,10 +199,10 @@ public class DataHandleOutput extends DataHandle {
         }
 
         // Build inverse data array
-        this.inverseData = new int[3][][];
-        this.inverseData[AttributeType.ATTR_TYPE_IS] = this.dataIS.getArray();
-        this.inverseData[AttributeType.ATTR_TYPE_SE] = this.dataSE.getArray();
-        this.inverseData[AttributeType.ATTR_TYPE_QI] = this.dataQI.getArray();
+        this.inverseData = new IMemory[3];
+        this.inverseData[AttributeType.ATTR_TYPE_IS] = this.dataIS.getMemory();
+        this.inverseData[AttributeType.ATTR_TYPE_SE] = this.dataSE.getMemory();
+        this.inverseData[AttributeType.ATTR_TYPE_QI] = this.dataQI.getMemory();
 
         // Build inverse dictionary array
         this.inverseDictionaries = new Dictionary[3];
@@ -477,12 +478,12 @@ public class DataHandleOutput extends DataHandle {
             return suppressionString;
         default:
             final int index = inverseMap[col] & AttributeType.MASK;
-            final int[][] data = inverseData[type];
+            final IMemory data = inverseData[type];
 
             if ((suppressedAttributeTypes & (1 << type)) != 0 &&
-                ((dataQI.getArray()[row][0] & Data.OUTLIER_MASK) != 0)) { return suppressionString; }
+                ((dataQI.getMemory().get(row,0) & Data.OUTLIER_MASK) != 0)) { return suppressionString; }
 
-            final int value = data[row][index] & Data.REMOVE_OUTLIER_MASK;
+            final int value = data.get(row,index) & Data.REMOVE_OUTLIER_MASK;
             final String[][] dictionary = inverseDictionaries[type].getMapping();
             return dictionary[index][value];
         }
@@ -495,7 +496,7 @@ public class DataHandleOutput extends DataHandle {
      * @return
      */
     protected boolean internalIsOutlier(final int row) {
-        return ((dataQI.getArray()[row][0] & Data.OUTLIER_MASK) != 0);
+        return ((dataQI.getMemory().get(row,0) & Data.OUTLIER_MASK) != 0);
     }
 
     /**
@@ -507,8 +508,6 @@ public class DataHandleOutput extends DataHandle {
      *            the row2
      */
     protected void internalSwap(final int row1, final int row2) {
-        int[] temp = dataQI.getArray()[row1];
-        dataQI.getArray()[row1] = dataQI.getArray()[row2];
-        dataQI.getArray()[row2] = temp;
+        dataQI.getMemory().swap(row1, row2);
     }
 }

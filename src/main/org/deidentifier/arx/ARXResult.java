@@ -109,9 +109,9 @@ public class ARXResult {
                                                     config.getCriteria());
 
         // Update handle
-        ((DataHandleInput)handle).update(manager.getDataQI().getArray(), 
-                                         manager.getDataSE().getArray(),
-                                         manager.getDataIS().getArray());
+        ((DataHandleInput)handle).update(manager.getDataQI().getMemory(), 
+                                         manager.getDataSE().getMemory(),
+                                         manager.getDataIS().getMemory());
         
         // Lock handle
         ((DataHandleInput)handle).setLocked(true);

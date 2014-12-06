@@ -29,6 +29,7 @@ import org.deidentifier.arx.framework.check.groupify.IHashGroupify;
 import org.deidentifier.arx.framework.data.Data;
 import org.deidentifier.arx.framework.data.Dictionary;
 import org.deidentifier.arx.framework.data.GeneralizationHierarchy;
+import org.deidentifier.arx.framework.data.IMemory;
 import org.deidentifier.arx.framework.lattice.Node;
 
 /**
@@ -45,13 +46,13 @@ public class MetricEntropy extends MetricDefault {
 
     /** Value unknown. */
     private static final double NA               = Double.POSITIVE_INFINITY;
-    
+
     /** SVUID. */
     private static final long   serialVersionUID = -8618697919821588987L;
-    
+
     /** Log 2. */
     static final double         log2             = Math.log(2);
-    
+
     /**
      * Computes log 2.
      *
@@ -87,8 +88,10 @@ public class MetricEntropy extends MetricDefault {
     protected MetricEntropy(final boolean monotonic, final boolean independent) {
         super(monotonic, independent);
     }
-    
-    /* (non-Javadoc)
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.deidentifier.arx.metric.Metric#toString()
      */
     @Override
@@ -102,7 +105,7 @@ public class MetricEntropy extends MetricDefault {
     protected double[][] getCache() {
         return cache;
     }
-    
+
     /**
      * @return the cardinalities
      */
@@ -117,17 +120,19 @@ public class MetricEntropy extends MetricDefault {
         return hierarchies;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.deidentifier.arx.metric.Metric#getInformationLossInternal(org.deidentifier.arx.framework.lattice.Node, org.deidentifier.arx.framework.check.groupify.IHashGroupify)
      */
     @Override
     protected InformationLossWithBound<InformationLossDefault> getInformationLossInternal(final Node node, final IHashGroupify g) {
 
-        if (node.getLowerBound() != null) { 
-            return new InformationLossWithBound<InformationLossDefault>((InformationLossDefault)node.getLowerBound(),
-                                                                    (InformationLossDefault)node.getLowerBound()); 
+        if (node.getLowerBound() != null) {
+            return new InformationLossWithBound<InformationLossDefault>((InformationLossDefault) node.getLowerBound(),
+                                                                        (InformationLossDefault) node.getLowerBound());
         }
-        
+
         // Init
         double result = 0;
 
@@ -157,7 +162,9 @@ public class MetricEntropy extends MetricDefault {
         return new InformationLossDefaultWithBound(result, result);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.deidentifier.arx.metric.MetricDefault#getLowerBoundInternal(org.deidentifier.arx.framework.lattice.Node)
      */
     @Override
@@ -165,7 +172,9 @@ public class MetricEntropy extends MetricDefault {
         return getInformationLossInternal(node, null).getLowerBound();
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.deidentifier.arx.metric.MetricDefault#getLowerBoundInternal(org.deidentifier.arx.framework.lattice.Node, org.deidentifier.arx.framework.check.groupify.IHashGroupify)
      */
     @Override
@@ -174,15 +183,17 @@ public class MetricEntropy extends MetricDefault {
         return getLowerBoundInternal(node);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.deidentifier.arx.metric.MetricDefault#initializeInternal(org.deidentifier.arx.DataDefinition, org.deidentifier.arx.framework.data.Data, org.deidentifier.arx.framework.data.GeneralizationHierarchy[], org.deidentifier.arx.ARXConfiguration)
      */
     @Override
     protected void initializeInternal(final DataDefinition definition,
-                                      final Data input, 
-                                      final GeneralizationHierarchy[] ahierarchies, 
+                                      final Data input,
+                                      final GeneralizationHierarchy[] ahierarchies,
                                       final ARXConfiguration config) {
-        
+
         // Obtain dictionary
         final Dictionary dictionary = input.getDictionary();
 
@@ -190,36 +201,37 @@ public class MetricEntropy extends MetricDefault {
         RowSet rSubset = null;
         if (config.containsCriterion(DPresence.class)) {
             Set<DPresence> crits = config.getCriteria(DPresence.class);
-            if (crits.size() > 1) { throw new IllegalArgumentException("Only one d-presence criterion supported!"); }
+            if (crits.size() > 1) {
+                throw new IllegalArgumentException("Only one d-presence criterion supported!");
+            }
             for (DPresence dPresence : crits) {
                 rSubset = dPresence.getSubset().getSet();
             }
         }
 
         // Create reference to the hierarchies
-        final int[][] data = input.getArray();
-        hierarchies = new int[data[0].length][][];
+        final IMemory data = input.getMemory();
+        hierarchies = new int[data.getNumColumns()][][];
         for (int i = 0; i < ahierarchies.length; i++) {
             hierarchies[i] = ahierarchies[i].getArray();
             // Column -> Id -> Level -> Output
         }
 
         // Initialize counts
-        cardinalities = new int[data[0].length][][];
+        cardinalities = new int[data.getNumColumns()][][];
         for (int i = 0; i < cardinalities.length; i++) {
             cardinalities[i] = new int[dictionary.getMapping()[i].length][ahierarchies[i].getArray()[0].length];
             // Column -> Id -> Level -> Count
         }
 
-		for (int i = 0; i < data.length; i++) { 
-			// only use the rows contained in the research subset
-			if (rSubset == null || rSubset.contains(i)) {
-				final int[] row = data[i];
-				for (int column = 0; column < row.length; column++) {
-					cardinalities[column][row[column]][0]++;
-				}
-			}
-		}
+        for (int i = 0; i < data.getNumRows(); i++) {
+            // only use the rows contained in the research subset
+            if (rSubset == null || rSubset.contains(i)) {
+                for (int column = 0; column < data.getNumColumns(); column++) {
+                    cardinalities[column][data.get(i, column)][0]++;
+                }
+            }
+        }
 
         // Create counts for other levels
         for (int column = 0; column < hierarchies.length; column++) {
