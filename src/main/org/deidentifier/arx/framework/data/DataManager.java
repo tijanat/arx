@@ -509,9 +509,9 @@ public class DataManager {
                           final String[] headerIS) {
 
         // Parse the dataset
-        final IMemory valsQI = new Memory(data.length, headerQI.length);
-        final IMemory valsSE = new Memory(data.length, headerSE.length);
-        final IMemory valsIS = new Memory(data.length, headerIS.length);
+        final IMemory valsQI = new MemoryIntArray(data.length, headerQI.length);
+        final IMemory valsSE = new MemoryIntArray(data.length, headerSE.length);
+        final IMemory valsIS = new MemoryIntArray(data.length, headerIS.length);
 
         int index = 0;
         for (final int[] tuple : data) {
