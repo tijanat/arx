@@ -43,12 +43,12 @@ public class Memory implements IMemory {
      */
     private static byte[] createIntFieldSizes(int columns) {
         final byte[] fieldSizes = new byte[columns];
-        Arrays.fill(fieldSizes, (byte) 4);
+        Arrays.fill(fieldSizes, (byte) 31);
         return fieldSizes;
     }
 
     /** The Constant POWER. */
-    private static final int POWER                    = 2;
+    private static final int POWER                    = 1;
 
     /** The Constant NUM_LONGS. */
     private static final int NUM_LONGS                = 1 << POWER;
@@ -97,6 +97,7 @@ public class Memory implements IMemory {
      */
     public Memory(final int numRows, final byte[] columnSizes) {
 
+
         this.columnSizes = columnSizes;
         numColumns = columnSizes.length;
         this.numRows = numRows;
@@ -143,10 +144,10 @@ public class Memory implements IMemory {
 
             // bitpos [1] --> offset
             bitPos[idx + 1] = currentlyUsedBits;
+            currentlyUsedBits += bitPos[idx];
 
             idx += NUM_LONGS;
 
-            currentlyUsedBits += currFieldSize;
         }
 
         // make multiple of 8
