@@ -60,7 +60,7 @@ public class Memory implements IMemory {
     private final long       baseAddress;
 
     /** The offset position of the fields. Aligned in long array for efficient caching */
-    private final long[]     bitPos;
+    private final long[]     bytePos;
 
     /** The size in bytes of one row. */
     private final long       rowSizeInBytes;
@@ -97,7 +97,6 @@ public class Memory implements IMemory {
      */
     public Memory(final int numRows, final byte[] columnSizes) {
 
-
         this.columnSizes = columnSizes;
         numColumns = columnSizes.length;
         this.numRows = numRows;
@@ -116,35 +115,34 @@ public class Memory implements IMemory {
         }
 
         // Field properties
-        bitPos = new long[columnSizes.length * NUM_LONGS];
+        bytePos = new long[columnSizes.length * NUM_LONGS];
 
-        int currentlyUsedBits = 0;
+        int currentlyUsedBytes = 0;
         int curLong = 1;
         int idx = 0;
         for (int field = 0; field < columnSizes.length; field++) {
-            final int currFieldSize = columnSizes[field];
-
-            // If it doesn't fit in current long, align
-            if ((currentlyUsedBits + currFieldSize) > (curLong * 64)) {
-                currentlyUsedBits = curLong * 64;
-                curLong++;
-            }
+            final int currFieldSizeInBits = columnSizes[field];
 
             // bitpos [0] --> fieldsize
-
-            if (currFieldSize <= 7) { // Byte
-                bitPos[idx] = 1;
-            } else if (currFieldSize <= 15) { // Short
-                bitPos[idx] = 2;
-            } else if (currFieldSize <= 31) { // Int
-                bitPos[idx] = 4;
+            if (currFieldSizeInBits <= 7) { // Byte
+                bytePos[idx] = 1;
+            } else if (currFieldSizeInBits <= 15) { // Short
+                bytePos[idx] = 2;
+            } else if (currFieldSizeInBits <= 31) { // Int
+                bytePos[idx] = 4;
             } else {
-                throw new RuntimeException("Unexpected field size: " + currFieldSize);
+                throw new RuntimeException("Unexpected field size: " + currFieldSizeInBits);
             }
 
             // bitpos [1] --> offset
-            bitPos[idx + 1] = currentlyUsedBits;
-            currentlyUsedBits += bitPos[idx];
+            bytePos[idx + 1] = currentlyUsedBytes;
+
+            currentlyUsedBytes += bytePos[idx];
+
+            // If it doesn't fit in current long, add another
+            if (currentlyUsedBytes > (curLong * 8)) {
+                curLong++;
+            }
 
             idx += NUM_LONGS;
 
@@ -166,8 +164,8 @@ public class Memory implements IMemory {
         freed = false;
 
         // precompute the offset
-        for (int i = 0; i < bitPos.length; i += NUM_LONGS) {
-            bitPos[i + 1] += baseAddress;
+        for (int i = 0; i < bytePos.length; i += NUM_LONGS) {
+            bytePos[i + 1] += baseAddress;
         }
     }
 
@@ -410,12 +408,12 @@ public class Memory implements IMemory {
     public int get(final int row, final int col) {
         final int idx = (col << POWER);
 
-        if (bitPos[idx] == 1L) {
-            return unsafe.getByte(bitPos[idx + 1] + (row * rowSizeInBytes));
-        } else if (bitPos[idx] == 2L) {
-            return unsafe.getShort(bitPos[idx + 1] + (row * rowSizeInBytes));
-        } else if (bitPos[idx] == 4L) {
-            return unsafe.getInt(bitPos[idx + 1] + (row * rowSizeInBytes));
+        if (bytePos[idx] == 1L) {
+            return unsafe.getByte(bytePos[idx + 1] + (row * rowSizeInBytes));
+        } else if (bytePos[idx] == 2L) {
+            return unsafe.getShort(bytePos[idx + 1] + (row * rowSizeInBytes));
+        } else if (bytePos[idx] == 4L) {
+            return unsafe.getInt(bytePos[idx + 1] + (row * rowSizeInBytes));
         } else {
             throw new RuntimeException("Invalid field size!");
         }
@@ -500,12 +498,12 @@ public class Memory implements IMemory {
     public void set(final int row, final int col, final int val) {
         final int idx = (col << POWER);
 
-        if (bitPos[idx] == 1L) {
-            unsafe.putByte(bitPos[idx + 1] + (row * rowSizeInBytes), (byte) val);
-        } else if (bitPos[idx] == 2L) {
-            unsafe.putShort(bitPos[idx + 1] + (row * rowSizeInBytes), (short) val);
-        } else if (bitPos[idx] == 4L) {
-            unsafe.putInt(bitPos[idx + 1] + (row * rowSizeInBytes), val);
+        if (bytePos[idx] == 1L) {
+            unsafe.putByte(bytePos[idx + 1] + (row * rowSizeInBytes), (byte) val);
+        } else if (bytePos[idx] == 2L) {
+            unsafe.putShort(bytePos[idx + 1] + (row * rowSizeInBytes), (short) val);
+        } else if (bytePos[idx] == 4L) {
+            unsafe.putInt(bytePos[idx + 1] + (row * rowSizeInBytes), val);
         } else {
             throw new RuntimeException("Invalid field size!");
         }

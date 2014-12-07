@@ -2,11 +2,11 @@ package org.deidentifier.arx.framework.data;
 
 import java.util.Random;
 
-public class Tester {
+public class MemoryTester {
 
-    private static final int ROWS    = 7;
-    private static final int COLUMNS = 3;
-    private static final int REPEATS = 10000;
+    private static final int ROWS    = 100000;
+    private static final int COLUMNS = 97;
+    private static final int REPEATS = 100;
 
     public static void main(String[] args) {
         Random rnd = new Random();
@@ -18,7 +18,7 @@ public class Tester {
             int[][] data = new int[ROWS][COLUMNS];
             for (int i = 0; i < data.length; i++) {
                 for (int j = 0; j < data[i].length; j++) {
-                    data[i][j] = rnd.nextInt(5);
+                    data[i][j] = rnd.nextInt();
                 }
             }
 
