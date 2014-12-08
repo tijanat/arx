@@ -302,10 +302,12 @@ public class MemoryLongArray2 implements IMemory {
         case 3: temp = 37 * temp + get(row, 2);
         case 2: temp = 37 * temp + get(row, 1);
         case 1: temp = 37 * temp + get(row, 0); 
+        break;
         default:
           // TODO
           throw new RuntimeException("Invalid bytes per row!");
         }
+        return temp;
     }
 
     /*
