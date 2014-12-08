@@ -161,6 +161,8 @@ public class Memory implements IMemory {
         // Allocate
         size = rowSizeInBytes * numRows;
         baseAddress = unsafe.allocateMemory(size);
+        unsafe.setMemory(baseAddress, size, (byte) 0);
+        
         freed = false;
 
         // precompute the offset
@@ -546,6 +548,17 @@ public class Memory implements IMemory {
         if (!freed) {
             free();
         }
+    }
+
+    public void printMemory() {
+        for (int i = 0; i < numRows; i++) {
+            for (int j = 0; j < numColumns; j++) {
+                System.out.print(get(i, j));
+                System.out.print(" ");
+            }
+            System.out.println();
+        }
+        System.out.println();
     }
 
 }
