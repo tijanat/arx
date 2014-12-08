@@ -22,9 +22,16 @@ public class MemoryTester {
                 }
             }
 
-            IMemory memory = new Memory(ROWS, COLUMNS);
+            IMemory memory = new MemoryLongArray(ROWS, COLUMNS);
 
-            // Fill
+            // Fill 1
+            for (int i = 0; i < data.length; i++) {
+                for (int j = 0; j < data[i].length; j++) {
+                    memory.set(i, j, -data[i][j] + 1);
+                }
+            }
+
+            // Fill 2
             for (int i = 0; i < data.length; i++) {
                 for (int j = 0; j < data[i].length; j++) {
                     memory.set(i, j, data[i][j]);
