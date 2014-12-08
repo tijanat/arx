@@ -18,7 +18,7 @@ public class MemoryTester {
             int[][] data = new int[ROWS][COLUMNS];
             for (int i = 0; i < data.length; i++) {
                 for (int j = 0; j < data[i].length; j++) {
-                    data[i][j] = rnd.nextInt();
+                    data[i][j] = rnd.nextInt(10000);
                 }
             }
 

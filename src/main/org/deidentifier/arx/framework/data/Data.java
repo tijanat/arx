@@ -36,7 +36,7 @@ public class Data implements Cloneable {
     public static final int  REMOVE_OUTLIER_MASK = ~OUTLIER_MASK;
 
     /** The inverse outliers mask. */
-    public static final long REMOVE_OUTLIER_LONG_MASK = ~(OUTLIER_MASK << 32);
+    public static final long REMOVE_OUTLIER_LONG_MASK = ~(((long)OUTLIER_MASK) << 32);
 
     /** Row, Dimension. */
     private final IMemory    data;
