@@ -29,31 +29,16 @@ import java.util.Arrays;
 public class MemoryLongArray implements IMemory {
 
     /** The data. */
-    private long[]           data;
-
-    /** Flag to indicate, if efficient equals and compare can be used. */
-    private final boolean    use_fast_compare;
-
-    /** The length of the slide for equals and compare in longs. */
-    private static final int LENGTH_OF_SLIDE_IN_LONGS = 6;
+    private long[]    data;
 
     /** The number of rows. */
-    private final int        numRows;
+    private final int numRows;
 
     /** The number of columns. */
-    private final int        numColumns;
+    private final int numColumns;
 
-    /** The number of longs used for one row. */
-    private final int        longsPerRow;
-
-    /** The offset to the long containing the column. */
-    private final int[]      offsets;
-
-    /** The shifts per column. */
-    private final byte[]     shifts;
-
-    /** The setMasks. */
-    private final long[]     setMasks;
+    /** Longs per row. */
+    private final int longsPerRow;
 
     /**
      * Creates a new Memory where all columns are four bytes wide.
@@ -63,31 +48,9 @@ public class MemoryLongArray implements IMemory {
      */
     public MemoryLongArray(int rows, int columns) {
         longsPerRow = (int) (Math.ceil(columns / 2d));
-
-        if (longsPerRow > LENGTH_OF_SLIDE_IN_LONGS) {
-            use_fast_compare = false;
-        } else {
-            use_fast_compare = true;
-        }
-
         data = new long[longsPerRow * rows];
         numColumns = columns;
         numRows = rows;
-
-        offsets = new int[numColumns];
-        shifts = new byte[numColumns];
-        setMasks = new long[numColumns];
-        for (int i = 0; i < numColumns; i++) {
-            offsets[i] = (int) (i / 2d);
-            if ((i & 1) == 0) { // even
-                shifts[i] = (byte) 0;
-                setMasks[i] = 0xFFFFFFFF00000000L;
-            } else {
-                shifts[i] = (byte) 32;
-                setMasks[i] = 0x00000000FFFFFFFFL;
-            }
-        }
-
     }
 
     /*
@@ -110,48 +73,46 @@ public class MemoryLongArray implements IMemory {
     @Override
     public boolean equals(final int row1, final int row2) {
         final int idx1 = row1 * longsPerRow;
-        int idx2 = row2 * longsPerRow;
+        final int idx2 = row2 * longsPerRow;
 
-        if (use_fast_compare) {
-            switch (longsPerRow) {
-            case 6:
-                if (data[idx1 + 5] != data[idx2 + 5]) {
-                    return false;
-                }
-            case 5:
-                if (data[idx1 + 4] != data[idx2 + 4]) {
-                    return false;
-                }
-            case 4:
-                if (data[idx1 + 3] != data[idx2 + 3]) {
-                    return false;
-                }
-            case 3:
-                if (data[idx1 + 2] != data[idx2 + 2]) {
-                    return false;
-                }
-            case 2:
-                if (data[idx1 + 1] != data[idx2 + 1]) {
-                    return false;
-                }
-            case 1:
-                if (data[idx1] != data[idx2]) {
-                    return false;
-                }
-                break;
-            default:
-                throw new RuntimeException("Invalid bytes per row!");
+        switch (longsPerRow) {
+        case 6:
+            if (data[idx1 + 5] != data[idx2 + 5]) {
+                return false;
             }
-            return true;
-        } else {
-            final int end = idx1 + longsPerRow;
-            for (int cIDX = idx1; cIDX < end; cIDX++) {
-                if (data[cIDX] != data[idx2++]) {
-                    return false;
-                }
+        case 5:
+            if (data[idx1 + 4] != data[idx2 + 4]) {
+                return false;
             }
-            return true;
+        case 4:
+            if (data[idx1 + 3] != data[idx2 + 3]) {
+                return false;
+            }
+        case 3:
+            if (data[idx1 + 2] != data[idx2 + 2]) {
+                return false;
+            }
+        case 2:
+            if (data[idx1 + 1] != data[idx2 + 1]) {
+                return false;
+            }
+        case 1:
+            if (data[idx1] != data[idx2]) {
+                return false;
+            }
+            break;
+        default:
+            // final int end = idx1 + longsPerRow;
+            // final int offset = idx1 - idx2;
+            // for (int cIDX = idx1; cIDX < end; cIDX++) {
+            // if (data[cIDX] != data[cIDX + offset]) {
+            // return false;
+            // }
+            // }
+            // return true;
+            throw new RuntimeException("Invalid bytes per row!");
         }
+        return true;
     }
 
     /*
@@ -164,47 +125,43 @@ public class MemoryLongArray implements IMemory {
         final int idx1 = row1 * longsPerRow;
         int idx2 = row2 * longsPerRow;
 
-        if (use_fast_compare) {
-            switch (longsPerRow) {
-            case 6:
-                if ((data[idx1 + 5] & Data.REMOVE_OUTLIER_LONG_MASK) != (data[idx2 + 5] & Data.REMOVE_OUTLIER_LONG_MASK)) {
-                    return false;
-                }
-            case 5:
-                if ((data[idx1 + 4] & Data.REMOVE_OUTLIER_LONG_MASK) != (data[idx2 + 4] & Data.REMOVE_OUTLIER_LONG_MASK)) {
-                    return false;
-                }
-            case 4:
-                if ((data[idx1 + 3] & Data.REMOVE_OUTLIER_LONG_MASK) != (data[idx2 + 3] & Data.REMOVE_OUTLIER_LONG_MASK)) {
-                    return false;
-                }
-            case 3:
-                if ((data[idx1 + 2] & Data.REMOVE_OUTLIER_LONG_MASK) != (data[idx2 + 2] & Data.REMOVE_OUTLIER_LONG_MASK)) {
-                    return false;
-                }
-            case 2:
-                if ((data[idx1 + 1] & Data.REMOVE_OUTLIER_LONG_MASK) != (data[idx2 + 1] & Data.REMOVE_OUTLIER_LONG_MASK)) {
-                    return false;
-                }
-            case 1:
-                if ((data[idx1] & Data.REMOVE_OUTLIER_LONG_MASK) != (data[idx2] & Data.REMOVE_OUTLIER_LONG_MASK)) {
-                    return false;
-                }
-                break;
-            default:
-                throw new RuntimeException("Invalid bytes per row!");
+        switch (longsPerRow) {
+        case 6:
+            if ((data[idx1 + 5]) != (data[idx2 + 5])) {
+                return false;
             }
-            return true;
-        } else {
-            final int end = idx1 + longsPerRow;
-            for (int cIDX = idx1; cIDX < end; cIDX++) {
-                if ((data[cIDX] & Data.REMOVE_OUTLIER_LONG_MASK) != (data[idx2++] & Data.REMOVE_OUTLIER_LONG_MASK)) {
-                    return false;
-                }
+        case 5:
+            if ((data[idx1 + 4]) != (data[idx2 + 4])) {
+                return false;
             }
-            return true;
+        case 4:
+            if ((data[idx1 + 3]) != (data[idx2 + 3])) {
+                return false;
+            }
+        case 3:
+            if ((data[idx1 + 2]) != (data[idx2 + 2])) {
+                return false;
+            }
+        case 2:
+            if ((data[idx1 + 1]) != (data[idx2 + 1])) {
+                return false;
+            }
+        case 1:
+            if ((data[idx1] & Data.REMOVE_OUTLIER_LONG_MASK) != (data[idx2] & Data.REMOVE_OUTLIER_LONG_MASK)) {
+                return false;
+            }
+            break;
+        default:
+            // final int end = idx1 + longsPerRow;
+            // for (int cIDX = idx1; cIDX < end; cIDX++) {
+            // if ((data[cIDX] & Data.REMOVE_OUTLIER_LONG_MASK) != (data[idx2++] & Data.REMOVE_OUTLIER_LONG_MASK)) {
+            // return false;
+            // }
+            // }
+            // return true;
+            throw new RuntimeException("Invalid bytes per row!");
         }
-
+        return true;
     }
 
     /*
@@ -224,9 +181,7 @@ public class MemoryLongArray implements IMemory {
      */
     @Override
     public int get(final int row, final int col) {
-        final int idx = (row * longsPerRow) + offsets[col];
-        final int value = (int) (data[idx] >>> shifts[col]);
-        return value;
+        return (int) (data[(row * longsPerRow) + (col >> 1)] >>> (32 - ((col & 1) << 5)));
     }
 
     /*
@@ -266,33 +221,26 @@ public class MemoryLongArray implements IMemory {
      */
     @Override
     public int hashCode(final int row) {
-        final int cIDX = row * longsPerRow;
         long temp = 1125899906842597L;
+        final int idx = row * longsPerRow;
 
-        if (use_fast_compare) {
-            switch (longsPerRow) {
-            case 6:
-                temp = (31 * temp) + data[cIDX + 5];
-            case 5:
-                temp = (31 * temp) + data[cIDX + 4];
-            case 4:
-                temp = (31 * temp) + data[cIDX + 3];
-            case 3:
-                temp = (31 * temp) + data[cIDX + 2];
-            case 2:
-                temp = (31 * temp) + data[cIDX + 1];
-            case 1:
-                temp = (31 * temp) + data[cIDX];
-                break;
-            default:
-                throw new RuntimeException("Invalid bytes per row!");
-            }
-
-        } else {
-            final int end = cIDX + longsPerRow;
-            for (int address = cIDX; address < end; address++) {
-                temp = (31 * temp) + data[address];
-            }
+        switch (longsPerRow) {
+        case 6:
+            temp = (31 * temp) + data[idx + 5];
+        case 5:
+            temp = (31 * temp) + data[idx + 4];
+        case 4:
+            temp = (31 * temp) + data[idx + 3];
+        case 3:
+            temp = (31 * temp) + data[idx + 2];
+        case 2:
+            temp = (31 * temp) + data[idx + 1];
+        case 1:
+            temp = (31 * temp) + data[idx];
+            break;
+        default:
+            // TODO
+            throw new RuntimeException("Invalid bytes per row!");
         }
         return (int) (31 * temp) * (int) (temp >>> 32);
     }
@@ -314,11 +262,12 @@ public class MemoryLongArray implements IMemory {
      */
     @Override
     public void set(final int row, final int col, final int val) {
-        final int idx = (row * longsPerRow) + offsets[col];
-        // clear previous bits
-        data[idx] &= setMasks[col];
-        // set new bits
-        data[idx] |= (((long) val) << shifts[col]);
+
+        final int idx = (row * longsPerRow) + (col >> 1);
+        final int shift = 32 - ((col & 1) << 5);
+        final long value = (long) val << shift;
+        final long mask = ~(0x00000000FFFFFFFFL << shift);
+        data[idx] = (data[idx] & mask) | value;
     }
 
     /*
@@ -355,5 +304,4 @@ public class MemoryLongArray implements IMemory {
             free();
         }
     }
-
 }

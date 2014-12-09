@@ -20,6 +20,8 @@ package org.deidentifier.arx.framework.data;
 
 import java.util.Arrays;
 
+import org.deidentifier.arx.framework.check.groupify.HashTableUtil;
+
 /**
  * A wrapper of an int array.
  *
@@ -65,7 +67,7 @@ public class MemoryIntArray implements IMemory {
      */
     @Override
     public boolean equals(final int row1, final int row2) {
-        return Arrays.equals(data[row1], data[row2]);
+        return HashTableUtil.equals(data[row1], data[row2]);
     }
 
     /*
@@ -144,7 +146,7 @@ public class MemoryIntArray implements IMemory {
      */
     @Override
     public int hashCode(final int row) {
-        return Arrays.hashCode(data[row]);
+        return HashTableUtil.hashcode(data[row]);
     }
 
     /*
