@@ -303,11 +303,11 @@ public class MemoryUnsafe implements IMemory {
     public int get(final int row, final int col) {
         switch (columnSizesInBytes[col]) {
         case 4:
-            return unsafe.getInt(offsets[col] + (row * rowSizeInBytes));
+            return unsafe.getInt((row * rowSizeInBytes) + offsets[col]);
         case 2:
-            return unsafe.getShort(offsets[col] + (row * rowSizeInBytes));
+            return unsafe.getShort((row * rowSizeInBytes) + offsets[col]);
         case 1:
-            return unsafe.getByte(offsets[col] + (row * rowSizeInBytes));
+            return unsafe.getByte((row * rowSizeInBytes) + offsets[col]);
         }
         return -1;
     }
@@ -395,13 +395,13 @@ public class MemoryUnsafe implements IMemory {
     public void set(final int row, final int col, final int val) {
         switch (columnSizesInBytes[col]) {
         case 4:
-            unsafe.putInt(offsets[col] + (row * rowSizeInBytes), val);
+            unsafe.putInt((row * rowSizeInBytes) + offsets[col], val);
             break;
         case 2:
-            unsafe.putShort(offsets[col] + (row * rowSizeInBytes), (short) val);
+            unsafe.putShort((row * rowSizeInBytes) + offsets[col], (short) val);
             break;
         case 1:
-            unsafe.putByte(offsets[col] + (row * rowSizeInBytes), (byte) val);
+            unsafe.putByte((row * rowSizeInBytes) + offsets[col], (byte) val);
             break;
         }
     }
