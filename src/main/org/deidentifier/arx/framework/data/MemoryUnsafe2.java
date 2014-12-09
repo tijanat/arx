@@ -36,6 +36,9 @@ public class MemoryUnsafe2 implements IMemory {
     /** The base address of the memory field in bytes. */
     private final long   baseAddress;
 
+    /** The offset address for each colum. */
+    private final long[] offsets;
+
     /** The size in bytes of one row. */
     private final long   rowSizeInBytes;
 
@@ -56,9 +59,6 @@ public class MemoryUnsafe2 implements IMemory {
 
     /** The number of columns. */
     private final int    numColumns;
-
-    /** The offset address for each colum. */
-    private final long[] offsets;
 
     /**
      * Instantiates a new memory.
