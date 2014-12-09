@@ -22,7 +22,7 @@ public class MemoryTester {
                 }
             }
 
-            IMemory memory = new MemoryLongArray3(ROWS, COLUMNS);
+            IMemory memory = new MemoryUnsafe(ROWS, COLUMNS);
 
             // Fill 1
             for (int i = 0; i < data.length; i++) {

@@ -47,52 +47,49 @@ public class MemoryUnsafe implements IMemory {
         return fieldSizes;
     }
 
-    /** The Constant POWER. */
-    private static final int POWER     = 1;
-
-    /** The Constant NUM_LONGS. */
-    private static final int NUM_LONGS = 1 << POWER;
-
     /** The base address of the memory field in bytes. */
-    private final long       baseAddress;
+    private final long   baseAddress;
 
     /** The offset position of the fields. Aligned in long array for efficient caching */
-    private final long[]     bytePos;
+    private final long[] offsets;
 
     /** The size in bytes of one row. */
-    private final long       rowSizeInBytes;
+    private final long   rowSizeInBytes;
 
     /** The size in longs of one row. */
-    private final int        rowSizeInLongs;
+    private final int    rowSizeInLongs;
 
     /** The total size of the allocated memory. */
-    private final long       size;
+    private final long   size;
 
     /** The unsafe. */
-    private final Unsafe     unsafe;
+    private final Unsafe unsafe;
 
     /** Flag to indicate if the allocated memory has been freed. */
-    private boolean          freed;
+    private boolean      freed;
 
     /** The number of rows. */
-    private final int        numRows;
+    private final int    numRows;
 
     /** The number of columns. */
-    private final int        numColumns;
+    private final int    numColumns;
 
     /** The sizes of the columns in bytes. */
-    private final byte[]     columnSizes;
+    private final int[]  columnSizesInBytes;
+
+    /** The sizes of the columns in bits. */
+    private final byte[] columnSizesInBits;
 
     /**
      * Instantiates a new memory.
      *
      * @param numRows the num rows
-     * @param columnSizes the column sizes
+     * @param columnSizes the column sizes in bits
      */
     public MemoryUnsafe(final int numRows, final byte[] columnSizes) {
 
-        this.columnSizes = columnSizes;
-        numColumns = columnSizes.length;
+        this.columnSizesInBits = columnSizes;
+        this.numColumns = columnSizes.length;
         this.numRows = numRows;
 
         // Access unsafe
@@ -109,36 +106,34 @@ public class MemoryUnsafe implements IMemory {
         }
 
         // Field properties
-        bytePos = new long[columnSizes.length * NUM_LONGS];
+        this.offsets = new long[columnSizes.length];
+        this.columnSizesInBytes = new int[columnSizes.length];
 
         int currentlyUsedBytes = 0;
         int curLong = 1;
-        int idx = 0;
-        for (int field = 0; field < columnSizes.length; field++) {
-            final int currFieldSizeInBits = columnSizes[field];
+        for (int column = 0; column < columnSizes.length; column++) {
+            final int currFieldSizeInBits = columnSizes[column];
 
             // bitpos [0] --> fieldsize
             if (currFieldSizeInBits <= 7) { // Byte
-                bytePos[idx] = 1;
+                columnSizesInBytes[column] = 1;
             } else if (currFieldSizeInBits <= 15) { // Short
-                bytePos[idx] = 2;
+                columnSizesInBytes[column] = 2;
             } else if (currFieldSizeInBits <= 31) { // Int
-                bytePos[idx] = 4;
+                columnSizesInBytes[column] = 4;
             } else {
                 throw new RuntimeException("Unexpected field size: " + currFieldSizeInBits);
             }
 
             // bitpos [1] --> offset
-            bytePos[idx + 1] = currentlyUsedBytes;
+            offsets[column] = currentlyUsedBytes;
 
-            currentlyUsedBytes += bytePos[idx];
+            currentlyUsedBytes += columnSizesInBytes[column];
 
             // If it doesn't fit in current long, add another
             if (currentlyUsedBytes > (curLong * 8)) {
                 curLong++;
             }
-
-            idx += NUM_LONGS;
 
         }
 
@@ -154,8 +149,8 @@ public class MemoryUnsafe implements IMemory {
         freed = false;
 
         // precompute the offset
-        for (int i = 0; i < bytePos.length; i += NUM_LONGS) {
-            bytePos[i + 1] += baseAddress;
+        for (int i = 0; i < offsets.length; i++) {
+            offsets[i] += baseAddress;
         }
     }
 
@@ -176,7 +171,7 @@ public class MemoryUnsafe implements IMemory {
      */
     @Override
     public IMemory clone() {
-        MemoryUnsafe memory = new MemoryUnsafe(numRows, columnSizes);
+        MemoryUnsafe memory = new MemoryUnsafe(numRows, columnSizesInBits);
         unsafe.copyMemory(baseAddress, memory.baseAddress, size);
         return memory;
     }
@@ -306,17 +301,15 @@ public class MemoryUnsafe implements IMemory {
      */
     @Override
     public int get(final int row, final int col) {
-        final int idx = (col << POWER);
-
-        if (bytePos[idx] == 1L) {
-            return unsafe.getByte(bytePos[idx + 1] + (row * rowSizeInBytes));
-        } else if (bytePos[idx] == 2L) {
-            return unsafe.getShort(bytePos[idx + 1] + (row * rowSizeInBytes));
-        } else if (bytePos[idx] == 4L) {
-            return unsafe.getInt(bytePos[idx + 1] + (row * rowSizeInBytes));
-        } else {
-            throw new RuntimeException("Invalid field size!");
+        switch (columnSizesInBytes[col]) {
+        case 4:
+            return unsafe.getInt(offsets[col] + (row * rowSizeInBytes));
+        case 2:
+            return unsafe.getShort(offsets[col] + (row * rowSizeInBytes));
+        case 1:
+            return unsafe.getByte(offsets[col] + (row * rowSizeInBytes));
         }
+        return -1;
     }
 
     /*
@@ -390,7 +383,7 @@ public class MemoryUnsafe implements IMemory {
      */
     @Override
     public IMemory newInstance() {
-        return new MemoryUnsafe(numRows, columnSizes);
+        return new MemoryUnsafe(numRows, columnSizesInBits);
     }
 
     /*
@@ -400,16 +393,16 @@ public class MemoryUnsafe implements IMemory {
      */
     @Override
     public void set(final int row, final int col, final int val) {
-        final int idx = (col << POWER);
-
-        if (bytePos[idx] == 1L) {
-            unsafe.putByte(bytePos[idx + 1] + (row * rowSizeInBytes), (byte) val);
-        } else if (bytePos[idx] == 2L) {
-            unsafe.putShort(bytePos[idx + 1] + (row * rowSizeInBytes), (short) val);
-        } else if (bytePos[idx] == 4L) {
-            unsafe.putInt(bytePos[idx + 1] + (row * rowSizeInBytes), val);
-        } else {
-            throw new RuntimeException("Invalid field size!");
+        switch (columnSizesInBytes[col]) {
+        case 4:
+            unsafe.putInt(offsets[col] + (row * rowSizeInBytes), val);
+            break;
+        case 2:
+            unsafe.putShort(offsets[col] + (row * rowSizeInBytes), (short) val);
+            break;
+        case 1:
+            unsafe.putByte(offsets[col] + (row * rowSizeInBytes), (byte) val);
+            break;
         }
     }
 
