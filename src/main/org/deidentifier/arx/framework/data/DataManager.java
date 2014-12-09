@@ -508,6 +508,7 @@ public class DataManager {
                           final String[] headerSE,
                           final String[] headerIS) {
 
+        // // Calculate the needed bit sizes of each qi column
         // final byte[] columnSizes = new byte[headerQI.length];
         // for (int i = 0; i < columnSizes.length; i++) {
         // int dimSize = dictionaryQI.getNumUniqueUnfinalizedValues(i);
@@ -516,9 +517,9 @@ public class DataManager {
         // }
 
         // Parse the dataset
-        final IMemory valsQI = new MemoryLongArray3(data.length, headerQI.length);
-        final IMemory valsSE = new MemoryLongArray3(data.length, headerSE.length);
-        final IMemory valsIS = new MemoryLongArray3(data.length, headerIS.length);
+        final IMemory valsQI = new MemoryUnsafe2(data.length, headerQI.length);
+        final IMemory valsSE = new MemoryUnsafe2(data.length, headerSE.length);
+        final IMemory valsIS = new MemoryUnsafe2(data.length, headerIS.length);
 
         int index = 0;
         for (final int[] tuple : data) {
