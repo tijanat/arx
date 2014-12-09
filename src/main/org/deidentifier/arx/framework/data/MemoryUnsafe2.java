@@ -26,7 +26,6 @@ import sun.misc.Unsafe;
  * A fast implementation of a two dimensional integer array based
  * on unsafe memory accesses, which implements specialized methods.
  * 
- * Fields are either 1 (byte), 2 (short) or 4 (int) bytes in size.
  * Each row is 8 byte (long) aligned, to allow for fast equals() and hashcode().
  * 
  * @author Fabian Prasser
@@ -58,6 +57,9 @@ public class MemoryUnsafe2 implements IMemory {
     /** The number of columns. */
     private final int    numColumns;
 
+    /** The offset address for each colum */
+    private final long[] offsets;
+
     /**
      * Instantiates a new memory.
      *
@@ -88,6 +90,11 @@ public class MemoryUnsafe2 implements IMemory {
         size = rowSizeInBytes * numRows;
         baseAddress = unsafe.allocateMemory(size);
         unsafe.setMemory(baseAddress, size, (byte) 0);
+
+        offsets = new long[numColumns];
+        for (int i = 0; i < offsets.length; i++) {
+            offsets[i] = baseAddress + (i >> 1) * 8 + ((i & 1) << 2);
+        }
 
         freed = false;
     }
@@ -297,7 +304,7 @@ public class MemoryUnsafe2 implements IMemory {
      */
     @Override
     public int get(final int row, final int col) {
-        return unsafe.getInt(baseAddress + ((row * rowSizeInBytes) + (col >> 1) * 8 + ((col & 1) << 2)));
+        return unsafe.getInt((row * rowSizeInBytes) + offsets[col]);
     }
 
     /*
@@ -371,8 +378,7 @@ public class MemoryUnsafe2 implements IMemory {
      */
     @Override
     public void set(final int row, final int col, final int val) {
-//        System.out.println("Set: (" + row + "," + col + ") : " + val + " - idx: ");
-        unsafe.putInt(baseAddress + ((row * rowSizeInBytes) + (col >> 1) * 8 + ((col & 1) << 2)), val);
+        unsafe.putInt((row * rowSizeInBytes) + offsets[col], val);
     }
 
     /*
