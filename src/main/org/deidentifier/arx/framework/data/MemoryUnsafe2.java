@@ -57,7 +57,7 @@ public class MemoryUnsafe2 implements IMemory {
     /** The number of columns. */
     private final int    numColumns;
 
-    /** The offset address for each colum */
+    /** The offset address for each colum. */
     private final long[] offsets;
 
     /**
@@ -83,7 +83,7 @@ public class MemoryUnsafe2 implements IMemory {
             throw new RuntimeException("Error accessing unsafe memory!", e);
         }
 
-        rowSizeInLongs = (int) (Math.ceil((double) numColumns / 2d));
+        rowSizeInLongs = (int) (Math.ceil(numColumns / 2d));
         rowSizeInBytes = rowSizeInLongs * 8;
 
         // Allocate
@@ -93,7 +93,7 @@ public class MemoryUnsafe2 implements IMemory {
 
         offsets = new long[numColumns];
         for (int i = 0; i < offsets.length; i++) {
-            offsets[i] = baseAddress + (i >> 1) * 8 + ((i & 1) << 2);
+            offsets[i] = baseAddress + ((i >> 1) * 8) + ((i & 1) << 2);
         }
 
         freed = false;
@@ -107,27 +107,8 @@ public class MemoryUnsafe2 implements IMemory {
     @Override
     public IMemory clone() {
         MemoryUnsafe2 memory = new MemoryUnsafe2(numRows, numColumns);
+        unsafe.copyMemory(baseAddress, memory.baseAddress, size);
         return memory;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.deidentifier.arx.framework.data.IMemory#convert(org.deidentifier.arx.framework.data.IMemory)
-     */
-    @Override
-    public int[][] convert(IMemory memory) {
-        throw new UnsupportedOperationException();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.deidentifier.arx.framework.data.IMemory#convert(int[][])
-     */
-    @Override
-    public IMemory convert(int[][] data) {
-        throw new UnsupportedOperationException();
     }
 
     /*
@@ -369,6 +350,16 @@ public class MemoryUnsafe2 implements IMemory {
             }
         }
         return (int) (31 * temp) * (int) (temp >>> 32);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#clone()
+     */
+    @Override
+    public IMemory newInstance() {
+        return new MemoryUnsafe2(numRows, numColumns);
     }
 
     /*

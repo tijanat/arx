@@ -196,38 +196,6 @@ public class Memory implements IMemory {
     /*
      * (non-Javadoc)
      * 
-     * @see org.deidentifier.arx.framework.data.IMemory#convert(org.deidentifier.arx.framework.data.IMemory)
-     */
-    @Override
-    public int[][] convert(IMemory memory) {
-        int[][] array = new int[numRows][numColumns];
-        for (int row = 0; row < array.length; row++) {
-            for (int column = 0; column < array[0].length; column++) {
-                array[row][column] = get(row, column);
-            }
-        }
-        return array;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.deidentifier.arx.framework.data.IMemory#convert(int[][])
-     */
-    @Override
-    public IMemory convert(int[][] data) {
-        Memory memory = new Memory(data.length, data[0].length);
-        for (int row = 0; row < data.length; row++) {
-            for (int column = 0; column < data[0].length; column++) {
-                memory.set(row, column, data[row][column]);
-            }
-        }
-        return memory;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
      * @see org.deidentifier.arx.framework.data.IMemory#equals(org.deidentifier.arx.framework.data.IMemory, int)
      */
     @Override
@@ -494,6 +462,32 @@ public class Memory implements IMemory {
     /*
      * (non-Javadoc)
      * 
+     * @see java.lang.Object#clone()
+     */
+    @Override
+    public IMemory newInstance() {
+        Memory memory = new Memory(numRows, columnSizes);
+        unsafe.copyMemory(baseAddress, memory.baseAddress, size);
+        return memory;
+    }
+
+    /**
+     * Prints the memory.
+     */
+    public void printMemory() {
+        for (int i = 0; i < numRows; i++) {
+            for (int j = 0; j < numColumns; j++) {
+                System.out.print(get(i, j));
+                System.out.print(" ");
+            }
+            System.out.println();
+        }
+        System.out.println();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.deidentifier.arx.framework.data.IMemory#set(int, int, int)
      */
     @Override
@@ -548,17 +542,6 @@ public class Memory implements IMemory {
         if (!freed) {
             free();
         }
-    }
-
-    public void printMemory() {
-        for (int i = 0; i < numRows; i++) {
-            for (int j = 0; j < numColumns; j++) {
-                System.out.print(get(i, j));
-                System.out.print(" ");
-            }
-            System.out.println();
-        }
-        System.out.println();
     }
 
 }

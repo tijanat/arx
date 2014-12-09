@@ -34,24 +34,6 @@ public interface IMemory {
     public IMemory clone();
 
     /**
-     * Converts a given memory to an integer array.
-     * NOTE: This method can be very expensive.
-     *
-     * @param memory the memory
-     * @return the int[][]
-     */
-    public int[][] convert(IMemory memory);
-
-    /**
-     * Converts a given integer array to memory.
-     * NOTE: This method can be very expensive.
-     *
-     * @param data the data
-     * @return the i memory
-     */
-    public IMemory convert(int[][] data);
-
-    /**
      * Compares two rows for equality.
      *
      * @param memory the memory
@@ -120,6 +102,13 @@ public interface IMemory {
      * @return the int
      */
     public int hashCode(int row);
+
+    /**
+     * Creates a new instance.
+     *
+     * @return the i memory
+     */
+    public IMemory newInstance();
 
     /**
      * Sets the value val at position row, col.

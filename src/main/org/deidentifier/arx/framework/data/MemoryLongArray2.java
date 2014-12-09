@@ -18,6 +18,8 @@
 
 package org.deidentifier.arx.framework.data;
 
+import java.util.Arrays;
+
 /**
  * A wrapper of an int array.
  *
@@ -27,16 +29,16 @@ package org.deidentifier.arx.framework.data;
 public class MemoryLongArray2 implements IMemory {
 
     /** The data. */
-    private long[]           data;
+    private long[]    data;
 
     /** The number of rows. */
-    private final int        numRows;
+    private final int numRows;
 
     /** The number of columns. */
-    private final int        numColumns;
-    
-    /** Longs per row*/
-    private final int        longsPerRow;
+    private final int numColumns;
+
+    /** Longs per row. */
+    private final int longsPerRow;
 
     /**
      * Creates a new Memory where all columns are four bytes wide.
@@ -45,10 +47,10 @@ public class MemoryLongArray2 implements IMemory {
      * @param columns the columns
      */
     public MemoryLongArray2(int rows, int columns) {
-        this.longsPerRow = (int) (Math.ceil((double) columns / 2d));
-        this.data = new long[longsPerRow * rows];
-        this.numColumns = columns;
-        this.numRows = rows;
+        longsPerRow = (int) (Math.ceil(columns / 2d));
+        data = new long[longsPerRow * rows];
+        numColumns = columns;
+        numRows = rows;
     }
 
     /*
@@ -58,28 +60,9 @@ public class MemoryLongArray2 implements IMemory {
      */
     @Override
     public IMemory clone() {
-        // TODO: Rename method
-        return new MemoryLongArray2(numRows, numColumns);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.deidentifier.arx.framework.data.IMemory#convert(org.deidentifier.arx.framework.data.IMemory)
-     */
-    @Override
-    public int[][] convert(IMemory memory) {
-        throw new UnsupportedOperationException();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.deidentifier.arx.framework.data.IMemory#convert(int[][])
-     */
-    @Override
-    public IMemory convert(int[][] data) {
-        throw new UnsupportedOperationException();
+        MemoryLongArray2 m = new MemoryLongArray2(numRows, numColumns);
+        m.data = Arrays.copyOf(data, data.length);
+        return m;
     }
 
     /*
@@ -89,47 +72,47 @@ public class MemoryLongArray2 implements IMemory {
      */
     @Override
     public boolean equals(final IMemory otherMemory, final int row) {
-        
+
         final long[] other = ((MemoryLongArray2) otherMemory).data;
         final int idx = row * longsPerRow;
 
-            switch (longsPerRow) {
-            case 6:
-                if (data[idx + 5] != other[idx + 5]) {
-                    return false;
-                }
-            case 5:
-                if (data[idx + 4] != other[idx + 4]) {
-                    return false;
-                }
-            case 4:
-                if (data[idx + 3] != other[idx + 3]) {
-                    return false;
-                }
-            case 3:
-                if (data[idx + 2] != other[idx + 2]) {
-                    return false;
-                }
-            case 2:
-                if (data[idx + 1] != other[idx + 1]) {
-                    return false;
-                }
-            case 1:
-                if (data[idx] != other[idx]) {
-                    return false;
-                }
-                break;
-            default:
-//                final int end = idx + longsPerRow;
-//                for (int cIDX = idx; cIDX < end; cIDX++) {
-//                    if (data[cIDX] != other[cIDX]) {
-//                        return false;
-//                    }
-//                }
-//                return true;
-                throw new RuntimeException("Invalid bytes per row!");
+        switch (longsPerRow) {
+        case 6:
+            if (data[idx + 5] != other[idx + 5]) {
+                return false;
             }
-            return true;
+        case 5:
+            if (data[idx + 4] != other[idx + 4]) {
+                return false;
+            }
+        case 4:
+            if (data[idx + 3] != other[idx + 3]) {
+                return false;
+            }
+        case 3:
+            if (data[idx + 2] != other[idx + 2]) {
+                return false;
+            }
+        case 2:
+            if (data[idx + 1] != other[idx + 1]) {
+                return false;
+            }
+        case 1:
+            if (data[idx] != other[idx]) {
+                return false;
+            }
+            break;
+        default:
+            // final int end = idx + longsPerRow;
+            // for (int cIDX = idx; cIDX < end; cIDX++) {
+            // if (data[cIDX] != other[cIDX]) {
+            // return false;
+            // }
+            // }
+            // return true;
+            throw new RuntimeException("Invalid bytes per row!");
+        }
+        return true;
     }
 
     /*
@@ -142,44 +125,44 @@ public class MemoryLongArray2 implements IMemory {
         final int idx1 = row1 * longsPerRow;
         final int idx2 = row2 * longsPerRow;
 
-            switch (longsPerRow) {
-            case 6:
-                if (data[idx1 + 5] != data[idx2 + 5]) {
-                    return false;
-                }
-            case 5:
-                if (data[idx1 + 4] != data[idx2 + 4]) {
-                    return false;
-                }
-            case 4:
-                if (data[idx1 + 3] != data[idx2 + 3]) {
-                    return false;
-                }
-            case 3:
-                if (data[idx1 + 2] != data[idx2 + 2]) {
-                    return false;
-                }
-            case 2:
-                if (data[idx1 + 1] != data[idx2 + 1]) {
-                    return false;
-                }
-            case 1:
-                if (data[idx1] != data[idx2]) {
-                    return false;
-                }
-                break;
-            default:
-//                final int end = idx1 + longsPerRow;
-//                final int offset = idx1 - idx2;
-//                for (int cIDX = idx1; cIDX < end; cIDX++) {
-//                    if (data[cIDX] != data[cIDX + offset]) {
-//                        return false;
-//                    }
-//                }
-//                return true;
-                throw new RuntimeException("Invalid bytes per row!");
+        switch (longsPerRow) {
+        case 6:
+            if (data[idx1 + 5] != data[idx2 + 5]) {
+                return false;
             }
-            return true;
+        case 5:
+            if (data[idx1 + 4] != data[idx2 + 4]) {
+                return false;
+            }
+        case 4:
+            if (data[idx1 + 3] != data[idx2 + 3]) {
+                return false;
+            }
+        case 3:
+            if (data[idx1 + 2] != data[idx2 + 2]) {
+                return false;
+            }
+        case 2:
+            if (data[idx1 + 1] != data[idx2 + 1]) {
+                return false;
+            }
+        case 1:
+            if (data[idx1] != data[idx2]) {
+                return false;
+            }
+            break;
+        default:
+            // final int end = idx1 + longsPerRow;
+            // final int offset = idx1 - idx2;
+            // for (int cIDX = idx1; cIDX < end; cIDX++) {
+            // if (data[cIDX] != data[cIDX + offset]) {
+            // return false;
+            // }
+            // }
+            // return true;
+            throw new RuntimeException("Invalid bytes per row!");
+        }
+        return true;
     }
 
     /*
@@ -192,43 +175,43 @@ public class MemoryLongArray2 implements IMemory {
         final int idx1 = row1 * longsPerRow;
         int idx2 = row2 * longsPerRow;
 
-            switch (longsPerRow) {
-            case 6:
-                if ((data[idx1 + 5]) != (data[idx2 + 5])) {
-                    return false;
-                }
-            case 5:
-                if ((data[idx1 + 4]) != (data[idx2 + 4])) {
-                    return false;
-                }
-            case 4:
-                if ((data[idx1 + 3]) != (data[idx2 + 3])) {
-                    return false;
-                }
-            case 3:
-                if ((data[idx1 + 2]) != (data[idx2 + 2])) {
-                    return false;
-                }
-            case 2:
-                if ((data[idx1 + 1]) != (data[idx2 + 1])) {
-                    return false;
-                }
-            case 1:
-                if ((data[idx1] & Data.REMOVE_OUTLIER_LONG_MASK) != (data[idx2] & Data.REMOVE_OUTLIER_LONG_MASK)) {
-                    return false;
-                }
-                break;
-            default:
-//                final int end = idx1 + longsPerRow;
-//                for (int cIDX = idx1; cIDX < end; cIDX++) {
-//                    if ((data[cIDX] & Data.REMOVE_OUTLIER_LONG_MASK) != (data[idx2++] & Data.REMOVE_OUTLIER_LONG_MASK)) {
-//                        return false;
-//                    }
-//                }
-//                return true;
-                throw new RuntimeException("Invalid bytes per row!");
+        switch (longsPerRow) {
+        case 6:
+            if ((data[idx1 + 5]) != (data[idx2 + 5])) {
+                return false;
             }
-            return true;
+        case 5:
+            if ((data[idx1 + 4]) != (data[idx2 + 4])) {
+                return false;
+            }
+        case 4:
+            if ((data[idx1 + 3]) != (data[idx2 + 3])) {
+                return false;
+            }
+        case 3:
+            if ((data[idx1 + 2]) != (data[idx2 + 2])) {
+                return false;
+            }
+        case 2:
+            if ((data[idx1 + 1]) != (data[idx2 + 1])) {
+                return false;
+            }
+        case 1:
+            if ((data[idx1] & Data.REMOVE_OUTLIER_LONG_MASK) != (data[idx2] & Data.REMOVE_OUTLIER_LONG_MASK)) {
+                return false;
+            }
+            break;
+        default:
+            // final int end = idx1 + longsPerRow;
+            // for (int cIDX = idx1; cIDX < end; cIDX++) {
+            // if ((data[cIDX] & Data.REMOVE_OUTLIER_LONG_MASK) != (data[idx2++] & Data.REMOVE_OUTLIER_LONG_MASK)) {
+            // return false;
+            // }
+            // }
+            // return true;
+            throw new RuntimeException("Invalid bytes per row!");
+        }
+        return true;
     }
 
     /*
@@ -248,7 +231,7 @@ public class MemoryLongArray2 implements IMemory {
      */
     @Override
     public int get(final int row, final int col) {
-        return (int)(data[row * longsPerRow + (col >> 1)] >>> (32 - ((col % 2) << 5)));
+        return (int) (data[(row * longsPerRow) + (col >> 1)] >>> (32 - ((col % 2) << 5)));
     }
 
     /*
@@ -290,24 +273,46 @@ public class MemoryLongArray2 implements IMemory {
     public int hashCode(final int row) {
         int temp = 23;
         switch (numColumns) {
-        case 12: temp = 37 * temp + get(row, 11);
-        case 11: temp = 37 * temp + get(row, 10);
-        case 10: temp = 37 * temp + get(row, 9);
-        case 9: temp = 37 * temp + get(row, 8);
-        case 8: temp = 37 * temp + get(row, 7);
-        case 7: temp = 37 * temp + get(row, 6); 
-        case 6: temp = 37 * temp + get(row, 5);
-        case 5: temp = 37 * temp + get(row, 4);
-        case 4: temp = 37 * temp + get(row, 3);
-        case 3: temp = 37 * temp + get(row, 2);
-        case 2: temp = 37 * temp + get(row, 1);
-        case 1: temp = 37 * temp + get(row, 0); 
-        break;
+        case 12:
+            temp = (37 * temp) + get(row, 11);
+        case 11:
+            temp = (37 * temp) + get(row, 10);
+        case 10:
+            temp = (37 * temp) + get(row, 9);
+        case 9:
+            temp = (37 * temp) + get(row, 8);
+        case 8:
+            temp = (37 * temp) + get(row, 7);
+        case 7:
+            temp = (37 * temp) + get(row, 6);
+        case 6:
+            temp = (37 * temp) + get(row, 5);
+        case 5:
+            temp = (37 * temp) + get(row, 4);
+        case 4:
+            temp = (37 * temp) + get(row, 3);
+        case 3:
+            temp = (37 * temp) + get(row, 2);
+        case 2:
+            temp = (37 * temp) + get(row, 1);
+        case 1:
+            temp = (37 * temp) + get(row, 0);
+            break;
         default:
-          // TODO
-          throw new RuntimeException("Invalid bytes per row!");
+            // TODO
+            throw new RuntimeException("Invalid bytes per row!");
         }
         return temp;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#clone()
+     */
+    @Override
+    public IMemory newInstance() {
+        return new MemoryLongArray2(numRows, numColumns);
     }
 
     /*
@@ -317,8 +322,8 @@ public class MemoryLongArray2 implements IMemory {
      */
     @Override
     public void set(final int row, final int col, final int val) {
-        
-        final int idx = row * longsPerRow + (col >> 1);
+
+        final int idx = (row * longsPerRow) + (col >> 1);
         final int shift = 32 - ((col % 2) << 5);
         final long value = (long) val << shift;
         final long mask = ~(0x00000000FFFFFFFFL << shift);

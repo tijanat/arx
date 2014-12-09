@@ -18,6 +18,8 @@
 
 package org.deidentifier.arx.framework.data;
 
+import java.util.Arrays;
+
 /**
  * A wrapper of an int array.
  *
@@ -44,13 +46,13 @@ public class MemoryLongArray implements IMemory {
     /** The number of longs used for one row. */
     private final int        longsPerRow;
 
-    /** The offset to the long containing the column */
+    /** The offset to the long containing the column. */
     private final int[]      offsets;
 
-    /** The shifts per column */
+    /** The shifts per column. */
     private final byte[]     shifts;
 
-    /** The setMasks */
+    /** The setMasks. */
     private final long[]     setMasks;
 
     /**
@@ -60,7 +62,7 @@ public class MemoryLongArray implements IMemory {
      * @param columns the columns
      */
     public MemoryLongArray(int rows, int columns) {
-        this.longsPerRow = (int) (Math.ceil((double) columns / 2d));
+        longsPerRow = (int) (Math.ceil(columns / 2d));
 
         if (longsPerRow > LENGTH_OF_SLIDE_IN_LONGS) {
             use_fast_compare = false;
@@ -68,44 +70,15 @@ public class MemoryLongArray implements IMemory {
             use_fast_compare = true;
         }
 
-        this.data = new long[longsPerRow * rows];
-        this.numColumns = columns;
-        this.numRows = rows;
+        data = new long[longsPerRow * rows];
+        numColumns = columns;
+        numRows = rows;
 
         offsets = new int[numColumns];
         shifts = new byte[numColumns];
         setMasks = new long[numColumns];
         for (int i = 0; i < numColumns; i++) {
-            offsets[i] = (int) ((double) i / 2d);
-            if ((i & 1) == 0) { // even
-                shifts[i] = (byte) 0;
-                setMasks[i] = 0xFFFFFFFF00000000L;
-            } else {
-                shifts[i] = (byte) 32;
-                setMasks[i] = 0x00000000FFFFFFFFL;
-            }
-        }
-
-    }
-
-    private MemoryLongArray(long[] clone, int rows, int columns) {
-        longsPerRow = (int) (Math.ceil((double) columns / 2d));
-
-        if (longsPerRow > LENGTH_OF_SLIDE_IN_LONGS) {
-            use_fast_compare = false;
-        } else {
-            use_fast_compare = true;
-        }
-
-        this.data = clone;
-        this.numColumns = columns;
-        this.numRows = rows;
-
-        offsets = new int[numColumns];
-        shifts = new byte[numColumns];
-        setMasks = new long[numColumns];
-        for (int i = 0; i < numColumns; i++) {
-            offsets[i] = (int) ((double) i / 2d);
+            offsets[i] = (int) (i / 2d);
             if ((i & 1) == 0) { // even
                 shifts[i] = (byte) 0;
                 setMasks[i] = 0xFFFFFFFF00000000L;
@@ -124,29 +97,9 @@ public class MemoryLongArray implements IMemory {
      */
     @Override
     public IMemory clone() {
-        long[] clone = new long[data.length];
-        System.arraycopy(data, 0, clone, 0, data.length);
-        return new MemoryLongArray(clone, numRows, numColumns);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.deidentifier.arx.framework.data.IMemory#convert(org.deidentifier.arx.framework.data.IMemory)
-     */
-    @Override
-    public int[][] convert(IMemory memory) {
-        throw new UnsupportedOperationException();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.deidentifier.arx.framework.data.IMemory#convert(int[][])
-     */
-    @Override
-    public IMemory convert(int[][] data) {
-        throw new UnsupportedOperationException();
+        MemoryLongArray m = new MemoryLongArray(numRows, numColumns);
+        m.data = Arrays.copyOf(data, data.length);
+        return m;
     }
 
     /*
@@ -394,6 +347,16 @@ public class MemoryLongArray implements IMemory {
             }
         }
         return (int) (31 * temp) * (int) (temp >>> 32);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#clone()
+     */
+    @Override
+    public IMemory newInstance() {
+        return new MemoryLongArray(numRows, numColumns);
     }
 
     /*

@@ -110,7 +110,7 @@ public class NodeChecker implements INodeChecker {
                                    dictionarySensFreq);
         
         this.stateMachine = new StateMachine(history);
-        IMemory buffer = data.getMemory().clone();
+        IMemory buffer = data.getMemory().newInstance();
         this.currentGroupify = new HashGroupify(initialSize, config, buffer, manager.getDataSE().getMemory());
         this.lastGroupify = new HashGroupify(initialSize, config, buffer, manager.getDataSE().getMemory());
         this.transformer = new Transformer(manager.getDataQI().getMemory(),

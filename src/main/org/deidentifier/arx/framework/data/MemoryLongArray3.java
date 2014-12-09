@@ -18,6 +18,8 @@
 
 package org.deidentifier.arx.framework.data;
 
+import java.util.Arrays;
+
 /**
  * A wrapper of an int array.
  *
@@ -35,7 +37,7 @@ public class MemoryLongArray3 implements IMemory {
     /** The number of columns. */
     private final int numColumns;
 
-    /** Longs per row */
+    /** Longs per row. */
     private final int longsPerRow;
 
     /**
@@ -45,10 +47,10 @@ public class MemoryLongArray3 implements IMemory {
      * @param columns the columns
      */
     public MemoryLongArray3(int rows, int columns) {
-        this.longsPerRow = (int) (Math.ceil((double) columns / 2d));
-        this.data = new long[longsPerRow * rows];
-        this.numColumns = columns;
-        this.numRows = rows;
+        longsPerRow = (int) (Math.ceil(columns / 2d));
+        data = new long[longsPerRow * rows];
+        numColumns = columns;
+        numRows = rows;
     }
 
     /*
@@ -58,28 +60,9 @@ public class MemoryLongArray3 implements IMemory {
      */
     @Override
     public IMemory clone() {
-        // TODO: Rename method
-        return new MemoryLongArray3(numRows, numColumns);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.deidentifier.arx.framework.data.IMemory#convert(org.deidentifier.arx.framework.data.IMemory)
-     */
-    @Override
-    public int[][] convert(IMemory memory) {
-        throw new UnsupportedOperationException();
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.deidentifier.arx.framework.data.IMemory#convert(int[][])
-     */
-    @Override
-    public IMemory convert(int[][] data) {
-        throw new UnsupportedOperationException();
+        MemoryLongArray3 m = new MemoryLongArray3(numRows, numColumns);
+        m.data = Arrays.copyOf(data, data.length);
+        return m;
     }
 
     /*
@@ -248,7 +231,7 @@ public class MemoryLongArray3 implements IMemory {
      */
     @Override
     public int get(final int row, final int col) {
-        return (int) (data[row * longsPerRow + (col >> 1)] >>> (32 - ((col & 1) << 5)));
+        return (int) (data[(row * longsPerRow) + (col >> 1)] >>> (32 - ((col & 1) << 5)));
     }
 
     /*
@@ -289,7 +272,7 @@ public class MemoryLongArray3 implements IMemory {
     @Override
     public int hashCode(final int row) {
         long temp = 1125899906842597L;
-        final int idx = row * longsPerRow ;
+        final int idx = row * longsPerRow;
 
         switch (longsPerRow) {
         case 6:
@@ -315,12 +298,22 @@ public class MemoryLongArray3 implements IMemory {
     /*
      * (non-Javadoc)
      * 
+     * @see java.lang.Object#clone()
+     */
+    @Override
+    public IMemory newInstance() {
+        return new MemoryLongArray3(numRows, numColumns);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.deidentifier.arx.framework.data.IMemory#set(int, int, int)
      */
     @Override
     public void set(final int row, final int col, final int val) {
 
-        final int idx = row * longsPerRow + (col >> 1);
+        final int idx = (row * longsPerRow) + (col >> 1);
         final int shift = 32 - ((col & 1) << 5);
         final long value = (long) val << shift;
         final long mask = ~(0x00000000FFFFFFFFL << shift);

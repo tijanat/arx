@@ -44,15 +44,6 @@ public class MemoryIntArray implements IMemory {
         }
     }
 
-    /**
-     * Instantiates a new memory int array.
-     *
-     * @param data the data
-     */
-    private MemoryIntArray(int[][] data) {
-        this.data = data;
-    }
-
     /*
      * (non-Javadoc)
      * 
@@ -60,31 +51,11 @@ public class MemoryIntArray implements IMemory {
      */
     @Override
     public IMemory clone() {
-        int[][] clone = new int[data.length][];
-        for (int i = 0; i < clone.length; i++) {
-            clone[i] = Arrays.copyOf(data[i], data[i].length);
+        MemoryIntArray m = new MemoryIntArray(data.length, data[0].length);
+        for (int i = 0; i < m.data.length; i++) {
+            m.data[i] = Arrays.copyOf(data[i], data[i].length);
         }
-        return new MemoryIntArray(clone);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.deidentifier.arx.framework.data.IMemory#convert(org.deidentifier.arx.framework.data.IMemory)
-     */
-    @Override
-    public int[][] convert(IMemory memory) {
-        return ((MemoryIntArray) memory).data;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.deidentifier.arx.framework.data.IMemory#convert(int[][])
-     */
-    @Override
-    public IMemory convert(int[][] data) {
-        return new MemoryIntArray(data);
+        return m;
     }
 
     /*
@@ -184,6 +155,16 @@ public class MemoryIntArray implements IMemory {
     @Override
     public int hashCode(final int row) {
         return Arrays.hashCode(data[row]);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#clone()
+     */
+    @Override
+    public IMemory newInstance() {
+        return new MemoryIntArray(data.length, data[0].length);
     }
 
     /*
