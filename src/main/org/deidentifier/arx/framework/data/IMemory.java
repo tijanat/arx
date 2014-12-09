@@ -36,15 +36,6 @@ public interface IMemory {
     /**
      * Compares two rows for equality.
      *
-     * @param memory the memory
-     * @param row the row
-     * @return true, if successful
-     */
-    public boolean equals(IMemory memory, int row);
-
-    /**
-     * Compares two rows for equality.
-     *
      * @param row1 the row1
      * @param row2 the row2
      * @return true, if successful

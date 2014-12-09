@@ -68,56 +68,6 @@ public class MemoryLongArray3 implements IMemory {
     /*
      * (non-Javadoc)
      * 
-     * @see org.deidentifier.arx.framework.data.IMemory#equals(org.deidentifier.arx.framework.data.IMemory, int)
-     */
-    @Override
-    public boolean equals(final IMemory otherMemory, final int row) {
-
-        final long[] other = ((MemoryLongArray3) otherMemory).data;
-        final int idx = row * longsPerRow;
-
-        switch (longsPerRow) {
-        case 6:
-            if (data[idx + 5] != other[idx + 5]) {
-                return false;
-            }
-        case 5:
-            if (data[idx + 4] != other[idx + 4]) {
-                return false;
-            }
-        case 4:
-            if (data[idx + 3] != other[idx + 3]) {
-                return false;
-            }
-        case 3:
-            if (data[idx + 2] != other[idx + 2]) {
-                return false;
-            }
-        case 2:
-            if (data[idx + 1] != other[idx + 1]) {
-                return false;
-            }
-        case 1:
-            if (data[idx] != other[idx]) {
-                return false;
-            }
-            break;
-        default:
-            // final int end = idx + longsPerRow;
-            // for (int cIDX = idx; cIDX < end; cIDX++) {
-            // if (data[cIDX] != other[cIDX]) {
-            // return false;
-            // }
-            // }
-            // return true;
-            throw new RuntimeException("Invalid bytes per row!");
-        }
-        return true;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
      * @see org.deidentifier.arx.framework.data.IMemory#equals(int, int)
      */
     @Override

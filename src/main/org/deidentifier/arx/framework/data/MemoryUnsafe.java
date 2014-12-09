@@ -33,7 +33,7 @@ import sun.misc.Unsafe;
  * @author Fabian Prasser
  * @author Florian Kohlmayer
  */
-public class Memory implements IMemory {
+public class MemoryUnsafe implements IMemory {
 
     /**
      * Creates an byte array of length columns and fills it with 4.
@@ -48,13 +48,10 @@ public class Memory implements IMemory {
     }
 
     /** The Constant POWER. */
-    private static final int POWER                    = 1;
+    private static final int POWER     = 1;
 
     /** The Constant NUM_LONGS. */
-    private static final int NUM_LONGS                = 1 << POWER;
-
-    /** The length of the slide for equals and compare in longs. */
-    private static final int LENGTH_OF_SLIDE_IN_LONGS = 6;
+    private static final int NUM_LONGS = 1 << POWER;
 
     /** The base address of the memory field in bytes. */
     private final long       baseAddress;
@@ -74,9 +71,6 @@ public class Memory implements IMemory {
     /** The unsafe. */
     private final Unsafe     unsafe;
 
-    /** Flag to indicate, if efficient equals and compare can be used. */
-    private final boolean    use_fast_compare;
-
     /** Flag to indicate if the allocated memory has been freed. */
     private boolean          freed;
 
@@ -95,7 +89,7 @@ public class Memory implements IMemory {
      * @param numRows the num rows
      * @param columnSizes the column sizes
      */
-    public Memory(final int numRows, final byte[] columnSizes) {
+    public MemoryUnsafe(final int numRows, final byte[] columnSizes) {
 
         this.columnSizes = columnSizes;
         numColumns = columnSizes.length;
@@ -152,12 +146,6 @@ public class Memory implements IMemory {
         rowSizeInBytes = curLong * 8;
         rowSizeInLongs = (int) (rowSizeInBytes / 8);
 
-        if (rowSizeInBytes > (8 * LENGTH_OF_SLIDE_IN_LONGS)) {
-            use_fast_compare = false;
-        } else {
-            use_fast_compare = true;
-        }
-
         // Allocate
         size = rowSizeInBytes * numRows;
         baseAddress = unsafe.allocateMemory(size);
@@ -177,7 +165,7 @@ public class Memory implements IMemory {
      * @param rows the rows
      * @param columns the columns
      */
-    public Memory(int rows, int columns) {
+    public MemoryUnsafe(int rows, int columns) {
         this(rows, createIntFieldSizes(columns));
     }
 
@@ -188,62 +176,9 @@ public class Memory implements IMemory {
      */
     @Override
     public IMemory clone() {
-        Memory memory = new Memory(numRows, columnSizes);
+        MemoryUnsafe memory = new MemoryUnsafe(numRows, columnSizes);
         unsafe.copyMemory(baseAddress, memory.baseAddress, size);
         return memory;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.deidentifier.arx.framework.data.IMemory#equals(org.deidentifier.arx.framework.data.IMemory, int)
-     */
-    @Override
-    public boolean equals(final IMemory other, final int row) {
-        final Unsafe o = ((Memory) other).unsafe;
-        final Unsafe t = unsafe;
-        final long base = baseAddress + (row * rowSizeInBytes);
-
-        if (use_fast_compare) {
-            switch (rowSizeInLongs) {
-            case 6:
-                if (t.getLong(base + 40) != o.getLong(base + 40)) {
-                    return false;
-                }
-            case 5:
-                if (t.getLong(base + 32) != o.getLong(base + 32)) {
-                    return false;
-                }
-            case 4:
-                if (t.getLong(base + 24) != o.getLong(base + 24)) {
-                    return false;
-                }
-            case 3:
-                if (t.getLong(base + 16) != o.getLong(base + 16)) {
-                    return false;
-                }
-            case 2:
-                if (t.getLong(base + 8) != o.getLong(base + 8)) {
-                    return false;
-                }
-            case 1:
-                if (t.getLong(base) != o.getLong(base)) {
-                    return false;
-                }
-                break;
-            default:
-                throw new RuntimeException("Invalid bytes per row!");
-            }
-            return true;
-        } else {
-            final long end = base + rowSizeInBytes;
-            for (long address = base; address < end; address += 8) {
-                if (t.getLong(address) != o.getLong(address)) {
-                    return false;
-                }
-            }
-            return true;
-        }
     }
 
     /*
@@ -257,38 +192,33 @@ public class Memory implements IMemory {
         final long base1 = baseAddress + (row1 * rowSizeInBytes);
         final long base2 = baseAddress + (row2 * rowSizeInBytes);
 
-        if (use_fast_compare) {
-            switch (rowSizeInLongs) {
-            case 6:
-                if (t.getLong(base1 + 40) != t.getLong(base2 + 40)) {
-                    return false;
-                }
-            case 5:
-                if (t.getLong(base1 + 32) != t.getLong(base2 + 32)) {
-                    return false;
-                }
-            case 4:
-                if (t.getLong(base1 + 24) != t.getLong(base2 + 24)) {
-                    return false;
-                }
-            case 3:
-                if (t.getLong(base1 + 16) != t.getLong(base2 + 16)) {
-                    return false;
-                }
-            case 2:
-                if (t.getLong(base1 + 8) != t.getLong(base2 + 8)) {
-                    return false;
-                }
-            case 1:
-                if (t.getLong(base1) != t.getLong(base2)) {
-                    return false;
-                }
-                break;
-            default:
-                throw new RuntimeException("Invalid bytes per row!");
+        switch (rowSizeInLongs) {
+        case 6:
+            if (t.getLong(base1 + 40) != t.getLong(base2 + 40)) {
+                return false;
             }
-            return true;
-        } else {
+        case 5:
+            if (t.getLong(base1 + 32) != t.getLong(base2 + 32)) {
+                return false;
+            }
+        case 4:
+            if (t.getLong(base1 + 24) != t.getLong(base2 + 24)) {
+                return false;
+            }
+        case 3:
+            if (t.getLong(base1 + 16) != t.getLong(base2 + 16)) {
+                return false;
+            }
+        case 2:
+            if (t.getLong(base1 + 8) != t.getLong(base2 + 8)) {
+                return false;
+            }
+        case 1:
+            if (t.getLong(base1) != t.getLong(base2)) {
+                return false;
+            }
+            break;
+        default:
             final long end1 = base1 + rowSizeInBytes;
             long address2 = base2;
 
@@ -296,10 +226,10 @@ public class Memory implements IMemory {
                 if (t.getLong(address) != t.getLong(address2)) {
                     return false;
                 }
-                address += 8;
+                address2 += 8;
             }
-            return true;
         }
+        return true;
     }
 
     /*
@@ -313,49 +243,49 @@ public class Memory implements IMemory {
         final long base1 = baseAddress + (row1 * rowSizeInBytes);
         final long base2 = baseAddress + (row2 * rowSizeInBytes);
 
-        if (use_fast_compare) {
-            switch (rowSizeInLongs) {
-            case 6:
-                if ((t.getLong(base1 + 40) & Data.REMOVE_OUTLIER_LONG_MASK) != (t.getLong(base2 + 40) & Data.REMOVE_OUTLIER_LONG_MASK)) {
-                    return false;
-                }
-            case 5:
-                if ((t.getLong(base1 + 32) & Data.REMOVE_OUTLIER_LONG_MASK) != (t.getLong(base2 + 32) & Data.REMOVE_OUTLIER_LONG_MASK)) {
-                    return false;
-                }
-            case 4:
-                if ((t.getLong(base1 + 24) & Data.REMOVE_OUTLIER_LONG_MASK) != (t.getLong(base2 + 24) & Data.REMOVE_OUTLIER_LONG_MASK)) {
-                    return false;
-                }
-            case 3:
-                if ((t.getLong(base1 + 16) & Data.REMOVE_OUTLIER_LONG_MASK) != (t.getLong(base2 + 16) & Data.REMOVE_OUTLIER_LONG_MASK)) {
-                    return false;
-                }
-            case 2:
-                if ((t.getLong(base1 + 8) & Data.REMOVE_OUTLIER_LONG_MASK) != (t.getLong(base2 + 8) & Data.REMOVE_OUTLIER_LONG_MASK)) {
-                    return false;
-                }
-            case 1:
-                if ((t.getLong(base1) & Data.REMOVE_OUTLIER_LONG_MASK) != (t.getLong(base2) & Data.REMOVE_OUTLIER_LONG_MASK)) {
-                    return false;
-                }
-                break;
-            default:
-                throw new RuntimeException("Invalid bytes per row!");
+        switch (rowSizeInLongs) {
+        case 6:
+            if ((t.getLong(base1 + 40)) != (t.getLong(base2 + 40))) {
+                return false;
             }
-            return true;
-        } else {
-            final long end1 = base1 + rowSizeInBytes;
-            long address2 = base2;
+        case 5:
+            if ((t.getLong(base1 + 32)) != (t.getLong(base2 + 32))) {
+                return false;
+            }
+        case 4:
+            if ((t.getLong(base1 + 24)) != (t.getLong(base2 + 24))) {
+                return false;
+            }
+        case 3:
+            if ((t.getLong(base1 + 16)) != (t.getLong(base2 + 16))) {
+                return false;
+            }
+        case 2:
+            if ((t.getLong(base1 + 8)) != (t.getLong(base2 + 8))) {
+                return false;
+            }
+        case 1:
+            if ((t.getLong(base1) & Data.REMOVE_OUTLIER_LONG_MASK) != (t.getLong(base2) & Data.REMOVE_OUTLIER_LONG_MASK)) {
+                return false;
+            }
+            break;
+        default:
 
-            for (long address = base1; address < end1; address += 8) {
-                if ((t.getLong(address) & Data.REMOVE_OUTLIER_LONG_MASK) != (t.getLong(address2) & Data.REMOVE_OUTLIER_LONG_MASK)) {
+            if ((t.getLong(base1) & Data.REMOVE_OUTLIER_LONG_MASK) != (t.getLong(base2) & Data.REMOVE_OUTLIER_LONG_MASK)) {
+                return false;
+            }
+
+            final long end1 = base1 + rowSizeInBytes;
+            long address2 = base2 + 8;
+
+            for (long address = base1 + 8; address < end1; address += 8) {
+                if ((t.getLong(address)) != (t.getLong(address2))) {
                     return false;
                 }
-                address += 8;
+                address2 += 8;
             }
-            return true;
         }
+        return true;
     }
 
     /*
@@ -430,33 +360,27 @@ public class Memory implements IMemory {
         final long base = baseAddress + (row * rowSizeInBytes);
         long temp = 1125899906842597L;
 
-        if (use_fast_compare) {
-            switch (rowSizeInLongs) {
-            case 6:
-                temp = (31 * temp) + t.getLong(base + 40);
-            case 5:
-                temp = (31 * temp) + t.getLong(base + 32);
-            case 4:
-                temp = (31 * temp) + t.getLong(base + 24);
-            case 3:
-                temp = (31 * temp) + t.getLong(base + 16);
-            case 2:
-                temp = (31 * temp) + t.getLong(base + 8);
-            case 1:
-                temp = (31 * temp) + t.getLong(base);
-                break;
-            default:
-                throw new RuntimeException("Invalid bytes per row!");
-            }
-
-        } else {
+        switch (rowSizeInLongs) {
+        case 6:
+            temp = (31 * temp) + t.getLong(base + 40);
+        case 5:
+            temp = (31 * temp) + t.getLong(base + 32);
+        case 4:
+            temp = (31 * temp) + t.getLong(base + 24);
+        case 3:
+            temp = (31 * temp) + t.getLong(base + 16);
+        case 2:
+            temp = (31 * temp) + t.getLong(base + 8);
+        case 1:
+            temp = (31 * temp) + t.getLong(base);
+            break;
+        default:
             final long end = base + rowSizeInBytes;
             for (long address = base; address < end; address += 8) {
                 temp = (31 * temp) + t.getLong(address);
             }
         }
         return (int) (31 * temp) * (int) (temp >>> 32);
-
     }
 
     /*
@@ -466,23 +390,7 @@ public class Memory implements IMemory {
      */
     @Override
     public IMemory newInstance() {
-        Memory memory = new Memory(numRows, columnSizes);
-        unsafe.copyMemory(baseAddress, memory.baseAddress, size);
-        return memory;
-    }
-
-    /**
-     * Prints the memory.
-     */
-    public void printMemory() {
-        for (int i = 0; i < numRows; i++) {
-            for (int j = 0; j < numColumns; j++) {
-                System.out.print(get(i, j));
-                System.out.print(" ");
-            }
-            System.out.println();
-        }
-        System.out.println();
+        return new MemoryUnsafe(numRows, columnSizes);
     }
 
     /*

@@ -61,16 +61,6 @@ public class MemoryIntArray implements IMemory {
     /*
      * (non-Javadoc)
      * 
-     * @see org.deidentifier.arx.framework.data.IMemory#equals(org.deidentifier.arx.framework.data.IMemory, int)
-     */
-    @Override
-    public boolean equals(final IMemory other, final int row) {
-        return Arrays.equals(((MemoryIntArray) other).data[row], data[row]);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
      * @see org.deidentifier.arx.framework.data.IMemory#equals(int, int)
      */
     @Override

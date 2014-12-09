@@ -114,54 +114,6 @@ public class MemoryUnsafe2 implements IMemory {
     /*
      * (non-Javadoc)
      * 
-     * @see org.deidentifier.arx.framework.data.IMemory#equals(org.deidentifier.arx.framework.data.IMemory, int)
-     */
-    @Override
-    public boolean equals(final IMemory other, final int row) {
-        final Unsafe o = ((MemoryUnsafe2) other).unsafe;
-        final Unsafe t = unsafe;
-        final long base = baseAddress + (row * rowSizeInBytes);
-
-        switch (rowSizeInLongs) {
-        case 6:
-            if (t.getLong(base + 40) != o.getLong(base + 40)) {
-                return false;
-            }
-        case 5:
-            if (t.getLong(base + 32) != o.getLong(base + 32)) {
-                return false;
-            }
-        case 4:
-            if (t.getLong(base + 24) != o.getLong(base + 24)) {
-                return false;
-            }
-        case 3:
-            if (t.getLong(base + 16) != o.getLong(base + 16)) {
-                return false;
-            }
-        case 2:
-            if (t.getLong(base + 8) != o.getLong(base + 8)) {
-                return false;
-            }
-        case 1:
-            if (t.getLong(base) != o.getLong(base)) {
-                return false;
-            }
-            break;
-        default:
-            final long end = base + rowSizeInBytes;
-            for (long address = base; address < end; address += 8) {
-                if (t.getLong(address) != o.getLong(address)) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
      * @see org.deidentifier.arx.framework.data.IMemory#equals(int, int)
      */
     @Override
@@ -204,7 +156,7 @@ public class MemoryUnsafe2 implements IMemory {
                 if (t.getLong(address) != t.getLong(address2)) {
                     return false;
                 }
-                address += 8;
+                address2 += 8;
             }
         }
         return true;
@@ -260,7 +212,7 @@ public class MemoryUnsafe2 implements IMemory {
                 if ((t.getLong(address)) != (t.getLong(address2))) {
                     return false;
                 }
-                address += 8;
+                address2 += 8;
             }
         }
         return true;
