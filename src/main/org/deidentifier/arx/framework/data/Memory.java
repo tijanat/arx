@@ -162,7 +162,7 @@ public class Memory implements IMemory {
         size = rowSizeInBytes * numRows;
         baseAddress = unsafe.allocateMemory(size);
         unsafe.setMemory(baseAddress, size, (byte) 0);
-        
+
         freed = false;
 
         // precompute the offset
@@ -465,17 +465,17 @@ public class Memory implements IMemory {
         if (use_fast_compare) {
             switch (rowSizeInLongs) {
             case 6:
-                temp = (31 * temp) + t.getAddress(base + 40);
+                temp = (31 * temp) + t.getLong(base + 40);
             case 5:
-                temp = (31 * temp) + t.getAddress(base + 32);
+                temp = (31 * temp) + t.getLong(base + 32);
             case 4:
-                temp = (31 * temp) + t.getAddress(base + 24);
+                temp = (31 * temp) + t.getLong(base + 24);
             case 3:
-                temp = (31 * temp) + t.getAddress(base + 16);
+                temp = (31 * temp) + t.getLong(base + 16);
             case 2:
-                temp = (31 * temp) + t.getAddress(base + 8);
+                temp = (31 * temp) + t.getLong(base + 8);
             case 1:
-                temp = (31 * temp) + t.getAddress(base);
+                temp = (31 * temp) + t.getLong(base);
                 break;
             default:
                 throw new RuntimeException("Invalid bytes per row!");
@@ -484,7 +484,7 @@ public class Memory implements IMemory {
         } else {
             final long end = base + rowSizeInBytes;
             for (long address = base; address < end; address += 8) {
-                temp = (31 * temp) + t.getAddress(address);
+                temp = (31 * temp) + t.getLong(address);
             }
         }
         return (int) (31 * temp) * (int) (temp >>> 32);
