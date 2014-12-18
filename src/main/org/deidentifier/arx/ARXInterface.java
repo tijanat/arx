@@ -2,7 +2,6 @@ package org.deidentifier.arx;
 
 import java.io.IOException;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 import org.deidentifier.arx.criteria.KAnonymity;
@@ -35,35 +34,45 @@ public class ARXInterface {
     public ARXInterface(final Data data, ARXConfiguration config) throws IOException {
 
         // Check simplifying assumptions
-        if (config.getMaxOutliers()>0d) {
+        if (config.getMaxOutliers() > 0d) {
             throw new UnsupportedOperationException("Outliers are not supported");
         }
-        
-        if (config.getCriteria().size()!=1) {
+
+        if (config.getCriteria().size() != 1) {
             throw new UnsupportedOperationException("Only exactly one criterion is supported");
         }
-        
-        if (!(config.getCriteria().iterator().next() instanceof KAnonymity)){
+
+        if (!(config.getCriteria().iterator().next() instanceof KAnonymity)) {
             throw new UnsupportedOperationException("Only the k-anonymity criterion is supported");
         }
-        
-        // Check
-        checkBeforeEncoding(data, config);
+
+        if (((DataHandleInput) data.getHandle()).isLocked()) {
+            throw new RuntimeException("This data handle is locked. Please release it first");
+        }
+
+        if (data.getDefinition().getSensitiveAttributes().size() > 1 && config.isProtectSensitiveAssociations()) {
+            throw new UnsupportedOperationException("Currently not supported!");
+        }
 
         // Encode data
         DataHandle handle = data.getHandle();
+        handle.getDefinition().materialize(handle);
+        checkBeforeEncoding(handle, config);
+        handle.getRegistry().reset();
+        handle.getRegistry().createInputSubset(config);
+
         String[] header = ((DataHandleInput) handle).header;
         int[][] dataArray = ((DataHandleInput) handle).data;
         Dictionary dictionary = ((DataHandleInput) handle).dictionary;
         manager = new DataManager(header, dataArray, dictionary, handle.getDefinition(), config.getCriteria());
-        
+
         // Initialize
         this.config = config;
         config.initialize(manager);
 
         // Check
         checkAfterEncoding(config, manager);
-        
+
         // Build buffer
         int[][] array = getData();
         buffer = new int[array.length][];
@@ -76,77 +85,77 @@ public class ARXInterface {
      * Returns the input data array
      * @return
      */
-    public int[][] getData(){
+    public int[][] getData() {
         return manager.getDataQI().getArray();
     }
-    
+
     /**
      * Returns the output buffer
      * @return
      */
-    public int[][] getBuffer(){
+    public int[][] getBuffer() {
         return buffer;
     }
-    
+
     /**
      * Returns the hierarchy for the attribute at the given index
      * @param index
      * @return
      */
-    public int[][] getHierarchy(int index){
+    public int[][] getHierarchy(int index) {
         return manager.getHierarchies()[index].getArray();
     }
-    
+
     /**
      * Returns the name of the attribute at the given index
      * @param index
      * @return
      */
-    public String getAttribute(int index){
+    public String getAttribute(int index) {
         return manager.getDataQI().getHeader()[index];
     }
-    
+
     /**
      * Returns the number of quasi-identifying attributes
      * @return
      */
-    public int getNumAttributes(){
+    public int getNumAttributes() {
         return buffer[0].length;
     }
-    
+
     /**
      * Returns the parameter 'k', as in k-anonymity
      * @return
      */
-    public int getK(){
+    public int getK() {
         return config.getMinimalGroupSize();
     }
 
     /**
      * Performs some sanity checks.
-     * 
-     * @param manager
-     *            the manager
+     *
+     * @param config
+     * @param manager the manager
      */
     private void checkAfterEncoding(final ARXConfiguration config, final DataManager manager) {
 
-        if (config.containsCriterion(KAnonymity.class)){
+        if (config.containsCriterion(KAnonymity.class)) {
             KAnonymity c = config.getCriterion(KAnonymity.class);
-            if ((c.getK() > manager.getDataQI().getDataLength()) || (c.getK() < 1)) { 
-                throw new IllegalArgumentException("Parameter k (" + c.getK() + ") musst be positive and less or equal than the number of rows (" + manager.getDataQI().getDataLength()+")"); 
+            if ((c.getK() > manager.getDataQI().getDataLength()) || (c.getK() < 1)) {
+                throw new IllegalArgumentException("Parameter k (" + c.getK() + ") musst be positive and less or equal than the number of rows (" + manager.getDataQI().getDataLength() + ")");
             }
         }
-        if (config.containsCriterion(LDiversity.class)){
-            for (LDiversity c : config.getCriteria(LDiversity.class)){
-                if ((c.getL() > manager.getDataQI().getDataLength()) || (c.getL() < 1)) { 
-                    throw new IllegalArgumentException("Parameter l (" + c.getL() + ") musst be positive and less or equal than the number of rows (" + manager.getDataQI().getDataLength()+")"); 
+        if (config.containsCriterion(LDiversity.class)) {
+            for (LDiversity c : config.getCriteria(LDiversity.class)) {
+                if ((c.getL() > manager.getDataQI().getDataLength()) || (c.getL() < 1)) {
+                    throw new IllegalArgumentException("Parameter l (" + c.getL() + ") musst be positive and less or equal than the number of rows (" + manager.getDataQI().getDataLength() + ")");
                 }
             }
         }
-        
+
         // Check whether all hierarchies are monotonic
         for (final GeneralizationHierarchy hierarchy : manager.getHierarchies()) {
-            if (!hierarchy.isMonotonic()) { throw new IllegalArgumentException("The hierarchy for the attribute '" + hierarchy.getName() + "' is not monotonic!"); }
+            hierarchy.checkMonotonicity(manager);
         }
 
         // check min and max sizes
@@ -155,34 +164,45 @@ public class ARXInterface {
         final int[] maxLevels = manager.getMaxLevels();
 
         for (int i = 0; i < hierarchyHeights.length; i++) {
-            if (minLevels[i] > (hierarchyHeights[i] - 1)) { throw new IllegalArgumentException("Invalid minimum generalization for attribute '" + manager.getHierarchies()[i].getName() + "': " +
-                                                                                               minLevels[i] + " > " + (hierarchyHeights[i] - 1)); }
-            if (minLevels[i] < 0) { throw new IllegalArgumentException("The minimum generalization for attribute '" + manager.getHierarchies()[i].getName() + "' has to be positive!"); }
-            if (maxLevels[i] > (hierarchyHeights[i] - 1)) { throw new IllegalArgumentException("Invalid maximum generalization for attribute '" + manager.getHierarchies()[i].getName() + "': " +
-                                                                                               maxLevels[i] + " > " + (hierarchyHeights[i] - 1)); }
-            if (maxLevels[i] < minLevels[i]) { throw new IllegalArgumentException("The minimum generalization for attribute '" + manager.getHierarchies()[i].getName() +
-                                                                                  "' has to be lower than or requal to the defined maximum!"); }
+            if (minLevels[i] > (hierarchyHeights[i] - 1)) {
+                throw new IllegalArgumentException("Invalid minimum generalization for attribute '" + manager.getHierarchies()[i].getName() + "': " +
+                                                   minLevels[i] + " > " + (hierarchyHeights[i] - 1));
+            }
+            if (minLevels[i] < 0) {
+                throw new IllegalArgumentException("The minimum generalization for attribute '" + manager.getHierarchies()[i].getName() + "' has to be positive!");
+            }
+            if (maxLevels[i] > (hierarchyHeights[i] - 1)) {
+                throw new IllegalArgumentException("Invalid maximum generalization for attribute '" + manager.getHierarchies()[i].getName() + "': " +
+                                                   maxLevels[i] + " > " + (hierarchyHeights[i] - 1));
+            }
+            if (maxLevels[i] < minLevels[i]) {
+                throw new IllegalArgumentException("The minimum generalization for attribute '" + manager.getHierarchies()[i].getName() +
+                                                   "' has to be lower than or requal to the defined maximum!");
+            }
         }
     }
 
     /**
      * Performs some sanity checks.
      * 
-     * @param data
-     *            the allowed maximal number of outliers
+     * @param handle
+     *            the data handle
      * @param config
      *            the configuration
      */
-    private void checkBeforeEncoding(final Data data, final ARXConfiguration config) {
-
+    private void checkBeforeEncoding(final DataHandle handle, final ARXConfiguration config) {
 
         // Lots of checks
-        if (data == null) { throw new NullPointerException("Data cannot be null!"); }
-        if (config.containsCriterion(LDiversity.class) ||
-            config.containsCriterion(TCloseness.class)){
-            if (data.getDefinition().getSensitiveAttributes().size() == 0) { throw new IllegalArgumentException("You need to specify a sensitive attribute!"); }
+        if (handle == null) {
+            throw new NullPointerException("Data must not be null!");
         }
-        for (String attr : data.getDefinition().getSensitiveAttributes()){
+        if (config.containsCriterion(LDiversity.class) ||
+            config.containsCriterion(TCloseness.class)) {
+            if (handle.getDefinition().getSensitiveAttributes().size() == 0) {
+                throw new IllegalArgumentException("You need to specify a sensitive attribute!");
+            }
+        }
+        for (String attr : handle.getDefinition().getSensitiveAttributes()) {
             boolean found = false;
             for (LDiversity c : config.getCriteria(LDiversity.class)) {
                 if (c.getAttribute().equals(attr)) {
@@ -199,56 +219,59 @@ public class ARXInterface {
                 }
             }
             if (!found) {
-                throw new IllegalArgumentException("No criterion defined for sensitive attribute: '"+attr+"'!");
+                throw new IllegalArgumentException("No criterion defined for sensitive attribute: '" + attr + "'!");
             }
         }
         for (LDiversity c : config.getCriteria(LDiversity.class)) {
-            if (data.getDefinition().getAttributeType(c.getAttribute()) != AttributeType.SENSITIVE_ATTRIBUTE) {
-                throw new RuntimeException("L-Diversity criterion defined for non-sensitive attribute '"+c.getAttribute()+"'!");
+            if (handle.getDefinition().getAttributeType(c.getAttribute()) != AttributeType.SENSITIVE_ATTRIBUTE) {
+                throw new RuntimeException("L-Diversity criterion defined for non-sensitive attribute '" + c.getAttribute() + "'!");
             }
         }
         for (TCloseness c : config.getCriteria(TCloseness.class)) {
-            if (data.getDefinition().getAttributeType(c.getAttribute()) != AttributeType.SENSITIVE_ATTRIBUTE) {
-                throw new RuntimeException("T-Closeness criterion defined for non-sensitive attribute '"+c.getAttribute()+"'!");
+            if (handle.getDefinition().getAttributeType(c.getAttribute()) != AttributeType.SENSITIVE_ATTRIBUTE) {
+                throw new RuntimeException("T-Closeness criterion defined for non-sensitive attribute '" + c.getAttribute() + "'!");
             }
         }
 
-        // Obtain handle
-        final DataHandle handle = data.getHandle();
-        
         // Check handle
-        if (!(handle instanceof DataHandleInput)) { throw new IllegalArgumentException("Invalid data handle provided!"); }
+        if (!(handle instanceof DataHandleInput)) {
+            throw new IllegalArgumentException("Invalid data handle provided!");
+        }
 
         // Check if all defines are correct
+        DataDefinition definition = handle.getDefinition();
         Set<String> attributes = new HashSet<String>();
-        for (int i=0; i<handle.getNumColumns(); i++){
+        for (int i = 0; i < handle.getNumColumns(); i++) {
             attributes.add(handle.getAttributeName(i));
         }
-        for (String attribute : data.getDefinition().getSensitiveAttributes()){
+        for (String attribute : handle.getDefinition().getSensitiveAttributes()) {
             if (!attributes.contains(attribute)) {
-                throw new IllegalArgumentException("Sensitive attribute '"+attribute+"' is not contained in the dataset");
+                throw new IllegalArgumentException("Sensitive attribute '" + attribute + "' is not contained in the dataset");
             }
         }
-        for (String attribute : data.getDefinition().getInsensitiveAttributes()){
+        for (String attribute : handle.getDefinition().getInsensitiveAttributes()) {
             if (!attributes.contains(attribute)) {
-                throw new IllegalArgumentException("Insensitive attribute '"+attribute+"' is not contained in the dataset");
+                throw new IllegalArgumentException("Insensitive attribute '" + attribute + "' is not contained in the dataset");
             }
         }
-        for (String attribute : data.getDefinition().getIdentifyingAttributes()){
+        for (String attribute : handle.getDefinition().getIdentifyingAttributes()) {
             if (!attributes.contains(attribute)) {
-                throw new IllegalArgumentException("Identifying attribute '"+attribute+"' is not contained in the dataset");
+                throw new IllegalArgumentException("Identifying attribute '" + attribute + "' is not contained in the dataset");
             }
         }
-        for (String attribute : data.getDefinition().getQuasiIdentifyingAttributes()){
+        for (String attribute : handle.getDefinition().getQuasiIdentifyingAttributes()) {
             if (!attributes.contains(attribute)) {
-                throw new IllegalArgumentException("Quasi-identifying attribute '"+attribute+"' is not contained in the dataset");
+                throw new IllegalArgumentException("Quasi-identifying attribute '" + attribute + "' is not contained in the dataset");
             }
         }
-        
+
         // Perform sanity checks
-        Map<String, String[][]> hierarchies = handle.getDefinition().getHierarchies();
-        if ((config.getMaxOutliers() < 0d) || (config.getMaxOutliers() >= 1d)) { throw new IllegalArgumentException("Suppression rate " + handle + "must be in [0,1["); }
-        if (hierarchies.size() > 15) { throw new IllegalArgumentException("The curse of dimensionality strikes. Too many quasi-identifiers: " + hierarchies.size()); }
-        if (hierarchies.size() == 0) { throw new IllegalArgumentException("You need to specify at least one quasi-identifier"); }
+        Set<String> qis = definition.getQuasiIdentifyingAttributes();
+        if ((config.getMaxOutliers() < 0d) || (config.getMaxOutliers() > 1d)) {
+            throw new IllegalArgumentException("Suppression rate " + config.getMaxOutliers() + "must be in [0, 1]");
+        }
+        if (qis.size() == 0) {
+            throw new IllegalArgumentException("You need to specify at least one quasi-identifier");
+        }
     }
 }
