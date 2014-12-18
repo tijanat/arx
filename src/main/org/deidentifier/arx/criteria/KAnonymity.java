@@ -1,5 +1,5 @@
 /*
- * ARX: Efficient, Stable and Optimal Data Anonymization
+ * ARX: Powerful Data Anonymization
  * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -28,13 +28,15 @@ import org.deidentifier.arx.framework.check.groupify.HashGroupifyEntry;
  * k-anonymity: A model for protecting privacy. 
  * International Journal of Uncertainty, Fuzziness and Knowledge-Based Systems. 2002;10(5):557 - 570. 
  * 
- * @author Prasser, Kohlmayer
+ * @author Fabian Prasser
+ * @author Florian Kohlmayer
  */
 public class KAnonymity extends ImplicitPrivacyCriterion{
 
+    /**  TODO */
     private static final long serialVersionUID = -8370928677928140572L;
     
-    /** The parameter k*/
+    /** The parameter k. */
     private final int k;
     
     /**
@@ -48,25 +50,35 @@ public class KAnonymity extends ImplicitPrivacyCriterion{
         this.k = k;
     }
 
+    /* (non-Javadoc)
+     * @see org.deidentifier.arx.criteria.PrivacyCriterion#getRequirements()
+     */
     @Override
     public int getRequirements(){
         // Requires only one counter
         return ARXConfiguration.REQUIREMENT_COUNTER;
     }
 
+    /* (non-Javadoc)
+     * @see org.deidentifier.arx.criteria.PrivacyCriterion#isAnonymous(org.deidentifier.arx.framework.check.groupify.HashGroupifyEntry)
+     */
     @Override
     public boolean isAnonymous(HashGroupifyEntry entry) {
         throw new RuntimeException("This should never be called!");
     }
 
     /**
-     * Returns the parameter k
+     * Returns the parameter k.
+     *
      * @return
      */
     public int getK() {
         return k;
     }
     
+	/* (non-Javadoc)
+	 * @see org.deidentifier.arx.criteria.PrivacyCriterion#toString()
+	 */
 	@Override
 	public String toString() {
 		return k+"-anonymity";

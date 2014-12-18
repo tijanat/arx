@@ -1,5 +1,5 @@
 /*
- * ARX: Efficient, Stable and Optimal Data Anonymization
+ * ARX: Powerful Data Anonymization
  * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -48,41 +48,34 @@ import org.eclipse.swt.widgets.TableItem;
 import cern.colt.Arrays;
 
 /**
- * This class implements a list view on selected nodes
+ * This class implements a list view on selected nodes.
+ * TODO: Highlight optimum and currently selected node in list
  * 
  * @author prasser
  */
 public class ViewList implements IView {
 
-    /** The optimum */
-	// TODO: Highlight in list
-    private ARXNode             optimum;
-
-    /** The selected node */
-	// TODO: Highlight in list
-    private ARXNode             selectedNode;
-
-    /** The controller */
+    /** The controller. */
     private final Controller    controller;
 
-    /** The format */
+    /** The format. */
     private final NumberFormat  format = new DecimalFormat("##0.000"); //$NON-NLS-1$
 
-    /** The table */
+    /** The table. */
     private final Table         table;
 
-    /** The model */
+    /** The model. */
     private Model               model;
 
-    /** The list */
+    /** The list. */
     private final List<ARXNode> list   = new ArrayList<ARXNode>();
 
-    /** The listener */
+    /** The listener. */
     private Listener            listener;
 
     /**
-     * Init
-     * 
+     * Init.
+     *
      * @param parent
      * @param controller
      */
@@ -92,10 +85,11 @@ public class ViewList implements IView {
         controller.addListener(ModelPart.SELECTED_NODE, this);
         controller.addListener(ModelPart.FILTER, this);
         controller.addListener(ModelPart.MODEL, this);
+        controller.addListener(ModelPart.RESULT, this);
 
         this.controller = controller;
 
-        table = new Table(parent, SWT.SINGLE | SWT.VIRTUAL | SWT.BORDER | SWT.V_SCROLL);
+        table = new Table(parent, SWT.SINGLE | SWT.VIRTUAL | SWT.BORDER | SWT.V_SCROLL | SWT.FULL_SELECTION);
         table.setLayoutData(SWTUtil.createFillGridData());
         table.setHeaderVisible(true);
         
@@ -116,30 +110,45 @@ public class ViewList implements IView {
         column4.pack();
     }
 
+    /* (non-Javadoc)
+     * @see org.deidentifier.arx.gui.view.def.IView#dispose()
+     */
     @Override
     public void dispose() {
         controller.removeListener(this);
     }
 
     /**
-     * Resets the view
+     * Resets the view.
      */
     @Override
     public void reset() {
-        optimum = null;
-        selectedNode = null;
         table.setRedraw(false);
-        table.clearAll();
+        for (final TableItem i : table.getItems()) {
+            i.dispose();
+        }
+        list.clear();
         table.setRedraw(true);
+        if (listener != null) {
+            table.removeListener(SWT.SetData, listener);
+        }
+        SWTUtil.disable(table);
     }
 
+    /* (non-Javadoc)
+     * @see org.deidentifier.arx.gui.view.def.IView#update(org.deidentifier.arx.gui.model.ModelEvent)
+     */
     @Override
     public void update(final ModelEvent event) {
 
-        if (event.part == ModelPart.SELECTED_NODE) {
-            selectedNode = (ARXNode) event.data;
+        if (event.part == ModelPart.RESULT) {
+            if (model.getResult() == null) reset();
+        } else  if (event.part == ModelPart.SELECTED_NODE) {
+            // selectedNode = (ARXNode) event.data;
         } else if (event.part == ModelPart.MODEL) {
+            reset();
             model = (Model) event.data;
+            update(model.getResult(), model.getNodeFilter());
         } else if (event.part == ModelPart.FILTER) {
             if (model != null) {
                 update(model.getResult(), (ModelNodeFilter) event.data);
@@ -148,25 +157,25 @@ public class ViewList implements IView {
     }
 
     /**
-     * Converts an information loss into a relative value in percent
-     * 
+     * Converts an information loss into a relative value in percent.
+     *
      * @param infoLoss
      * @return
      */
-    private double asRelativeValue(final InformationLoss infoLoss) {
-        return ((infoLoss.getValue() - model.getResult()
-                                            .getLattice()
-                                            .getBottom()
-                                            .getMinimumInformationLoss()
-                                            .getValue()) / model.getResult()
-                                                                .getLattice()
-                                                                .getTop()
-                                                                .getMaximumInformationLoss()
-                                                                .getValue()) * 100d;
+    private double asRelativeValue(final InformationLoss<?> infoLoss) {
+
+        if (model != null && model.getResult() != null && model.getResult().getLattice() != null &&
+            model.getResult().getLattice().getBottom() != null && model.getResult().getLattice().getTop() != null) {
+            return infoLoss.relativeTo(model.getResult().getLattice().getMinimumInformationLoss(), 
+                                       model.getResult().getLattice().getMaximumInformationLoss()) * 100d;
+        } else {
+            return 0;
+        }
     }
 
     /**
-     * Creates an item in the list
+     * Creates an item in the list.
+     *
      * @param item
      * @param index
      */
@@ -177,12 +186,12 @@ public class ViewList implements IView {
         final String transformation = Arrays.toString(node.getTransformation());
         item.setText(0, transformation);
 
-        final String anonymity = node.isAnonymous().toString();
+        final String anonymity = node.getAnonymity().toString();
         item.setText(1, anonymity);
 
         String min = null;
         if (node.getMinimumInformationLoss() != null) {
-            min = String.valueOf(node.getMinimumInformationLoss().getValue()) +
+            min = node.getMinimumInformationLoss().toString() +
                   " [" + format.format(asRelativeValue(node.getMinimumInformationLoss())) + "%]"; //$NON-NLS-1$ //$NON-NLS-2$
         } else {
             min = Resources.getMessage("ListView.7"); //$NON-NLS-1$
@@ -191,7 +200,7 @@ public class ViewList implements IView {
 
         String max = null;
         if (node.getMaximumInformationLoss() != null) {
-            max = String.valueOf(node.getMaximumInformationLoss().getValue()) +
+            max = node.getMaximumInformationLoss().toString() +
                   " [" + format.format(asRelativeValue(node.getMaximumInformationLoss())) + "%]"; //$NON-NLS-1$ //$NON-NLS-2$
         } else {
             max = Resources.getMessage("ListView.10"); //$NON-NLS-1$
@@ -200,25 +209,31 @@ public class ViewList implements IView {
     }
 
     /**
-     * Updates the list
+     * Updates the list.
+     *
      * @param result
      * @param filter
      */
     private void update(final ARXResult result, final ModelNodeFilter filter) {
-
+        
+        if (result == null || result.getLattice() == null) return;
+        if (filter == null) return;
+        
         controller.getResources().getDisplay().asyncExec(new Runnable() {
 
             @Override
             public void run() {
                 table.setRedraw(false);
-                table.clearAll();
+                SWTUtil.enable(table);
+                for (final TableItem i : table.getItems()) {
+                    i.dispose();
+                }
                 list.clear();
-
+                
                 final ARXLattice l = result.getLattice();
-                optimum = result.getGlobalOptimum();
                 for (final ARXNode[] level : l.getLevels()) {
                     for (final ARXNode node : level) {
-                        if (filter.isAllowed(node)) {
+                        if (filter.isAllowed(result.getLattice(), node)) {
                             list.add(node);
                         }
                     }
@@ -253,6 +268,11 @@ public class ViewList implements IView {
                 table.addListener(SWT.SetData, listener);
                 table.setItemCount(list.size());
 
+                TableColumn[] colums = table.getColumns();
+                for (TableColumn tableColumn : colums) {
+                    tableColumn.setWidth(120);
+                }
+                
                 table.setRedraw(true);
             }
         });

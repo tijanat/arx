@@ -1,5 +1,5 @@
 /*
- * ARX: Efficient, Stable and Optimal Data Anonymization
+ * ARX: Powerful Data Anonymization
  * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -23,16 +23,33 @@ import org.eclipse.nebula.widgets.nattable.NatTable;
 import org.eclipse.nebula.widgets.nattable.layer.LabelStack;
 import org.eclipse.nebula.widgets.nattable.layer.cell.IConfigLabelAccumulator;
 
+/**
+ * A label accumulator for the data view.
+ *
+ * @author Fabian Prasser
+ */
 public class DataTableConfigLabelAccumulator implements IConfigLabelAccumulator {
 
+    /**  TODO */
     private final DataTableContext context;
+    
+    /**  TODO */
     private final NatTable         table;
 
+    /**
+     * Creates a new instance.
+     *
+     * @param table
+     * @param context
+     */
     public DataTableConfigLabelAccumulator(NatTable table, DataTableContext context) {
         this.context = context;
         this.table = table;
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.nebula.widgets.nattable.layer.cell.IConfigLabelAccumulator#accumulateConfigLabels(org.eclipse.nebula.widgets.nattable.layer.LabelStack, int, int)
+     */
     @Override
     public void accumulateConfigLabels(LabelStack configLabels, int columnPosition, int rowPosition) {
 

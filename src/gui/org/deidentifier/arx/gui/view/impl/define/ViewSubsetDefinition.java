@@ -1,5 +1,5 @@
 /*
- * ARX: Efficient, Stable and Optimal Data Anonymization
+ * ARX: Powerful Data Anonymization
  * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -27,7 +27,7 @@ import org.deidentifier.arx.gui.model.ModelEvent.ModelPart;
 import org.deidentifier.arx.gui.resources.Resources;
 import org.deidentifier.arx.gui.view.SWTUtil;
 import org.deidentifier.arx.gui.view.def.IView;
-import org.deidentifier.arx.gui.view.impl.common.ComponentTitleBar;
+import org.deidentifier.arx.gui.view.impl.common.ComponentTitledFolderButton;
 import org.deidentifier.arx.gui.view.impl.common.ComponentTitledFolder;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridLayout;
@@ -35,24 +35,55 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.ToolItem;
 
+/**
+ * This view displays basic information about the research subset.
+ *
+ * @author Fabian Prasser
+ */
 public class ViewSubsetDefinition implements IView{
 
+    /**  TODO */
     private Controller controller;
+    
+    /**  TODO */
     private Composite root;
+    
+    /**  TODO */
     private Model model;
     
+    /**  TODO */
     private Label size;
+    
+    /**  TODO */
     private Label origin;
+    
+    /**  TODO */
     private Label total;
+    
+    /**  TODO */
     private Label percent;
 
+    /**  TODO */
     private ToolItem all;
+    
+    /**  TODO */
     private ToolItem none;
+    
+    /**  TODO */
     private ToolItem file;
+    
+    /**  TODO */
     private ToolItem filter;
     
+    /**  TODO */
     private DecimalFormat format = new DecimalFormat("##0.00");
     
+    /**
+     * Creates a new instance.
+     *
+     * @param parent
+     * @param controller
+     */
     public ViewSubsetDefinition(final Composite parent,
                                 final Controller controller) {
 
@@ -63,9 +94,15 @@ public class ViewSubsetDefinition implements IView{
         this.root = build(parent);
     }
 
+    /**
+     * Builds the view.
+     *
+     * @param parent
+     * @return
+     */
     private Composite build(Composite parent) {
 
-        ComponentTitleBar bar = new ComponentTitleBar("id-40");
+        ComponentTitledFolderButton bar = new ComponentTitledFolderButton("id-40");
         bar.add(Resources.getMessage("SubsetDefinitionView.1"), 
                 controller.getResources().getImage("page_white.png"),
                 new Runnable() {
@@ -132,20 +169,25 @@ public class ViewSubsetDefinition implements IView{
         origin.setText("");
         origin.setLayoutData(SWTUtil.createFillHorizontallyGridData());
         
-        all = folder.getBarItem(Resources.getMessage("SubsetDefinitionView.1"));
-        none = folder.getBarItem(Resources.getMessage("SubsetDefinitionView.2"));
-        file = folder.getBarItem(Resources.getMessage("SubsetDefinitionView.3"));
-        filter = folder.getBarItem(Resources.getMessage("SubsetDefinitionView.4"));
+        all = folder.getButtonItem(Resources.getMessage("SubsetDefinitionView.1"));
+        none = folder.getButtonItem(Resources.getMessage("SubsetDefinitionView.2"));
+        file = folder.getButtonItem(Resources.getMessage("SubsetDefinitionView.3"));
+        filter = folder.getButtonItem(Resources.getMessage("SubsetDefinitionView.4"));
         
         return group;
     }
 
-
+    /* (non-Javadoc)
+     * @see org.deidentifier.arx.gui.view.def.IView#dispose()
+     */
     @Override
     public void dispose() {
         controller.removeListener(this);
     }
     
+    /* (non-Javadoc)
+     * @see org.deidentifier.arx.gui.view.def.IView#reset()
+     */
     @Override
     public void reset() {
         size.setText("0");
@@ -155,6 +197,9 @@ public class ViewSubsetDefinition implements IView{
         disable();
     }
     
+    /**
+     * Enables the view.
+     */
     private void enable(){
         // TODO: Maybe make this a default for all views?
         all.setEnabled(true);
@@ -164,6 +209,9 @@ public class ViewSubsetDefinition implements IView{
         SWTUtil.enable(root);
     }
     
+    /**
+     * Disables the view.
+     */
     private void disable(){
         // TODO: Maybe make this a default for all views?
         all.setEnabled(false);
@@ -173,6 +221,9 @@ public class ViewSubsetDefinition implements IView{
         SWTUtil.disable(root);
     }
 
+    /* (non-Javadoc)
+     * @see org.deidentifier.arx.gui.view.def.IView#update(org.deidentifier.arx.gui.model.ModelEvent)
+     */
     @Override
     public void update(final ModelEvent event) {
         if (event.part == ModelPart.MODEL) {
@@ -194,9 +245,12 @@ public class ViewSubsetDefinition implements IView{
         } 
     }
 
+    /**
+     * Updates the view.
+     */
     private void update() {
         // TODO: Maybe make this a default for all views?
-    	if (model.getInputConfig()==null || model.getInputConfig().getResearchSubset()==null){
+    	if (model==null || model.getInputConfig()==null || model.getInputConfig().getResearchSubset()==null){
     		reset();
     		return;
     	}
@@ -206,8 +260,6 @@ public class ViewSubsetDefinition implements IView{
         this.size.setText(String.valueOf(size));
         this.total.setText(String.valueOf(total));
         this.percent.setText(format.format(percent));
-        if (this.model != null) {
-            this.origin.setText(model.getSubsetOrigin());
-        }
+        this.origin.setText(model.getSubsetOrigin());
     }
 }

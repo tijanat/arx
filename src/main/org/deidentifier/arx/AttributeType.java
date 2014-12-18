@@ -1,5 +1,5 @@
 /*
- * ARX: Efficient, Stable and Optimal Data Anonymization
+ * ARX: Powerful Data Anonymization
  * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -31,83 +31,68 @@ import org.deidentifier.arx.io.CSVDataOutput;
 import org.deidentifier.arx.io.CSVHierarchyInput;
 
 /**
- * Represents an attribute type
- * 
- * @author Prasser, Kohlmayer
+ * Represents an attribute type.
+ *
+ * @author Fabian Prasser
+ * @author Florian Kohlmayer
  */
-public class AttributeType implements Serializable {
+public class AttributeType implements Serializable, Cloneable {
     
-    private static final long serialVersionUID = -7358540408016873823L;
-
     /**
-     * This class implements a generalization hierarchy
-     * 
-     * @author Prasser, Kohlmayer
+     * This class implements a generalization hierarchy.
+     *
+     * @author Fabian Prasser
+     * @author Florian Kohlmayer
      */
     public static abstract class Hierarchy extends AttributeType implements Serializable {
 
-		private static final long serialVersionUID = -4721439386792383385L;
-		
 		/**
-         * The implementation for arrays
-         * 
-         * @author Prasser, Kohlmayer
-         */
-        static class ArrayHierarchy extends Hierarchy {
-
-			private static final long serialVersionUID = 8966189950800782892L;
-			
-			private final String[][] hierarchy;
-			
-            private ArrayHierarchy(final String[][] hierarchy) {
-                this.hierarchy = hierarchy;
-            }
-
-            @Override
-            public Hierarchy clone() {
-                return new DefaultHierarchy(getHierarchy());
-            }
-
-            @Override
-            public String[][] getHierarchy() {
-                return hierarchy;
-            }
-        }
-
-        /**
          * The default implementation of a generalization hierarchy. It allows
          * the user to programmatically define its content.
          * 
-         * @author Prasser, Kohlmayer
+         * @author Fabian Prasser
+ * @author Florian Kohlmayer
          */
         public static class DefaultHierarchy extends Hierarchy {
 
+			/**  TODO */
 			private static final long serialVersionUID = 7493568420925738049L;
 
-			/** The raw data */
+			/** The raw data. */
             private final List<String[]> hierarchy;
 
-            /** The array */
+            /** The array. */
             private String[][]           array = null;
 
+            /**
+             * 
+             */
             public DefaultHierarchy() {
                 this.hierarchy = new ArrayList<String[]>();
             }
 
+            /**
+             * 
+             *
+             * @param array
+             */
             private DefaultHierarchy(final String[][] array) {
                 this.array = array;
                 this.hierarchy = null;
             }
 
             /**
-             * Adds a row to the tabular representation of this hierarchy
-             * 
+             * Adds a row to the tabular representation of this hierarchy.
+             *
              * @param row
              */
             public void add(final String... row) {
                 hierarchy.add(row);
             }
 
+            /* (non-Javadoc)
+             * @see org.deidentifier.arx.AttributeType.Hierarchy#clone()
+             */
             @Override
             public Hierarchy clone() {
                 if (array != null){
@@ -117,6 +102,9 @@ public class AttributeType implements Serializable {
                 }
             }
 
+            /* (non-Javadoc)
+             * @see org.deidentifier.arx.AttributeType.Hierarchy#getHierarchy()
+             */
             @Override
             public String[][] getHierarchy() {
                 if (array == null) {
@@ -129,25 +117,76 @@ public class AttributeType implements Serializable {
                 return array;
             }
         }
+		
+		/**
+         * The implementation for arrays.
+         *
+         * @author Fabian Prasser
+         * @author Florian Kohlmayer
+         */
+        static class ArrayHierarchy extends Hierarchy {
+
+			/**  TODO */
+			private static final long serialVersionUID = 8966189950800782892L;
+			
+			/**  TODO */
+			private final String[][] hierarchy;
+			
+            /**
+             * 
+             *
+             * @param hierarchy
+             */
+            private ArrayHierarchy(final String[][] hierarchy) {
+                this.hierarchy = hierarchy;
+            }
+
+            /* (non-Javadoc)
+             * @see org.deidentifier.arx.AttributeType.Hierarchy#clone()
+             */
+            @Override
+            public Hierarchy clone() {
+                return new DefaultHierarchy(getHierarchy());
+            }
+
+            /* (non-Javadoc)
+             * @see org.deidentifier.arx.AttributeType.Hierarchy#getHierarchy()
+             */
+            @Override
+            public String[][] getHierarchy() {
+                return hierarchy;
+            }
+        }
 
         /**
-         * The implementation for iterators
-         * 
-         * @author Prasser, Kohlmayer
+         * The implementation for iterators.
+         *
+         * @author Fabian Prasser
+         * @author Florian Kohlmayer
          */
         static class IterableHierarchy extends Hierarchy {
 
+			/**  TODO */
 			private static final long serialVersionUID = 5734204406574324342L;
 
+			/**  TODO */
 			private Iterator<String[]> iterator;
 
-            /** The array */
+            /** The array. */
             private String[][]         array = null;
 
+            /**
+             * 
+             *
+             * @param iterator
+             */
             public IterableHierarchy(final Iterator<String[]> iterator) {
                 this.iterator = iterator;
             }
 
+            /* (non-Javadoc)
+             * @see org.deidentifier.arx.AttributeType.Hierarchy#clone()
+             */
             @Override
             public Hierarchy clone() {
                 if (array != null){
@@ -157,6 +196,9 @@ public class AttributeType implements Serializable {
                 }
             }
 
+            /* (non-Javadoc)
+             * @see org.deidentifier.arx.AttributeType.Hierarchy#getHierarchy()
+             */
             @Override
             public String[][] getHierarchy() {
                 if (array == null) {
@@ -174,10 +216,12 @@ public class AttributeType implements Serializable {
             }
         }
 
+        /**  TODO */
+        private static final long serialVersionUID = -4721439386792383385L;
+
         /**
-         * Creates a new default hierarchy
-         * 
-         * @param type
+         * Creates a new default hierarchy.
+         *
          * @return A Hierarchy
          */
         public static DefaultHierarchy create() {
@@ -185,13 +229,10 @@ public class AttributeType implements Serializable {
         }
 
         /**
-         * Creates a new hierarchy from a CSV file
-         * 
-         * @param type
-         * @param file
-         *            A file
-         * @param separator
-         *            The utilized separator character
+         * Creates a new hierarchy from a CSV file.
+         *
+         * @param file A file
+         * @param separator The utilized separator character
          * @return A Hierarchy
          * @throws IOException
          */
@@ -201,13 +242,10 @@ public class AttributeType implements Serializable {
         }
 
         /**
-         * Creates a new hierarchy from a CSV file
-         * 
-         * @param type
-         * @param stream
-         *            An input stream
-         * @param separator
-         *            The utilized separator character
+         * Creates a new hierarchy from a CSV file.
+         *
+         * @param stream An input stream
+         * @param separator The utilized separator character
          * @return A Hierarchy
          * @throws IOException
          */
@@ -217,11 +255,9 @@ public class AttributeType implements Serializable {
         }
 
         /**
-         * Creates a new hierarchy from an iterator over tuples
-         * 
-         * @param type
-         * @param iterator
-         *            An iterator
+         * Creates a new hierarchy from an iterator over tuples.
+         *
+         * @param iterator An iterator
          * @return A Hierarchy
          */
         public static Hierarchy create(final Iterator<String[]> iterator) {
@@ -229,11 +265,9 @@ public class AttributeType implements Serializable {
         }
 
         /**
-         * Creates a new hierarchy from a list
-         * 
-         * @param type
-         * @param list
-         *            The list
+         * Creates a new hierarchy from a list.
+         *
+         * @param list The list
          * @return A Hierarchy
          */
         public static Hierarchy create(final List<String[]> list) {
@@ -241,13 +275,10 @@ public class AttributeType implements Serializable {
         }
 
         /**
-         * Creates a new hierarchy from a CSV file
-         * 
-         * @param type
-         * @param path
-         *            A path to the file
-         * @param separator
-         *            The utilized separator character
+         * Creates a new hierarchy from a CSV file.
+         *
+         * @param path A path to the file
+         * @param separator The utilized separator character
          * @return A Hierarchy
          * @throws IOException
          */
@@ -257,38 +288,40 @@ public class AttributeType implements Serializable {
         }
 
         /**
-         * Creates a new hierarchy from a two-dimensional string array
-         * 
-         * @param type
-         * @param array
-         *            The array
+         * Creates a new hierarchy from a two-dimensional string array.
+         *
+         * @param array The array
          * @return A Hierarchy
          */
         public static Hierarchy create(final String[][] array) {
             return new ArrayHierarchy(array);
         }
 
+        /**
+         * 
+         */
         public Hierarchy() {
             super(ATTR_TYPE_QI);
         }
 
+        /* (non-Javadoc)
+         * @see org.deidentifier.arx.AttributeType#clone()
+         */
         @Override
         public abstract Hierarchy clone();
 
         /**
-         * Returns the hierarchy as a two-dimensional string array
-         * 
+         * Returns the hierarchy as a two-dimensional string array.
+         *
          * @return
          */
         public abstract String[][] getHierarchy();
 
         /**
-         * Writes the hierarchy to a CSV file
-         * 
-         * @param file
-         *            A file
-         * @param separator
-         *            The utilized separator character
+         * Writes the hierarchy to a CSV file.
+         *
+         * @param file A file
+         * @param separator The utilized separator character
          * @throws IOException
          */
         public void
@@ -298,12 +331,10 @@ public class AttributeType implements Serializable {
         }
 
         /**
-         * Writes the hierarchy to a CSV file
-         * 
-         * @param out
-         *            A output stream
-         * @param separator
-         *            The utilized separator character
+         * Writes the hierarchy to a CSV file.
+         *
+         * @param out A output stream
+         * @param separator The utilized separator character
          * @throws IOException
          */
         public void
@@ -313,12 +344,10 @@ public class AttributeType implements Serializable {
         }
 
         /**
-         * Writes the hierarchy to a CSV file
-         * 
-         * @param path
-         *            A path
-         * @param separator
-         *            The utilized separator character
+         * Writes the hierarchy to a CSV file.
+         *
+         * @param path A path
+         * @param separator The utilized separator character
          * @throws IOException
          */
         public void
@@ -328,55 +357,64 @@ public class AttributeType implements Serializable {
         }
     }
 
-    /** The shift */
+    /**  TODO */
+    private static final long serialVersionUID = -7358540408016873823L;
+
+    /** The shift. */
     protected static final int  SHIFT                 = 30;
 
-    /** The mask */
+    /** The mask. */
     protected static final int  MASK                  = 0x3fffffff;
 
-    /** Constant for type QI */
+    /** Constant for type QI. */
     protected static final int  ATTR_TYPE_QI          = 0;
 
-    /** Constant for type SE */
+    /** Constant for type SE. */
     protected static final int  ATTR_TYPE_SE          = 1;
 
-    /** Constant for type IN */
+    /** Constant for type IN. */
     protected static final int  ATTR_TYPE_IS          = 2;
 
-    /** Constant for type ID */
+    /** Constant for type ID. */
     protected static final int  ATTR_TYPE_ID          = 3;
 
-    /** Represents an identifying attribute */
+    /** Represents an identifying attribute. */
     public static AttributeType IDENTIFYING_ATTRIBUTE = new AttributeType(ATTR_TYPE_ID);
 
-    /** Represents a sensitive attribute */
+    /** Represents a sensitive attribute. */
     public static AttributeType SENSITIVE_ATTRIBUTE   = new AttributeType(ATTR_TYPE_SE);
 
-    /** Represents an insensitive attribute */
+    /** Represents an insensitive attribute. */
     public static AttributeType INSENSITIVE_ATTRIBUTE = new AttributeType(ATTR_TYPE_IS);
 
-    /** Represents a quasi-identifying attribute */
+    /** Represents a quasi-identifying attribute. */
     public static AttributeType QUASI_IDENTIFYING_ATTRIBUTE = new AttributeType(ATTR_TYPE_QI);
 
-    /** The type */
+    /** The type. */
     private int                 type                  = 0x0;
 
-    /** Instantiates a new type */
+    /**
+     * Instantiates a new type.
+     *
+     * @param type
+     */
     private AttributeType(final int type) {
         this.type = type;
     }
 
+    /* (non-Javadoc)
+     * @see java.lang.Object#clone()
+     */
     @Override
     public AttributeType clone() {
         return this;
     }
 
-    /** Returns the type identifier */
-    protected int getType() {
-        return type;
-    }
-
-    /** Returns a string representation */
+    /**
+     * Returns a string representation.
+     *
+     * @return
+     */
     @Override
     public String toString() {
         switch (type) {
@@ -389,7 +427,16 @@ public class AttributeType implements Serializable {
         case ATTR_TYPE_QI:
             return "QUASI_IDENTIFYING_ATTRIBUTE";
         default:
-            return null;
+            return "UNKNOWN_ATTRIBUTE_TYPE";
         }
+    }
+
+    /**
+     * Returns the type identifier.
+     *
+     * @return
+     */
+    protected int getType() {
+        return type;
     }
 }

@@ -1,5 +1,5 @@
 /*
- * ARX: Efficient, Stable and Optimal Data Anonymization
+ * ARX: Powerful Data Anonymization
  * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -20,10 +20,10 @@ package org.deidentifier.arx.framework.check.history;
 
 /**
  * The Class MRUCacheEntry.
- * 
- * @param <T>
- *            the generic type
- * @author Prasser, Kohlmayer
+ *
+ * @author Fabian Prasser
+ * @author Florian Kohlmayer
+ * @param <T> the generic type
  */
 public class MRUCacheEntry<T> {
 

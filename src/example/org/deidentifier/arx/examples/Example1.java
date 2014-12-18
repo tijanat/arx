@@ -1,5 +1,5 @@
 /*
- * ARX: Efficient, Stable and Optimal Data Anonymization
+ * ARX: Powerful Data Anonymization
  * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -33,9 +33,10 @@ import org.deidentifier.arx.criteria.KAnonymity;
 
 /**
  * This class implements an example on how to use the API by directly providing
- * the input datasets
- * 
- * @author Prasser, Kohlmayer
+ * the input datasets.
+ *
+ * @author Fabian Prasser
+ * @author Florian Kohlmayer
  */
 public class Example1 extends Example {
 
@@ -93,7 +94,7 @@ public class Example1 extends Example {
 
             // Process results
             System.out.println(" - Transformed data:");
-            final Iterator<String[]> transformed = result.getHandle()
+            final Iterator<String[]> transformed = result.getOutput(false)
                                                          .iterator();
             while (transformed.hasNext()) {
                 System.out.print("   ");

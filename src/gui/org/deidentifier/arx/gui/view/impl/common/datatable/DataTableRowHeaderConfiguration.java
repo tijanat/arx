@@ -1,5 +1,5 @@
 /*
- * ARX: Efficient, Stable and Optimal Data Anonymization
+ * ARX: Powerful Data Anonymization
  * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -27,17 +27,28 @@ import org.eclipse.nebula.widgets.nattable.painter.cell.ICellPainter;
 import org.eclipse.nebula.widgets.nattable.painter.cell.TextPainter;
 import org.eclipse.nebula.widgets.nattable.style.DisplayMode;
 import org.eclipse.nebula.widgets.nattable.util.GUIHelper;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Image;
 
+/**
+ * A configuration for row headers in the data view.
+ *
+ * @author Fabian Prasser
+ */
 public class DataTableRowHeaderConfiguration extends DefaultRowHeaderStyleConfiguration {
 
+    /**  TODO */
     private final Image IMAGE_ROW_BACK; //$NON-NLS-1$
+    
+    /**  TODO */
     private final Image IMAGE_ROW_SELECT; //$NON-NLS-1$
 
+    /**
+     * Creates a new instance.
+     *
+     * @param context
+     */
     public DataTableRowHeaderConfiguration(DataTableContext context) {
-        font = GUIHelper.getFont(new FontData("Verdana", 8, SWT.NORMAL)); //$NON-NLS-1$
+        this.font = context.getFont();
         IMAGE_ROW_BACK   = context.getController().getResources().getImage("row_header_bg.png");         //$NON-NLS-1$
         IMAGE_ROW_SELECT = context.getController().getResources().getImage("selected_row_header_bg.png"); //$NON-NLS-1$
         final TextPainter txtPainter = new TextPainter(false, false);
@@ -45,12 +56,11 @@ public class DataTableRowHeaderConfiguration extends DefaultRowHeaderStyleConfig
         cellPainter = bgImagePainter;
     }
 
-    @Override
-    public void configureRegistry(final IConfigRegistry configRegistry) {
-        super.configureRegistry(configRegistry);
-        addSelectedModeStyling(configRegistry);
-    }
-
+    /**
+     * Add selected style.
+     *
+     * @param configRegistry
+     */
     private void addSelectedModeStyling(final IConfigRegistry configRegistry) {
 
         final TextPainter txtPainter = new TextPainter(false, false);
@@ -62,5 +72,14 @@ public class DataTableRowHeaderConfiguration extends DefaultRowHeaderStyleConfig
                                                selectedCellPainter,
                                                DisplayMode.SELECT,
                                                GridRegion.ROW_HEADER);
+    }
+
+    /* (non-Javadoc)
+     * @see org.eclipse.nebula.widgets.nattable.layer.config.DefaultRowHeaderStyleConfiguration#configureRegistry(org.eclipse.nebula.widgets.nattable.config.IConfigRegistry)
+     */
+    @Override
+    public void configureRegistry(final IConfigRegistry configRegistry) {
+        super.configureRegistry(configRegistry);
+        addSelectedModeStyling(configRegistry);
     }
 }

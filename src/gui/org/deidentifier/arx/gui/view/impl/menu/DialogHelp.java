@@ -1,5 +1,5 @@
 /*
- * ARX: Efficient, Stable and Optimal Data Anonymization
+ * ARX: Powerful Data Anonymization
  * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -49,31 +49,73 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 
+/**
+ * A help dialog.
+ *
+ * @author Fabian Prasser
+ */
 public class DialogHelp extends TitleAreaDialog implements IDialog {
 
+    /**  TODO */
     private String           id;
-    private Controller       controller;
+    
+    /**  TODO */
     private Browser          browser;
+    
+    /**  TODO */
     private List             list;
+    
+    /**  TODO */
     private Image            image;
+    
+    /**  TODO */
     private DialogHelpConfig config = new DialogHelpConfig();
 
+    /**
+     * Constructor.
+     *
+     * @param parentShell
+     * @param controller
+     * @param id
+     */
     public DialogHelp(final Shell parentShell, final Controller controller, final String id) {
         super(parentShell);
-        this.controller = controller;
         this.id = id;
         this.image = controller.getResources().getImage("logo_small.png"); //$NON-NLS-1$
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.dialogs.Dialog#close()
+     */
     @Override
-    protected Control createContents(Composite parent) {
-    	Control contents = super.createContents(parent);
-        setTitle(Resources.getMessage("DialogHelp.1")); //$NON-NLS-1$
-        setMessage(Resources.getMessage("DialogHelp.2"), IMessageProvider.INFORMATION); //$NON-NLS-1$
-        if (image!=null) setTitleImage(image); //$NON-NLS-1$
-        return contents;
+    public boolean close() {
+        if (image != null)
+            image.dispose();
+        return super.close();
     }
 
+    /**
+     * Returns the index of a url.
+     *
+     * @param location
+     * @return
+     */
+    private int getIndexOf(String location) {
+        return config.getIndexForUrl(location);
+    }
+
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.window.Window#configureShell(org.eclipse.swt.widgets.Shell)
+     */
+    @Override
+    protected void configureShell(Shell newShell) {
+        super.configureShell(newShell);
+        newShell.setImages(Resources.getIconSet(newShell.getDisplay()));
+    }
+    
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.dialogs.Dialog#createButtonsForButtonBar(org.eclipse.swt.widgets.Composite)
+     */
     @Override
     protected void createButtonsForButtonBar(final Composite parent) {
 
@@ -90,7 +132,22 @@ public class DialogHelp extends TitleAreaDialog implements IDialog {
             }
         });
     }
+    
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.dialogs.TitleAreaDialog#createContents(org.eclipse.swt.widgets.Composite)
+     */
+    @Override
+    protected Control createContents(Composite parent) {
+    	Control contents = super.createContents(parent);
+        setTitle(Resources.getMessage("DialogHelp.1")); //$NON-NLS-1$
+        setMessage(Resources.getMessage("DialogHelp.2"), IMessageProvider.INFORMATION); //$NON-NLS-1$
+        if (image!=null) setTitleImage(image); //$NON-NLS-1$
+        return contents;
+    }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.dialogs.TitleAreaDialog#createDialogArea(org.eclipse.swt.widgets.Composite)
+     */
     @Override
     protected Control createDialogArea(final Composite parent) {
         
@@ -115,10 +172,9 @@ public class DialogHelp extends TitleAreaDialog implements IDialog {
 
         list = new List(form, SWT.SINGLE);
         try {
-            browser = new Browser(form, SWT.NONE);
+            browser = new Browser(form, SWT.BORDER);
         } catch (SWTError e) {
-            controller.actionShowErrorDialog("Error", "Could not open browser");
-            this.close();
+            throw new RuntimeException(e);
         }
         
         for (Entry entry : config.getEntries()) {
@@ -156,29 +212,30 @@ public class DialogHelp extends TitleAreaDialog implements IDialog {
         browser.setUrl(getUrlOf(index));
         return parent;
     }
+    
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.dialogs.TitleAreaDialog#getInitialSize()
+     */
+    @Override
+    protected Point getInitialSize() {
+        return new Point(900,600);
+    }
 
+    /**
+     * Returns the url for an index.
+     *
+     * @param index
+     * @return
+     */
     protected String getUrlOf(int index) {
         return config.getUrlForIndex(index);
     }
-
-    private int getIndexOf(String location) {
-        return config.getIndexForUrl(location);
-    }
-
-    @Override
-    protected Point getInitialSize() {
-        return new Point(800,600);
-    }
-
+    
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.dialogs.Dialog#isResizable()
+     */
     @Override
     protected boolean isResizable() {
-        return false;
-    }
-    
-    @Override
-    public boolean close() {
-        if (image != null)
-            image.dispose();
-        return super.close();
+        return true;
     }
 }

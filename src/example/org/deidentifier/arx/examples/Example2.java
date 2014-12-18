@@ -1,5 +1,5 @@
 /*
- * ARX: Efficient, Stable and Optimal Data Anonymization
+ * ARX: Powerful Data Anonymization
  * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -29,9 +29,10 @@ import org.deidentifier.arx.criteria.KAnonymity;
 
 /**
  * This class implements an example on how to use the API by providing CSV files
- * as input
- * 
- * @author Prasser, Kohlmayer
+ * as input.
+ *
+ * @author Fabian Prasser
+ * @author Florian Kohlmayer
  */
 public class Example2 extends Example {
 
@@ -76,7 +77,7 @@ public class Example2 extends Example {
 
             // Write results
             System.out.print(" - Writing data...");
-            result.getHandle().save("data/test_anonymized.csv", ';');
+            result.getOutput(false).save("data/test_anonymized.csv", ';');
             System.out.println("Done!");
 
         } catch (final IllegalArgumentException e) {

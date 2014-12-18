@@ -1,5 +1,5 @@
 /*
- * ARX: Efficient, Stable and Optimal Data Anonymization
+ * ARX: Powerful Data Anonymization
  * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -19,6 +19,7 @@
 package org.deidentifier.arx.framework.check;
 
 import org.deidentifier.arx.ARXConfiguration;
+import org.deidentifier.arx.ARXConfiguration.ARXConfigurationInternal;
 import org.deidentifier.arx.framework.check.StateMachine.Transition;
 import org.deidentifier.arx.framework.check.distribution.IntArrayDictionary;
 import org.deidentifier.arx.framework.check.groupify.HashGroupify;
@@ -26,15 +27,25 @@ import org.deidentifier.arx.framework.check.groupify.IHashGroupify;
 import org.deidentifier.arx.framework.check.history.History;
 import org.deidentifier.arx.framework.data.Data;
 import org.deidentifier.arx.framework.data.DataManager;
+import org.deidentifier.arx.framework.lattice.Lattice;
 import org.deidentifier.arx.framework.lattice.Node;
+import org.deidentifier.arx.metric.InformationLoss;
+import org.deidentifier.arx.metric.InformationLossWithBound;
 import org.deidentifier.arx.metric.Metric;
 
 /**
- * This class orchestrates the process of checking a node for k-anonymity
- * 
- * @author Prasser, Kohlmayer
+ * This class orchestrates the process of checking a node for k-anonymity.
+ *
+ * @author Fabian Prasser
+ * @author Florian Kohlmayer
  */
 public class NodeChecker implements INodeChecker {
+
+    /** The config. */
+    private final ARXConfigurationInternal config;
+
+    /** The data. */
+    private final Data             data;
 
     /** The current hash groupify. */
     protected IHashGroupify        currentGroupify;
@@ -54,12 +65,6 @@ public class NodeChecker implements INodeChecker {
     /** The data transformer. */
     protected Transformer          transformer;
 
-    /** The data. */
-    private final Data             data;
-
-    /** The config */
-    private final ARXConfiguration config;
-
     /**
      * Creates a new NodeChecker instance.
      * 
@@ -76,37 +81,62 @@ public class NodeChecker implements INodeChecker {
      * @param snapshotSizeSnapshot
      *            The history threshold replacement
      */
-    public NodeChecker(final DataManager manager, final Metric<?> metric, final ARXConfiguration config, final int historyMaxSize, final double snapshotSizeDataset, final double snapshotSizeSnapshot) {
+    public NodeChecker(final DataManager manager, final Metric<?> metric, final ARXConfigurationInternal config, final int historyMaxSize, final double snapshotSizeDataset, final double snapshotSizeSnapshot) {
 
         // Initialize all operators
         this.metric = metric;
         this.config = config;
         this.data = manager.getDataQI();
-        final int initialSize = (int) (manager.getDataQI().getDataLength() * 0.01d);
-
-        final IntArrayDictionary dictionarySensValue;
-        final IntArrayDictionary dictionarySensFreq;
-
+        
+        int initialSize = (int) (manager.getDataQI().getDataLength() * 0.01d);
+        IntArrayDictionary dictionarySensValue;
+        IntArrayDictionary dictionarySensFreq;
         if ((config.getRequirements() & ARXConfiguration.REQUIREMENT_DISTRIBUTION) != 0) {
             dictionarySensValue = new IntArrayDictionary(initialSize);
             dictionarySensFreq = new IntArrayDictionary(initialSize);
         } else {
-            // Just to allow bytecode instrumentation
+            // Just to allow byte code instrumentation
             dictionarySensValue = new IntArrayDictionary(0);
             dictionarySensFreq = new IntArrayDictionary(0);
         }
 
-        this.history = new History(manager.getDataQI().getArray().length, historyMaxSize, snapshotSizeDataset, snapshotSizeSnapshot, config, dictionarySensValue, dictionarySensFreq);
-
+        this.history = new History(manager.getDataQI().getArray().length,
+                                   historyMaxSize,
+                                   snapshotSizeDataset,
+                                   snapshotSizeSnapshot,
+                                   config,
+                                   dictionarySensValue,
+                                   dictionarySensFreq);
+        
         this.stateMachine = new StateMachine(history);
         this.currentGroupify = new HashGroupify(initialSize, config);
         this.lastGroupify = new HashGroupify(initialSize, config);
-
-        this.transformer = new Transformer(manager.getDataQI().getArray(), manager.getHierarchies(), manager.getDataSE().getArray(), config, dictionarySensValue, dictionarySensFreq);
+        this.transformer = new Transformer(manager.getDataQI().getArray(),
+                                           manager.getHierarchies(),
+                                           manager.getDataSE().getArray(),
+                                           config,
+                                           dictionarySensValue,
+                                           dictionarySensFreq);
     }
 
+    /* (non-Javadoc)
+     * @see org.deidentifier.arx.framework.check.INodeChecker#check(org.deidentifier.arx.framework.lattice.Node)
+     */
     @Override
-    public void check(final Node node) {
+    public INodeChecker.Result check(final Node node) {
+        return check(node, false);
+    }
+
+    /* (non-Javadoc)
+     * @see org.deidentifier.arx.framework.check.INodeChecker#check(org.deidentifier.arx.framework.lattice.Node, boolean)
+     */
+    @Override
+    public INodeChecker.Result check(final Node node, final boolean forceMeasureInfoLoss) {
+        
+        // If the result is already know, simply return it
+        if (node.getData() != null && node.getData() instanceof INodeChecker.Result) {
+            return (INodeChecker.Result)node.getData();
+        }
 
         // Store snapshot from last check
         if (stateMachine.getLastNode() != null) {
@@ -120,7 +150,6 @@ public class NodeChecker implements INodeChecker {
         final IHashGroupify temp = lastGroupify;
         lastGroupify = currentGroupify;
         currentGroupify = temp;
-        currentGroupify.clear();
 
         // Apply transition
         switch (transition.type) {
@@ -134,108 +163,125 @@ public class NodeChecker implements INodeChecker {
             currentGroupify = transformer.applySnapshot(transition.projection, node.getTransformation(), currentGroupify, transition.snapshot);
             break;
         }
-
-        // Mark as checked
-        node.setChecked();
-
-        // Propagate k-anonymity
-        node.setKAnonymous(currentGroupify.isKAnonymous());
-
-        // Propagate anonymity and information loss
-        if (currentGroupify.isAnonymous()) {
-            node.setAnonymous(true);
-            metric.evaluate(node, currentGroupify);
-        } else {
-            node.setInformationLoss(null);
-            node.setAnonymous(false);
+        
+        // We are done with transforming and adding
+        currentGroupify.analyze(forceMeasureInfoLoss);
+        if (forceMeasureInfoLoss && !currentGroupify.isAnonymous() && !config.isSuppressionAlwaysEnabled()) {
+            currentGroupify.resetSuppression();
         }
+        
+        // Compute information loss and lower bound
+        InformationLossWithBound<?> result = (currentGroupify.isAnonymous() || forceMeasureInfoLoss) ?
+                                          metric.getInformationLoss(node, currentGroupify) : null;
+        InformationLoss<?> loss = result != null ? result.getInformationLoss() : null;
+        InformationLoss<?> bound = result != null ? result.getLowerBound() : metric.getLowerBound(node, currentGroupify);
+        
+        // Return result;
+        return new INodeChecker.Result(currentGroupify.isAnonymous(), 
+                                       currentGroupify.isKAnonymous(),
+                                       loss,
+                                       bound);
     }
 
+    /* (non-Javadoc)
+     * @see org.deidentifier.arx.framework.check.INodeChecker#getBuffer()
+     */
     @Override
     public Data getBuffer() {
         return new Data(transformer.getBuffer(), data.getHeader(), data.getMap(), data.getDictionary());
     }
 
+    /* (non-Javadoc)
+     * @see org.deidentifier.arx.framework.check.INodeChecker#getConfiguration()
+     */
     @Override
-    public ARXConfiguration getConfiguration() {
+    public ARXConfigurationInternal getConfiguration() {
         return config;
     }
 
+    /* (non-Javadoc)
+     * @see org.deidentifier.arx.framework.check.INodeChecker#getData()
+     */
     @Override
     public Data getData() {
         return data;
     }
 
-    @Override
-    public int getNumberOfGroups() {
-        return currentGroupify.size();
-    }
-
+    /* (non-Javadoc)
+     * @see org.deidentifier.arx.framework.check.INodeChecker#getGroupify()
+     */
     @Override
     public IHashGroupify getGroupify() {
         return currentGroupify;
     }
 
-    @Override
-    public int getNumberOfOutlyingGroups() {
-        return currentGroupify.getGroupOutliersCount();
-    }
-
     /**
-     * Returns the checkers history, if any
+     * Returns the checkers history, if any.
+     *
      * @return
      */
     public History getHistory() {
         return history;
     }
 
+    /* (non-Javadoc)
+     * @see org.deidentifier.arx.framework.check.INodeChecker#getInformationLoss(org.deidentifier.arx.framework.lattice.Node)
+     */
     @Override
     @Deprecated
     public double getInformationLoss(final Node node) {
-        check(node);
-        metric.evaluate(node, currentGroupify);
-        return node.getInformationLoss().getValue();
-
+        throw new UnsupportedOperationException("Not implemented!");
     }
 
+    /* (non-Javadoc)
+     * @see org.deidentifier.arx.framework.check.INodeChecker#getMetric()
+     */
     @Override
     public Metric<?> getMetric() {
         return metric;
     }
 
+    /* (non-Javadoc)
+     * @see org.deidentifier.arx.framework.check.INodeChecker#getNumberOfGroups()
+     */
     @Override
-    public int getNumberOfOutlyingTuples() {
-        return currentGroupify.getTupleOutliersCount();
+    public int getNumberOfGroups() {
+        return currentGroupify.size();
     }
 
+    /* (non-Javadoc)
+     * @see org.deidentifier.arx.framework.check.INodeChecker#applyAndSetProperties(org.deidentifier.arx.framework.lattice.Node)
+     */
     @Override
-    @Deprecated
-    public Data transform(final Node node) {
-
-        throw new RuntimeException("Not implemented!");
-    }
-
-    @Override
-    public Data transformAndMarkOutliers(final Node node) {
+    public TransformedData applyAndSetProperties(final Node transformation) {
 
         // Apply transition and groupify
-        currentGroupify.clear();
-        currentGroupify = transformer.apply(0L, node.getTransformation(), currentGroupify);
-
-        // Determine outliers and set infoloss
-        node.setAnonymous(currentGroupify.isAnonymous());
-        if (!node.isChecked()) {
-            node.setChecked();
-            metric.evaluate(node, currentGroupify);
-            node.setTagged();
+        currentGroupify = transformer.apply(0L, transformation.getTransformation(), currentGroupify);
+        currentGroupify.analyze(true);
+        if (!currentGroupify.isAnonymous() && !config.isSuppressionAlwaysEnabled()) {
+            currentGroupify.resetSuppression();
         }
 
+        // Determine information loss
+        // TODO: This may already be known
+        InformationLoss<?> loss = transformation.getInformationLoss();
+        if (loss == null) {
+            loss = metric.getInformationLoss(transformation, currentGroupify).getInformationLoss();
+        }
+        
         // Find outliers
-        if (config.getAbsoluteMaxOutliers() != 0) {
+        if (config.getAbsoluteMaxOutliers() != 0 || !currentGroupify.isAnonymous()) {
             currentGroupify.markOutliers(transformer.getBuffer());
         }
-
+        
+        // Set properties
+        Lattice lattice = new Lattice(new Node[][]{{transformation}}, 0);
+        lattice.setChecked(transformation, new Result(currentGroupify.isAnonymous(), 
+                                                      currentGroupify.isKAnonymous(),
+                                                      loss,
+                                                      null));
+        
         // Return the buffer
-        return getBuffer();
+        return new TransformedData(getBuffer(), currentGroupify.getGroupStatistics());
     }
 }

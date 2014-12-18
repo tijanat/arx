@@ -1,5 +1,5 @@
 /*
- * ARX: Efficient, Stable and Optimal Data Anonymization
+ * ARX: Powerful Data Anonymization
  * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -29,11 +29,27 @@ import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 
+/**
+ * This class implements a titled border.
+ *
+ * @author Fabian Prasser
+ */
 public class ComponentTitledBorder implements IComponent{
     
+    /**  TODO */
     private final CTabFolder folder;
+    
+    /**  TODO */
     private final CTabItem tab; 
     
+    /**
+     * Creates a new instance.
+     *
+     * @param parent
+     * @param controller
+     * @param title
+     * @param id
+     */
     public ComponentTitledBorder(Composite parent, Controller controller, String title, String id){
 
         folder = new CTabFolder(parent, SWT.TOP | SWT.BORDER | SWT.FLAT);
@@ -59,14 +75,29 @@ public class ComponentTitledBorder implements IComponent{
         folder.setSelection(tab);
     }
     
+    /**
+     * Returns the underlying control.
+     *
+     * @return
+     */
     public Composite getControl(){
         return folder;
     }
     
+    /**
+     * Sets the child control.
+     *
+     * @param child
+     */
     public void setChild(Control child){
         this.tab.setControl(child);
     }
     
+    /**
+     * Sets layout data.
+     *
+     * @param data
+     */
     public void setLayoutData(Object data){
         folder.setLayoutData(data);
     }

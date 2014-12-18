@@ -1,5 +1,5 @@
 /*
- * ARX: Efficient, Stable and Optimal Data Anonymization
+ * ARX: Powerful Data Anonymization
  * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -21,7 +21,6 @@ package org.deidentifier.arx.gui.view.impl.common;
 import org.deidentifier.arx.DataDefinition;
 import org.deidentifier.arx.DataHandle;
 import org.deidentifier.arx.RowSet;
-import org.deidentifier.arx.criteria.DPresence;
 import org.deidentifier.arx.gui.Controller;
 import org.deidentifier.arx.gui.model.ModelEvent;
 import org.deidentifier.arx.gui.model.ModelEvent.ModelPart;
@@ -30,14 +29,16 @@ import org.eclipse.nebula.widgets.nattable.selection.event.CellSelectionEvent;
 import org.eclipse.swt.widgets.Composite;
 
 /**
- * A view on a <code>Data</code> object
- * @author Prasser, Kohlmayer
+ * A view on a <code>Data</code> object.
+ *
+ * @author Fabian Prasser
  */
 public class ViewDataOutput extends ViewData {
 
-    /** 
-     * Creates a new data view
+    /**
      * 
+     * Creates a new data view.
+     *
      * @param parent
      * @param controller
      */
@@ -45,12 +46,67 @@ public class ViewDataOutput extends ViewData {
                          final Controller controller) {
         
         super(parent, controller, Resources.getMessage("AnalyzeView.0")); //$NON-NLS-1
-
-        // Register
-        controller.addListener(ModelPart.INPUT, this);
-        controller.addListener(ModelPart.OUTPUT, this);
     }
     
+    /* (non-Javadoc)
+     * @see org.deidentifier.arx.gui.view.impl.common.ViewData#actionCellSelected(org.eclipse.nebula.widgets.nattable.selection.event.CellSelectionEvent)
+     */
+    @Override
+    protected void actionCellSelected(CellSelectionEvent arg1) {
+    	super.actionCellSelected(arg1);
+    }
+    
+    /* (non-Javadoc)
+     * @see org.deidentifier.arx.gui.view.impl.common.ViewData#actionSort()
+     */
+    @Override
+    protected void actionSort(){
+        controller.actionDataSort(false);
+    }
+
+    /* (non-Javadoc)
+     * @see org.deidentifier.arx.gui.view.impl.common.ViewData#getDefinition()
+     */
+    @Override
+    protected DataDefinition getDefinition() {
+        if (model == null) return null;
+        else return model.getOutputDefinition();
+    }
+
+    /* (non-Javadoc)
+     * @see org.deidentifier.arx.gui.view.impl.common.ViewData#getHandle()
+     */
+    @Override
+    protected DataHandle getHandle() {
+        if (model != null){
+            DataHandle handle = model.getOutput();
+            if (model.getViewConfig().isSubset() && 
+                model.getOutputConfig() != null &&
+                model.getOutputConfig().getConfig() != null) {
+                handle = handle.getView();
+            }
+            return handle;
+        } else {
+            return null;
+        }
+    }
+    
+    /**
+     * Returns the research subset.
+     *
+     * @return
+     */
+    private RowSet getSubset(){
+        if (model != null && model.getOutputConfig() != null){
+            return model.getOutputConfig().getResearchSubset();
+        } else {
+            return null;
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see org.deidentifier.arx.gui.view.impl.common.ViewData#update(org.deidentifier.arx.gui.model.ModelEvent)
+     */
     @Override
     public void update(final ModelEvent event) {
         
@@ -101,6 +157,7 @@ public class ViewDataOutput extends ViewData {
             // Redraw
             table.setEnabled(true);
             table.redraw();
+            this.enableSorting();
 
         } else if (event.part == ModelPart.RESEARCH_SUBSET) {
             
@@ -123,53 +180,6 @@ public class ViewDataOutput extends ViewData {
             table.setGroups(model.getGroups());
             table.setResearchSubset(getSubset());
             table.redraw();
-        }
-    }
-    
-    /**
-     * Returns the research subset
-     */
-    private RowSet getSubset(){
-        if (model != null && model.getOutputConfig() != null){
-            DPresence d = model.getOutputConfig().getCriterion(DPresence.class);
-            if (d != null) {
-                return d.getSubset().getSet();
-            } else {
-                return null;
-            }
-        } else {
-            return null;
-        }
-    }
-
-    @Override
-    protected void actionCellSelected(CellSelectionEvent arg1) {
-        // Empty by design
-    }
-
-    @Override
-    protected void actionSort(){
-        controller.actionDataSort(false);
-    }
-    
-    @Override
-    protected DataDefinition getDefinition() {
-        if (model == null) return null;
-        else return model.getOutput().getDefinition();
-    }
-
-    @Override
-    protected DataHandle getHandle() {
-        if (model != null){
-            DataHandle handle = model.getOutput();
-            if (model.getViewConfig().isSubset() && 
-                model.getOutputConfig() != null &&
-                model.getOutputConfig().getConfig() != null) {
-                handle = handle.getView();
-            }
-            return handle;
-        } else {
-            return null;
         }
     }
 }

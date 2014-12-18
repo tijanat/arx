@@ -1,5 +1,5 @@
 /*
- * ARX: Efficient, Stable and Optimal Data Anonymization
+ * ARX: Powerful Data Anonymization
  * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -27,7 +27,8 @@ import org.deidentifier.arx.framework.lattice.Node;
 /**
  * This class implements the general strategy of the ARX algorithm.
  * 
- * @author Prasser, Kohlmayer
+ * @author Fabian Prasser
+ * @author Florian Kohlmayer
  */
 public class FLASHStrategy implements Comparator<Node> {
 
@@ -37,7 +38,7 @@ public class FLASHStrategy implements Comparator<Node> {
     /** The maximal level in the lattice. */
     private final int        maxlevel;
 
-    /** The maximal level for each qi */
+    /** The maximal level for each qi. */
     private final int[]      maxLevels;
 
     /** The criteria for a node with id 'index'. */
@@ -54,7 +55,10 @@ public class FLASHStrategy implements Comparator<Node> {
     public FLASHStrategy(final Lattice lattice,
                          final GeneralizationHierarchy[] hier) {
 
-        maxLevels = lattice.getMaximumGeneralizationLevels();
+        maxLevels = lattice.getTop().getTransformation().clone();
+        for (int i=0; i < maxLevels.length; i++) {
+            maxLevels[i] ++;
+        }
         distinct = new int[hier.length][];
         for (int i = 0; i < hier.length; i++) {
             distinct[i] = hier[i].getDistinctValues();

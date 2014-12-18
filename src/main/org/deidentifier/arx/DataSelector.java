@@ -1,5 +1,5 @@
 /*
- * ARX: Efficient, Stable and Optimal Data Anonymization
+ * ARX: Powerful Data Anonymization
  * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.deidentifier.arx.DataType.ARXDate;
+import org.deidentifier.arx.DataType.ARXDecimal;
 
 import de.linearbits.objectselector.IAccessor;
 import de.linearbits.objectselector.Selector;
@@ -31,29 +32,35 @@ import de.linearbits.objectselector.SelectorBuilder;
 import de.linearbits.objectselector.datatypes.DataType;
 
 /**
- * A selector for tuples
- * @author Prasser, Kohlmayer
+ * A selector for tuples.
  *
+ * @author Fabian Prasser
+ * @author Florian Kohlmayer
  */
 public class DataSelector {
     
     /**
-     * An accessor for data elements
+     * An accessor for data elements.
+     *
      * @author Fabian Prasser
      */
     private class DataAccessor implements IAccessor<Integer>{
 
-        /** The data handle*/
+        /** The data handle. */
         private final DataHandle handle;
-        /** The data definition*/
+        
+        /** The data definition. */
         private final DataDefinition definition;
-        /** The data types*/
+        
+        /** The data types. */
         private final Map<String, DataType<?>> types;
-        /** The indices*/
+        
+        /** The indices. */
         private final Map<String, Integer> indices;
         
         /**
-         * Creates a new instance
+         * Creates a new instance.
+         *
          * @param data
          */
         protected DataAccessor(Data data){
@@ -63,31 +70,53 @@ public class DataSelector {
             this.indices = getIndices();
         }
         
-        /**
-         * Returns the data types
-         * @return
+        /* (non-Javadoc)
+         * @see de.linearbits.objectselector.IAccessor#exists(java.lang.String)
          */
-        private Map<String, DataType<?>> getTypes() {
-            Map<String, DataType<?>> result = new HashMap<String, DataType<?>>();
-            for (int i=0; i<handle.getNumColumns(); i++){
-                String attribute = handle.getAttributeName(i);
-                org.deidentifier.arx.DataType<?> type = definition.getDataType(attribute);
-                if (type == org.deidentifier.arx.DataType.DECIMAL) {
-                    result.put(attribute, DataType.NUMERIC);
-                } else if (type == org.deidentifier.arx.DataType.STRING) {
-                    result.put(attribute, DataType.STRING);                    
-                } else if (type instanceof org.deidentifier.arx.DataType.ARXDate){
-                    String format = ((ARXDate)type).getFormat();
-                    result.put(attribute, DataType.DATE(format));
-                } else {
-                    result.put(attribute, DataType.STRING);
-                }
-            }
-            return result;
+        @Override
+        public boolean exists(String arg0) {
+            return indices.containsKey(arg0);
+        }
+
+        /* (non-Javadoc)
+         * @see de.linearbits.objectselector.IAccessor#getType(java.lang.String)
+         */
+        @Override
+        public DataType<?> getType(String arg0) {
+            return types.get(arg0);
+        }
+
+        /* (non-Javadoc)
+         * @see de.linearbits.objectselector.IAccessor#getValue(java.lang.Object, java.lang.String)
+         */
+        @Override
+        public Object getValue(Integer arg0, String arg1) {
+            
+            int column = indices.get(arg1);
+            DataType<?> type = types.get(arg1);
+            String value = handle.getValue(arg0, column);
+            return type.fromString(value);
+        }
+
+        /* (non-Javadoc)
+         * @see de.linearbits.objectselector.IAccessor#isDataTypesSupported()
+         */
+        @Override
+        public boolean isDataTypesSupported() {
+            return true;
+        }
+
+        /* (non-Javadoc)
+         * @see de.linearbits.objectselector.IAccessor#isExistanceSupported()
+         */
+        @Override
+        public boolean isExistanceSupported() {
+            return true;
         }
 
         /**
-         * Returns the indices
+         * Returns the indices.
+         *
          * @return
          */
         private Map<String, Integer> getIndices() {
@@ -98,172 +127,234 @@ public class DataSelector {
             return result;
         }
 
-        @Override
-        public boolean exists(String arg0) {
-            return indices.containsKey(arg0);
-        }
-
-        @Override
-        public DataType<?> getType(String arg0) {
-            return types.get(arg0);
-        }
-
-        @Override
-        public Object getValue(Integer arg0, String arg1) {
-            
-            int column = indices.get(arg1);
-            DataType<?> type = types.get(arg1);
-            String value = handle.getValue(arg0, column);
-            return type.fromString(value);
-        }
-
-        @Override
-        public boolean isDataTypesSupported() {
-            return true;
-        }
-
-        @Override
-        public boolean isExistanceSupported() {
-            return true;
+        /**
+         * Returns the data types.
+         *
+         * @return
+         */
+        private Map<String, DataType<?>> getTypes() {
+            Map<String, DataType<?>> result = new HashMap<String, DataType<?>>();
+            for (int i=0; i<handle.getNumColumns(); i++){
+                String attribute = handle.getAttributeName(i);
+                org.deidentifier.arx.DataType<?> type = definition.getDataType(attribute);
+                if (type instanceof org.deidentifier.arx.DataType.ARXDecimal){
+                    String format = ((ARXDecimal)type).getFormat();
+                    result.put(attribute, DataType.NUMERIC(format));
+                } else if (type instanceof org.deidentifier.arx.DataType.ARXInteger) {
+                    result.put(attribute, DataType.NUMERIC);
+                } else if (type instanceof org.deidentifier.arx.DataType.ARXString) {
+                    result.put(attribute, DataType.STRING);                    
+                } else if (type instanceof org.deidentifier.arx.DataType.ARXDate){
+                    String format = ((ARXDate)type).getFormat();
+                    result.put(attribute, DataType.DATE(format));
+                } else {
+                    result.put(attribute, DataType.STRING);
+                }
+            }
+            return result;
         }        
     }
     
-    /** The builder*/
-    private final SelectorBuilder<Integer> builder;
-    /** The selector*/
-    private Selector<Integer> selector = null;
+    /**
+     * 
+     *
+     * @param data
+     * @return
+     */
+    public static DataSelector create(Data data){
+        return new DataSelector(data);
+    }
+    
+    /**
+     * 
+     *
+     * @param data
+     * @param query
+     * @return
+     * @throws ParseException
+     */
+    public static DataSelector create(Data data, String query) throws ParseException{
+        return new DataSelector(data, query);
+    }
    
+    /** The builder. */
+    private final SelectorBuilder<Integer> builder;
+
+    /** The selector. */
+    private Selector<Integer> selector = null;
+
+    /**
+     * 
+     *
+     * @param data
+     */
     private DataSelector(Data data){
         this.builder = new SelectorBuilder<Integer>(new DataAccessor(data)); 
     }
 
+    /**
+     * 
+     *
+     * @param data
+     * @param query
+     * @throws ParseException
+     */
     private DataSelector(Data data, String query) throws ParseException {
         this.builder = new SelectorBuilder<Integer>(new DataAccessor(data), query);
     }
-
-    public static DataSelector create(Data data){
-        return new DataSelector(data);
-    }
-
-    public static DataSelector create(Data data, String query) throws ParseException{
-        return new DataSelector(data, query);
-    }
     
-    public DataSelector field(String name){
-        this.builder.field(name);
-        return this;
-    }
-    
+    /**
+     * 
+     *
+     * @return
+     */
     public DataSelector and(){
         this.builder.and();
         return this;
     }
     
-    public DataSelector or(){
-        this.builder.or();
-        return this;
-    }
-    
+    /**
+     * 
+     *
+     * @return
+     */
     public DataSelector begin(){
         this.builder.begin();
         return this;
     }
     
+    /**
+     * 
+     *
+     * @throws ParseException
+     */
+    public void build() throws ParseException{
+        this.selector = this.builder.build();
+    }
+    
+    /**
+     * 
+     *
+     * @return
+     */
     public DataSelector end(){
         this.builder.end();
         return this;
     }
     
-    /*
-     * NUMERIC
+    /**
+     * 
+     *
+     * @param val
+     * @return
      */
-    public DataSelector leq(final double val){
-        this.builder.leq(val);
-        return this;
-    }
-    
-    public DataSelector geq(final double val){
-        this.builder.geq(val);
-        return this;
-    }
-    
-    public DataSelector less(final double val){
-        this.builder.less(val);
-        return this;
-    }
-    
-    public DataSelector greater(final double val){
-        this.builder.greater(val);
-        return this;
-    }
-    
-    public DataSelector equals(final double val){
-        this.builder.equals(val);
-        return this;
-    }
-    
-    /* **************************************
-     * STRING
-     * **************************************/
-    public DataSelector leq(final String val){
-        this.builder.leq(val);
-        return this;
-    }
-    
-    public DataSelector geq(final String val){
-        this.builder.geq(val);
-        return this;
-    }
-    
-    public DataSelector less(final String val){
-        this.builder.less(val);
-        return this;
-    }
-    
-    public DataSelector greater(final String val){
-        this.builder.greater(val);
-        return this;
-    }
-    
-    public DataSelector equals(final String val){
-        this.builder.equals(val);
-        return this;
-    }
-
-    /* **************************************
-     * Datetime
-     * **************************************/
-    public DataSelector leq(final Date val){
-        this.builder.leq(val);
-        return this;
-    }
-    
-    public DataSelector geq(final Date val){
-        this.builder.geq(val);
-        return this;
-    }
-    
-    public DataSelector less(final Date val){
-        this.builder.less(val);
-        return this;
-    }
-    
-    public DataSelector greater(final Date val){
-        this.builder.greater(val);
-        return this;
-    }
-    
     public DataSelector equals(final Date val){
         this.builder.equals(val);
         return this;
     }
     
-    public void build() throws ParseException{
-        this.selector = this.builder.build();
-    }
-
     /**
-     * Determines whether the given row is selected by the expression
+     * 
+     *
+     * @param val
+     * @return
+     */
+    public DataSelector equals(final double val){
+        this.builder.equals(val);
+        return this;
+    }
+    
+    /**
+     * 
+     *
+     * @param val
+     * @return
+     */
+    public DataSelector equals(final String val){
+        this.builder.equals(val);
+        return this;
+    }
+    
+    /**
+     * 
+     *
+     * @param name
+     * @return
+     */
+    public DataSelector field(String name){
+        this.builder.field(name);
+        return this;
+    }
+    
+    /**
+     * 
+     *
+     * @param val
+     * @return
+     */
+    public DataSelector geq(final Date val){
+        this.builder.geq(val);
+        return this;
+    }
+    
+    /**
+     * 
+     *
+     * @param val
+     * @return
+     */
+    public DataSelector geq(final double val){
+        this.builder.geq(val);
+        return this;
+    }
+    
+    /**
+     * 
+     *
+     * @param val
+     * @return
+     */
+    public DataSelector geq(final String val){
+        this.builder.geq(val);
+        return this;
+    }
+    
+    /**
+     * 
+     *
+     * @param val
+     * @return
+     */
+    public DataSelector greater(final Date val){
+        this.builder.greater(val);
+        return this;
+    }
+    
+    /**
+     * 
+     *
+     * @param val
+     * @return
+     */
+    public DataSelector greater(final double val){
+        this.builder.greater(val);
+        return this;
+    }
+    
+    /**
+     * 
+     *
+     * @param val
+     * @return
+     */
+    public DataSelector greater(final String val){
+        this.builder.greater(val);
+        return this;
+    }
+    
+    /**
+     * Determines whether the given row is selected by the expression.
+     *
      * @param row
      * @return
      */
@@ -276,5 +367,90 @@ public class DataSelector {
             }
         }
         return selector.isSelected(row);
+    }
+
+    /* **************************************
+     * Datetime
+     * **************************************/
+    /**
+     * 
+     *
+     * @param val
+     * @return
+     */
+    public DataSelector leq(final Date val){
+        this.builder.leq(val);
+        return this;
+    }
+    
+    /*
+     * NUMERIC
+     */
+    /**
+     * 
+     *
+     * @param val
+     * @return
+     */
+    public DataSelector leq(final double val){
+        this.builder.leq(val);
+        return this;
+    }
+    
+    /* **************************************
+     * STRING
+     * **************************************/
+    /**
+     * 
+     *
+     * @param val
+     * @return
+     */
+    public DataSelector leq(final String val){
+        this.builder.leq(val);
+        return this;
+    }
+    
+    /**
+     * 
+     *
+     * @param val
+     * @return
+     */
+    public DataSelector less(final Date val){
+        this.builder.less(val);
+        return this;
+    }
+    
+    /**
+     * 
+     *
+     * @param val
+     * @return
+     */
+    public DataSelector less(final double val){
+        this.builder.less(val);
+        return this;
+    }
+    
+    /**
+     * 
+     *
+     * @param val
+     * @return
+     */
+    public DataSelector less(final String val){
+        this.builder.less(val);
+        return this;
+    }
+
+    /**
+     * 
+     *
+     * @return
+     */
+    public DataSelector or(){
+        this.builder.or();
+        return this;
     }
 }

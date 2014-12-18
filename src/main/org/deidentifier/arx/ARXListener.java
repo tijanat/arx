@@ -1,5 +1,5 @@
 /*
- * ARX: Efficient, Stable and Optimal Data Anonymization
+ * ARX: Powerful Data Anonymization
  * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -19,18 +19,18 @@
 package org.deidentifier.arx;
 
 /**
- * This class implements a listener for the ARX framework
- * 
- * @author Prasser, Kohlmayer
+ * This class implements a listener for the ARX framework.
+ *
+ * @author Fabian Prasser
+ * @author Florian Kohlmayer
  */
 public interface ARXListener {
 
     /**
-     * Is called when a node is tagged
-     * 
-     * @param numNodes
-     *            The total number of nodes in the lattice
+     * Is called when a node has been processed.
+     *
+     * @param searchSpaceSize The total number of transformations in the search space
      */
-    public void nodeTagged(int numNodes);
+    public void nodeTagged(int searchSpaceSize);
 
 }

@@ -1,5 +1,5 @@
 /*
- * ARX: Efficient, Stable and Optimal Data Anonymization
+ * ARX: Powerful Data Anonymization
  * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -31,18 +31,27 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * A test case for illegal arguments
- * 
- * @author Prasser, Kohlmayer
+ * A test case for illegal arguments.
+ *
+ * @author Fabian Prasser
+ * @author Florian Kohlmayer
  */
 public class TestIllegalArguments extends AbstractTest {
 
+    /* (non-Javadoc)
+     * @see org.deidentifier.arx.test.AbstractTest#setUp()
+     */
     @Override
     @Before
     public void setUp() {
         super.setUp();
     }
 
+    /**
+     * 
+     *
+     * @throws IOException
+     */
     @Test
     public void testEmptyDatasetWithAttributeDefinition() throws IOException {
         try {
@@ -63,6 +72,11 @@ public class TestIllegalArguments extends AbstractTest {
 
     }
 
+    /**
+     * 
+     *
+     * @throws IOException
+     */
     @Test
     public void testEmptyDatasetWithoutAttributeDefinition() throws IOException {
 
@@ -81,6 +95,11 @@ public class TestIllegalArguments extends AbstractTest {
         Assert.fail();
     }
 
+    /**
+     * 
+     *
+     * @throws IOException
+     */
     @Test
     public void testEmptyDefinition() throws IOException {
 
@@ -97,6 +116,11 @@ public class TestIllegalArguments extends AbstractTest {
         Assert.fail();
     }
 
+    /**
+     * 
+     *
+     * @throws IOException
+     */
     @Test
     public void testEmptyHierarchy() throws IOException {
 
@@ -115,6 +139,9 @@ public class TestIllegalArguments extends AbstractTest {
         Assert.fail();
     }
 
+    /**
+     * 
+     */
     @Test
     public void testHistorySize() {
 
@@ -127,12 +154,16 @@ public class TestIllegalArguments extends AbstractTest {
         Assert.fail();
     }
 
+    /**
+     * 
+     *
+     * @throws IOException
+     */
     @Test
     public void testInvalidHierarchies() throws IOException {
         provider.createWrongDataDefinition();
 
         final ARXAnonymizer anonymizer = new ARXAnonymizer();
-        anonymizer.setSuppressionString("*");
 
         try {
             final ARXConfiguration config = ARXConfiguration.create();
@@ -146,6 +177,11 @@ public class TestIllegalArguments extends AbstractTest {
         Assert.fail();
     }
 
+    /**
+     * 
+     *
+     * @throws IOException
+     */
     @Test
     public void testKRangeNegative() throws IOException {
 
@@ -163,6 +199,11 @@ public class TestIllegalArguments extends AbstractTest {
         Assert.fail();
     }
 
+    /**
+     * 
+     *
+     * @throws IOException
+     */
     @Test
     public void testKRangeTooLarge() throws IOException {
 
@@ -179,6 +220,11 @@ public class TestIllegalArguments extends AbstractTest {
         Assert.fail();
     }
 
+    /**
+     * 
+     *
+     * @throws IOException
+     */
     @Test
     public void testKRangeZero() throws IOException {
 
@@ -195,6 +241,11 @@ public class TestIllegalArguments extends AbstractTest {
         Assert.fail();
     }
 
+    /**
+     * 
+     *
+     * @throws IOException
+     */
     @Test
     public void testMaxOutliersEqualsOne() throws IOException {
 
@@ -211,6 +262,11 @@ public class TestIllegalArguments extends AbstractTest {
         Assert.fail();
     }
 
+    /**
+     * 
+     *
+     * @throws IOException
+     */
     @Test
     public void testMaxOutliersNegative() throws IOException {
 
@@ -227,6 +283,11 @@ public class TestIllegalArguments extends AbstractTest {
         Assert.fail();
     }
 
+    /**
+     * 
+     *
+     * @throws IOException
+     */
     @Test
     public void testMaxOutliersTooLarge() throws IOException {
 
@@ -243,6 +304,9 @@ public class TestIllegalArguments extends AbstractTest {
         Assert.fail();
     }
 
+    /**
+     * 
+     */
     @Test
     public void testMetric() {
 
@@ -255,13 +319,17 @@ public class TestIllegalArguments extends AbstractTest {
         Assert.fail();
     }
 
+    /**
+     * 
+     *
+     * @throws IOException
+     */
     @Test
     public void testMissingHierarchyValue() throws IOException {
         provider.createDataDefinitionMissing();
         final Data data = provider.getData();
 
         final ARXAnonymizer anonymizer = new ARXAnonymizer();
-        anonymizer.setSuppressionString("*");
 
         try {
             final ARXConfiguration config = ARXConfiguration.create();
@@ -274,12 +342,17 @@ public class TestIllegalArguments extends AbstractTest {
         Assert.fail();
     }
 
+    /**
+     * 
+     *
+     * @throws IOException
+     */
     @Test
     public void testNullHierarchy() throws IOException {
         try {
             final ARXAnonymizer anonymizer = new ARXAnonymizer();
             final Data data = provider.getData();
-            data.getDefinition().setAttributeType("age", null);
+            data.getDefinition().setAttributeType("age", (AttributeType)null);
             final ARXConfiguration config = ARXConfiguration.create();
             config.addCriterion(new KAnonymity(2));
             config.setMaxOutliers(1.2d);
@@ -290,6 +363,9 @@ public class TestIllegalArguments extends AbstractTest {
         Assert.fail();
     }
 
+    /**
+     * 
+     */
     @Test
     public void testSnapshotSizeNegative() {
 
@@ -302,6 +378,9 @@ public class TestIllegalArguments extends AbstractTest {
         Assert.fail();
     }
 
+    /**
+     * 
+     */
     @Test
     public void testSnapshotSizeTooLarge() {
 
@@ -314,6 +393,9 @@ public class TestIllegalArguments extends AbstractTest {
         Assert.fail();
     }
 
+    /**
+     * 
+     */
     @Test
     public void testSnapshotSizeZero() {
 
@@ -321,18 +403,6 @@ public class TestIllegalArguments extends AbstractTest {
             final ARXAnonymizer anonymizer = new ARXAnonymizer();
             anonymizer.setMaximumSnapshotSizeDataset(0);
         } catch (final IllegalArgumentException e) {
-            return;
-        }
-        Assert.fail();
-    }
-
-    @Test
-    public void testSuppressionString() {
-
-        try {
-            final ARXAnonymizer anonymizer = new ARXAnonymizer();
-            anonymizer.setSuppressionString(null);
-        } catch (final NullPointerException e) {
             return;
         }
         Assert.fail();

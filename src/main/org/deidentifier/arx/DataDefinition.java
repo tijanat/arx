@@ -1,5 +1,5 @@
 /*
- * ARX: Efficient, Stable and Optimal Data Anonymization
+ * ARX: Powerful Data Anonymization
  * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -25,26 +25,39 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.deidentifier.arx.AttributeType.Hierarchy;
+import org.deidentifier.arx.aggregates.HierarchyBuilder;
+import org.deidentifier.arx.io.ImportAdapter;
+import org.deidentifier.arx.io.ImportConfiguration;
 
 /**
- * Encapsulates a definition of the types of attributes contained in a dataset
- * 
- * @author Prasser, Kohlmayer
+ * Encapsulates a definition of the types of attributes contained in a dataset.
+ *
+ * @author Fabian Prasser
+ * @author Florian Kohlmayer
  */
-public class DataDefinition {
+public class DataDefinition implements Cloneable{
+    
+    /** Is this data definition locked. */
+    private boolean locked = false;
 
-    /** The mapped attribute types */
-    private final Map<String, AttributeType> attributeTypes    = new HashMap<String, AttributeType>();
+    /** The mapped attribute types. */
+    private final Map<String, AttributeType>       attributeTypes    = new HashMap<String, AttributeType>();
 
-    /** The mapped data types */
-    private final Map<String, DataType<?>>   dataTypes         = new HashMap<String, DataType<?>>();
+    /** The mapped attribute types. */
+    private final Map<String, HierarchyBuilder<?>> builders          = new HashMap<String, HierarchyBuilder<?>>();
 
-    /** The mapped minimum generalization */
-    private final Map<String, Integer>       minGeneralization = new HashMap<String, Integer>();
+    /** The mapped data types. */
+    private final Map<String, DataType<?>>         dataTypes         = new HashMap<String, DataType<?>>();
 
-    /** The mapped maximum generalization */
-    private final Map<String, Integer>       maxGeneralization = new HashMap<String, Integer>();
+    /** The mapped minimum generalization. */
+    private final Map<String, Integer>             minGeneralization = new HashMap<String, Integer>();
 
+    /** The mapped maximum generalization. */
+    private final Map<String, Integer>             maxGeneralization = new HashMap<String, Integer>();
+
+    /* (non-Javadoc)
+     * @see java.lang.Object#clone()
+     */
     @Override
     public DataDefinition clone() {
 
@@ -62,13 +75,16 @@ public class DataDefinition {
         for (final String attr : maxGeneralization.keySet()) {
             d.maxGeneralization.put(attr, maxGeneralization.get(attr));
         }
-        
+        for (final String attr : builders.keySet()) {
+            d.builders.put(attr, builders.get(attr));
+        }
+        d.setLocked(this.isLocked());
         return d;
     }
 
     /**
-     * Returns the type defined for the attribute
-     * 
+     * Returns the type defined for the attribute.
+     *
      * @param attribute
      * @return
      */
@@ -77,8 +93,8 @@ public class DataDefinition {
     }
 
     /**
-     * Returns the Datatype for the coulmn name
-     * 
+     * Returns the data type for the given column.
+     *
      * @param columnName
      * @return
      */
@@ -92,52 +108,34 @@ public class DataDefinition {
     }
 
     /**
-     * Returns the data types
-     * 
-     * @return
-     */
-    protected Map<String, DataType<?>> getDataTypes() {
-        return dataTypes;
-    }
-
-    /**
-     * Returns all generalization hierarchies
-     * 
-     * @return
-     */
-    protected Map<String, String[][]> getHierarchies() {
-        final Map<String, String[][]> result = new HashMap<String, String[][]>();
-        for (final Entry<String, AttributeType> entry : attributeTypes.entrySet()) {
-            if (entry.getValue().getType() == AttributeType.ATTR_TYPE_QI) {
-                result.put(entry.getKey(),
-                           ((Hierarchy) entry.getValue()).getHierarchy());
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Returns the according hierarchy
-     * 
+     * Returns the according hierarchy.
+     *
+     * @param attribute
      * @return
      */
     public String[][] getHierarchy(final String attribute) {
-        return ((Hierarchy) attributeTypes.get(attribute)).getHierarchy();
+        checkQuasiIdentifier(attribute);
+        if (!(attributeTypes.get(attribute) instanceof Hierarchy)) {
+            return null;
+        } else {
+            return ((Hierarchy) attributeTypes.get(attribute)).getHierarchy();
+        }
     }
-
+    
     /**
-     * Returns the height of the according hierarchy
-     * 
+     * Returns the associated builder, if any.
+     *
+     * @param attribute
      * @return
      */
-    public int getHierarchyHeight(final String attribute) {
-        if (((Hierarchy) attributeTypes.get(attribute)).getHierarchy().length == 0) { return 0; }
-        return ((Hierarchy) attributeTypes.get(attribute)).getHierarchy()[0].length;
+    public HierarchyBuilder<?> getHierarchyBuilder(final String attribute) {
+        checkQuasiIdentifier(attribute);
+        return builders.get(attribute);
     }
-
+    
     /**
-     * Returns the direct identifiers
-     * 
+     * Returns the direct identifiers.
+     *
      * @return
      */
     public Set<String> getIdentifyingAttributes() {
@@ -149,10 +147,10 @@ public class DataDefinition {
         }
         return result;
     }
-
+    
     /**
-     * Returns the insensitive attributes
-     * 
+     * Returns the insensitive attributes.
+     *
      * @return
      */
     public Set<String> getInsensitiveAttributes() {
@@ -164,41 +162,44 @@ public class DataDefinition {
         }
         return result;
     }
-
+    
     /**
-     * Returns the maximum generalization for the attribute
-     * 
+     * Returns the maximum generalization for the attribute.
+     *
+     * @param attribute
      * @return
      */
     public int getMaximumGeneralization(final String attribute) {
-        if (!maxGeneralization.containsKey(attribute)) {
-            final int max = getHierarchyHeight(attribute) - 1;
-            if (max < 0) {
+        checkQuasiIdentifier(attribute);
+        Integer result = maxGeneralization.get(attribute);
+        if (result != null) return result;
+        if (this.attributeTypes.get(attribute) instanceof Hierarchy) {
+            String[][] hierarchy = getHierarchy(attribute);
+            if (hierarchy.length == 0 || hierarchy[0] == null) {
                 return 0;
             } else {
-                return max;
+                return hierarchy[0].length - 1;
             }
         } else {
-            return maxGeneralization.get(attribute);
+            throw new IllegalStateException("No materialized hierarchy specified for attribute ("+attribute+")");
         }
     }
-
+    
     /**
-     * Returns the minimum generalization for the attribute
-     * 
+     * Returns the minimum generalization for the attribute.
+     *
+     * @param attribute
      * @return
      */
     public int getMinimumGeneralization(final String attribute) {
-        if (!minGeneralization.containsKey(attribute)) {
-            return 0;
-        } else {
-            return minGeneralization.get(attribute);
-        }
+        checkQuasiIdentifier(attribute);
+        Integer result = minGeneralization.get(attribute);
+        return result != null ? result : 0;
     }
 
     /**
-     * Returns the quasi identifying attributes
-     * 
+     * Returns the quasi identifying attributes.
+     *
      * @return
      */
     public Set<String> getQuasiIdentifyingAttributes() {
@@ -212,8 +213,8 @@ public class DataDefinition {
     }
 
     /**
-     * Returns the sensitive attributes
-     * 
+     * Returns the sensitive attributes.
+     *
      * @return
      */
     public Set<String> getSensitiveAttributes() {
@@ -227,54 +228,216 @@ public class DataDefinition {
     }
 
     /**
-     * Define the type of a given attribute
-     * 
+     * Returns whether a hierarchy is available.
+     *
+     * @param attribute
+     * @return
+     */
+    public boolean isHierarchyAvailable(String attribute) {
+        checkQuasiIdentifier(attribute);
+        return attributeTypes.get(attribute) instanceof Hierarchy;
+    }
+
+    /**
+     * Returns whether a hierarchy builder is available.
+     *
+     * @param attribute
+     * @return
+     */
+    public boolean isHierarchyBuilderAvailable(String attribute) {
+        checkQuasiIdentifier(attribute);
+        return builders.containsKey(attribute);
+    }
+
+    /**
+     * Returns whether this definition can be altered.
+     *
+     * @return
+     */
+    public boolean isLocked(){
+        return locked;
+    }
+
+    /**
+     * Returns whether a maximum generalization level is available.
+     *
+     * @param attribute
+     * @return
+     */
+    public boolean isMaximumGeneralizationAvailable(String attribute) {
+        checkQuasiIdentifier(attribute);
+        return maxGeneralization.containsKey(attribute) || (this.attributeTypes.get(attribute) instanceof Hierarchy);
+        
+    }
+
+    /**
+     * Returns whether a minimum generalization level is available.
+     *
+     * @param attribute
+     * @return
+     */
+    public boolean isMinimumGeneralizationAvailable(String attribute) {
+        checkQuasiIdentifier(attribute);
+        return true;
+    }
+
+    /**
+     * Define the type of a given attribute.
+     *
      * @param attribute
      * @param type
      */
     public void setAttributeType(final String attribute,
                                  final AttributeType type) {
     	
-        if (type == null) { throw new NullPointerException("Type must not be null"); }
+        checkLocked();
+        checkNullArgument(type, "Type");
         attributeTypes.put(attribute, type);
     }
 
     /**
-     * Define the datatype of a given attribute
-     * 
+     * Defines the given attribute as a quasi-identifier and stores the functional
+     * representation of the generalization hierarchy.
+     *
+     * @param attribute
+     * @param builder
+     */
+    public void setAttributeType(final String attribute,
+                                 final HierarchyBuilder<?> builder) {
+        
+        checkLocked();
+        checkNullArgument(builder, "Builder");
+        attributeTypes.put(attribute, AttributeType.QUASI_IDENTIFYING_ATTRIBUTE);
+        builders.put(attribute, builder);
+    }
+
+    /**
+     * Define the datatype of a given attribute.
+     *
      * @param attribute
      * @param type
      */
     public void setDataType(final String attribute, final DataType<?> type) {
-        if (type == null) { throw new NullPointerException("Type must not be null"); }
+        
+        checkLocked();
+        checkNullArgument(type, "Type");
         dataTypes.put(attribute, type);
     }
 
     /**
-     * Define the maximal generalization of a given attribute
-     * 
+     * Define the maximal generalization of a given attribute.
+     *
      * @param attribute
-     * @param type
+     * @param maximum
      */
     public void setMaximumGeneralization(final String attribute,
                                          final int maximum) {
-    	if (!(this.getAttributeType(attribute) instanceof Hierarchy)){
-    		throw new IllegalArgumentException("Restrictions can only be applied to QIs with generalization hierarchies");
-    	}
+        
+        checkLocked();
         maxGeneralization.put(attribute, maximum);
     }
 
     /**
-     * Define the minimal generalization of a given attribute
-     * 
+     * Define the minimal generalization of a given attribute.
+     *
      * @param attribute
-     * @param type
+     * @param minimum
      */
     public void setMinimumGeneralization(final String attribute,
                                          final int minimum) {
-    	if (!(this.getAttributeType(attribute) instanceof Hierarchy)){
-    		throw new IllegalArgumentException("Restrictions can only be applied to QIs with generalization hierarchies");
-    	}
+        
+        checkLocked();
         minGeneralization.put(attribute, minimum);
+    }
+
+    /**
+     * Checks whether this handle is locked.
+     *
+     * @throws IllegalStateException
+     */
+    private void checkLocked() throws IllegalStateException{
+        if (locked) {throw new IllegalStateException("This definition is currently locked");}
+    }
+    
+    /**
+     * Checks whether the argument is null.
+     *
+     * @param argument
+     * @param name
+     * @throws IllegalArgumentException
+     */
+    private void checkNullArgument(Object argument, String name) throws IllegalArgumentException {
+        if (argument == null) { throw new NullPointerException(name + " must not be null"); }
+    }
+    
+    /**
+     * Checks whether the attribute is a quasi-identifier.
+     *
+     * @param attribute
+     * @throws IllegalArgumentException
+     */
+    private void checkQuasiIdentifier(String attribute) throws IllegalArgumentException {
+        if (attributeTypes.get(attribute) == null ||
+            attributeTypes.get(attribute).getType() != AttributeType.ATTR_TYPE_QI) {
+            throw new IllegalArgumentException("Attribute ("+attribute+") is not a quasi-identifier");
+        }
+    }
+
+    /**
+     * Materializes all functional hierarchies.
+     *
+     * @param handle
+     */
+    protected void materialize(DataHandle handle) {
+        
+        // For each qi
+        for (String qi : this.getQuasiIdentifyingAttributes()) {
+            
+            // If no hierarchy is available
+            if (!isHierarchyAvailable(qi)) {
+                
+                // Obtain data
+                String[] data = handle.getDistinctValues(handle.getColumnIndexOf(qi));
+                
+                // If builder is available
+                if (isHierarchyBuilderAvailable(qi)) {
+                    // Compute and store hierarchy
+                    try {
+                        this.attributeTypes.put(qi, this.getHierarchyBuilder(qi).build(data));
+                    } catch (Exception e) {
+                        throw new IllegalStateException("Error building hierarchy for attribute ("+qi+")", e);
+                    }
+                } else {
+                    // Create empty hierarchy
+                    String[][] hierarchy = new String[data.length][];
+                    for (int i=0; i<data.length; i++) {
+                        hierarchy[i] = new String[]{data[i]};
+                    }
+                    this.attributeTypes.put(qi, Hierarchy.create(hierarchy));
+                }
+            }
+        }
+    }
+
+    /**
+     * Parses the configuration of the import adapter.
+     *
+     * @param adapter
+     */
+    protected void parse(ImportAdapter adapter) {
+        String[] header = adapter.getHeader();
+        ImportConfiguration config = adapter.getConfig();
+        for (int i=0; i<config.getColumns().size(); i++){
+            this.setDataType(header[i], config.getColumns().get(i).getDataType());
+        }
+    }
+    
+    /**
+     * Lock/unlock the definition.
+     *
+     * @param locked
+     */
+    protected void setLocked(boolean locked){
+        this.locked = locked;
     }
 }

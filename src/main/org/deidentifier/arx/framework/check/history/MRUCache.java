@@ -1,5 +1,5 @@
 /*
- * ARX: Efficient, Stable and Optimal Data Anonymization
+ * ARX: Powerful Data Anonymization
  * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -23,17 +23,18 @@ import java.util.Iterator;
 
 /**
  * The Class MRUCache.
- * 
- * @param <T>
- *            the generic type
- * @author Prasser, Kohlmayer
+ *
+ * @author Fabian Prasser
+ * @author Florian Kohlmayer
+ * @param <T> the generic type
  */
 public class MRUCache<T> {
 
     /**
      * The Class MRULinkedListIterator.
      * 
-     * @author Prasser, Kohlmayer
+     * @author Fabian Prasser
+ * @author Florian Kohlmayer
      */
     public class MRULinkedListIterator implements Iterator<T> {
 
@@ -162,7 +163,7 @@ public class MRUCache<T> {
      * 
      * @return the first
      */
-    public MRUCacheEntry<T> getFirst() {
+    public MRUCacheEntry<T> getHead() {
         return first;
     }
 

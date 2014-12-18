@@ -1,5 +1,5 @@
 /*
- * ARX: Efficient, Stable and Optimal Data Anonymization
+ * ARX: Powerful Data Anonymization
  * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -21,7 +21,8 @@
  * k-anonymity and d-presence are implicit privacy criteria, i.e., they are implicitly bound to the
  * quasi-identifiers, while the other criteria are explicitly bound to a specific sensitive attribute.
  * 
- * @author Prasser, Kohlmayer
+ * @author Fabian Prasser
+ * @author Florian Kohlmayer
  */
 package org.deidentifier.arx.criteria;
 

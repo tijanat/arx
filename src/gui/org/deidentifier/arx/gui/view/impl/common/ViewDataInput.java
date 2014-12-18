@@ -1,5 +1,5 @@
 /*
- * ARX: Efficient, Stable and Optimal Data Anonymization
+ * ARX: Powerful Data Anonymization
  * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -30,14 +30,16 @@ import org.eclipse.nebula.widgets.nattable.selection.event.CellSelectionEvent;
 import org.eclipse.swt.widgets.Composite;
 
 /**
- * A view on a <code>Data</code> object
- * @author Prasser, Kohlmayer
+ * A view on a <code>Data</code> object.
+ *
+ * @author Fabian Prasser
  */
 public class ViewDataInput extends ViewData {
 
-    /** 
-     * Creates a new data view
+    /**
      * 
+     * Creates a new data view.
+     *
      * @param parent
      * @param controller
      */
@@ -48,11 +50,83 @@ public class ViewDataInput extends ViewData {
 
         // Register
         controller.addListener(ModelPart.RESEARCH_SUBSET, this);
-        controller.addListener(ModelPart.INPUT, this);
         controller.addListener(ModelPart.RESULT, this);
         controller.addListener(ModelPart.ATTRIBUTE_TYPE, this);
     }
     
+    /* (non-Javadoc)
+     * @see org.deidentifier.arx.gui.view.impl.common.ViewData#actionCellSelected(org.eclipse.nebula.widgets.nattable.selection.event.CellSelectionEvent)
+     */
+    @Override
+    protected void actionCellSelected(CellSelectionEvent arg1) {
+
+    	super.actionCellSelected(arg1);
+    	
+        if (model == null) return;
+        
+        int column = arg1.getColumnPosition();
+        int row = arg1.getRowPosition();
+        if (column == 0 && row >= 0) {
+
+            // Remap row index if showing the subset
+            if (table.getData() instanceof DataHandleSubset) {
+                int[] subset = ((DataHandleSubset) table.getData()).getSubset();
+                row = subset[row];
+            }
+
+            // Perform change
+            RowSet subset = model.getInputConfig().getResearchSubset();
+            if (subset.contains(row)) {
+                subset.remove(row);
+            } else {
+                subset.add(row);
+            }
+            
+            // Fire event
+            model.setSubsetManual();
+            controller.update(new ModelEvent(this,  ModelPart.RESEARCH_SUBSET, subset));
+        }
+    }
+    
+    /* (non-Javadoc)
+     * @see org.deidentifier.arx.gui.view.impl.common.ViewData#actionSort()
+     */
+    @Override
+    protected void actionSort(){
+        controller.actionDataSort(true);
+    }
+
+    /* (non-Javadoc)
+     * @see org.deidentifier.arx.gui.view.impl.common.ViewData#getDefinition()
+     */
+    @Override
+    protected DataDefinition getDefinition() {
+        if (model == null) return null;
+        else return model.getInputDefinition();
+    }
+
+    /* (non-Javadoc)
+     * @see org.deidentifier.arx.gui.view.impl.common.ViewData#getHandle()
+     */
+    @Override
+    protected DataHandle getHandle() {
+        if (model != null){
+            DataHandle handle = model.getInputConfig().getInput().getHandle();
+            
+            if (model.getViewConfig().isSubset() && 
+                model.getOutputConfig() != null &&
+                model.getOutputConfig().getConfig() != null) {
+                handle = handle.getView();
+            }
+            return handle;
+        } else {
+            return null;
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see org.deidentifier.arx.gui.view.impl.common.ViewData#update(org.deidentifier.arx.gui.model.ModelEvent)
+     */
     @Override
     public void update(final ModelEvent event) {
         
@@ -98,6 +172,7 @@ public class ViewDataInput extends ViewData {
             // Redraw
             table.setEnabled(true);
             table.redraw();
+            this.enableSorting();
 
         } else if (event.part == ModelPart.RESEARCH_SUBSET) {
             
@@ -143,62 +218,6 @@ public class ViewDataInput extends ViewData {
                     table.redraw();
                 }
             }
-        }
-    }
-    
-    @Override
-    protected void actionCellSelected(CellSelectionEvent arg1) {
-
-        if (model == null) return;
-        
-        int column = arg1.getColumnPosition();
-        int row = arg1.getRowPosition();
-        if (column == 0 && row >= 0) {
-
-            // Remap row index if showing the subset
-            if (table.getData() instanceof DataHandleSubset) {
-                int[] subset = ((DataHandleSubset) table.getData()).getSubset();
-                row = subset[row];
-            }
-
-            // Perform change
-            RowSet subset = model.getInputConfig().getResearchSubset();
-            if (subset.contains(row)) {
-                subset.remove(row);
-            } else {
-                subset.add(row);
-            }
-            
-            // Fire event
-            model.setSubsetManual();
-            controller.update(new ModelEvent(this,  ModelPart.RESEARCH_SUBSET, subset));
-        }
-    }
-
-    @Override
-    protected void actionSort(){
-        controller.actionDataSort(true);
-    }
-
-    @Override
-    protected DataDefinition getDefinition() {
-        if (model == null) return null;
-        else return model.getInputConfig().getInput().getDefinition();
-    }
-
-    @Override
-    protected DataHandle getHandle() {
-        if (model != null){
-            DataHandle handle = model.getInputConfig().getInput().getHandle();
-            
-            if (model.getViewConfig().isSubset() && 
-                model.getOutputConfig() != null &&
-                model.getOutputConfig().getConfig() != null) {
-                handle = handle.getView();
-            }
-            return handle;
-        } else {
-            return null;
         }
     }
 }

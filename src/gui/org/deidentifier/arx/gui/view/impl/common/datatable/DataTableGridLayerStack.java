@@ -1,5 +1,5 @@
 /*
- * ARX: Efficient, Stable and Optimal Data Anonymization
+ * ARX: Powerful Data Anonymization
  * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -28,15 +28,28 @@ import org.eclipse.nebula.widgets.nattable.data.IDataProvider;
 import org.eclipse.nebula.widgets.nattable.grid.data.DefaultColumnHeaderDataProvider;
 import org.eclipse.nebula.widgets.nattable.grid.data.DefaultCornerDataProvider;
 import org.eclipse.nebula.widgets.nattable.grid.data.DefaultRowHeaderDataProvider;
+import org.eclipse.swt.widgets.Control;
 
+/**
+ * A grid layer stack for the data view.
+ *
+ * @author Fabian Prasser
+ */
 public class DataTableGridLayerStack extends DataTableGridLayer {
 
-    public DataTableGridLayerStack(final IDataProvider bodyDataProvider, NatTable table, DataTableContext context) {
+    /**
+     * Creates a new instance.
+     *
+     * @param bodyDataProvider
+     * @param table
+     * @param context
+     * @param parent
+     */
+    public DataTableGridLayerStack(final IDataProvider bodyDataProvider, NatTable table, DataTableContext context, Control parent) {
         super(true, table, context);
         List<String> lcolumns = new ArrayList<String>();
         RowSet rows = context.getRows();
         DataHandle handle = context.getHandle();
-        String[][] data = context.getArray();
         if (bodyDataProvider.getColumnCount() != 0) {
             if (rows != null) {
                 lcolumns.add("");
@@ -45,17 +58,13 @@ public class DataTableGridLayerStack extends DataTableGridLayer {
                 for (int i = 0; i < handle.getNumColumns(); i++) {
                     lcolumns.add(handle.getAttributeName(i));
                 }
-            } else if (data != null) {
-                for (int i = 0; i < data[0].length; i++) {
-                    lcolumns.add(data[0][i]);
-                }
-            }
+            } 
         }
         String[] columns = lcolumns.toArray(new String[] {});
-        final IDataProvider columnHeaderDataProvider = new DefaultColumnHeaderDataProvider(columns);
-        final IDataProvider rowHeaderDataProvider = new DefaultRowHeaderDataProvider(bodyDataProvider);
-        final IDataProvider cornerDataProvider = new DefaultCornerDataProvider(columnHeaderDataProvider,
-                                                                               rowHeaderDataProvider);
-        init(bodyDataProvider, columnHeaderDataProvider, rowHeaderDataProvider, cornerDataProvider);
+        final IDataProvider columnHeaderDataProvider = new DataTableDataProvider(new DefaultColumnHeaderDataProvider(columns));
+        final IDataProvider rowHeaderDataProvider = new DataTableDataProvider(new DefaultRowHeaderDataProvider(bodyDataProvider));
+        final IDataProvider cornerDataProvider = new DataTableDataProvider(new DefaultCornerDataProvider(columnHeaderDataProvider,
+                                                                               rowHeaderDataProvider));
+        init(bodyDataProvider, columnHeaderDataProvider, rowHeaderDataProvider, cornerDataProvider, parent);
     }
 }

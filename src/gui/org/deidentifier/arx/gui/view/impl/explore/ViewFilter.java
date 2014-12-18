@@ -1,5 +1,5 @@
 /*
- * ARX: Efficient, Stable and Optimal Data Anonymization
+ * ARX: Powerful Data Anonymization
  * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -18,210 +18,418 @@
 
 package org.deidentifier.arx.gui.view.impl.explore;
 
-import org.deidentifier.arx.ARXLattice;
-import org.deidentifier.arx.ARXLattice.ARXNode;
-import org.deidentifier.arx.ARXLattice.Anonymity;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.deidentifier.arx.ARXResult;
+import org.deidentifier.arx.DataDefinition;
 import org.deidentifier.arx.gui.Controller;
 import org.deidentifier.arx.gui.model.Model;
 import org.deidentifier.arx.gui.model.ModelEvent;
-import org.deidentifier.arx.gui.model.ModelNodeFilter;
 import org.deidentifier.arx.gui.model.ModelEvent.ModelPart;
+import org.deidentifier.arx.gui.model.ModelNodeFilter;
 import org.deidentifier.arx.gui.resources.Resources;
 import org.deidentifier.arx.gui.view.SWTUtil;
 import org.deidentifier.arx.gui.view.def.IView;
-import org.deidentifier.arx.gui.view.impl.common.ComponentTitledBorder;
+import org.deidentifier.arx.gui.view.impl.common.ComponentFilterTable;
+import org.deidentifier.arx.gui.view.impl.common.ComponentTitledFolderButton;
+import org.deidentifier.arx.gui.view.impl.common.ComponentTitledFolder;
+import org.eclipse.jface.layout.GridDataFactory;
+import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Scale;
-import org.eclipse.swt.widgets.Table;
-import org.eclipse.swt.widgets.TableColumn;
-import org.eclipse.swt.widgets.TableItem;
 
+/**
+ * This class displays a filter for the lattice.
+ *
+ * @author Fabian Prasser
+ */
 public class ViewFilter implements IView {
 
+    /** Scale size. */
     private static final int SCALE_MAX_VALUE = 1000;
+
+    /** Image. */
+    private final Image          IMG_RESET;
+
+    /** Image. */
+    private final Image          IMG_OPTIMUM;
+
+    /** Widget. */
+    private Composite            root;
     
-    private final Image      IMG_RED;
-    private final Image      IMG_GREEN;
-    private final Image      IMG_ORANGE;
+    /** Widget. */
+    private ComponentFilterTable generalization;
+    
+    /** Widget. */
+    private Button               anonymous;
+    
+    /** Widget. */
+    private Button               nonanonymous;
+    
+    /** Widget. */
+    private Button               unknown;
+    
+    /** Widget. */
+    private Scale                max;
+    
+    /** Widget. */
+    private Scale                min;
 
-    private final Controller controller;
-    private ModelNodeFilter  filter = null;
-    private int[]            maxlevels;
-    private ARXResult        result;
-    private Combo            attribute;
-    private Combo            anonymous;
-    private Combo            notanonymous;
-    private Combo            unknown;
-    private Scale            min;
-    private Scale            max;
-    private Table            generalization;
-    private int              selectedDimension;
-    private Model            model;
-    private final Composite  root;
+    /** Model. */
+    private Controller           controller;
+    
+    /** Model. */
+    private ModelNodeFilter      filter          = null;
+    
+    /** Model. */
+    private Model                model           = null;
+    
+    /** Model. */
+    private ARXResult            result          = null;
 
+    /**
+     * Creates a new instance.
+     *
+     * @param parent
+     * @param controller
+     */
     public ViewFilter(final Composite parent, final Controller controller) {
 
+        // Listen
         this.controller = controller;
         this.controller.addListener(ModelPart.RESULT, this);
         this.controller.addListener(ModelPart.INPUT, this);
         this.controller.addListener(ModelPart.MODEL, this);
         this.controller.addListener(ModelPart.FILTER, this);
 
-        IMG_RED = controller.getResources().getImage("red.gif"); //$NON-NLS-1$
-        IMG_GREEN = controller.getResources().getImage("green.gif"); //$NON-NLS-1$
-        IMG_ORANGE = controller.getResources().getImage("orange.gif"); //$NON-NLS-1$
+        // Images
+        IMG_RESET = controller.getResources().getImage("arrow_refresh.png"); //$NON-NLS-1$
+        IMG_OPTIMUM = controller.getResources().getImage("bullet_yellow.png"); //$NON-NLS-1$
 
-        // Create group
-        ComponentTitledBorder border = new ComponentTitledBorder(parent, controller, Resources.getMessage("NodeFilterView.3"), "id-21"); //$NON-NLS-1$
-        root = new Composite(border.getControl(), SWT.NONE);
-        border.setChild(root);
+        // Bar
+        ComponentTitledFolderButton bar = new ComponentTitledFolderButton("id-21"); //$NON-NLS-1$
+        bar.add("Show optimum", IMG_OPTIMUM, new Runnable(){
+            public void run() {
+                actionShowOptimum();
+            }
+        });
+        bar.add("Reset", IMG_RESET, new Runnable(){
+            public void run() {
+                actionReset();
+            }
+        });
+
+        // Border
+        ComponentTitledFolder border = new ComponentTitledFolder(parent, controller,  bar, null); //$NON-NLS-1$
         border.setLayoutData(SWTUtil.createFillGridData());
-        final GridLayout groupLayout = new GridLayout();
-        groupLayout.numColumns = 3;
+        
+        // Create root
+        root = border.createItem(Resources.getMessage("NodeFilterView.3"), //$NON-NLS-1$
+                                 null);
+        
+        GridLayout groupLayout = new GridLayout();
+        groupLayout.numColumns = 2;
         root.setLayout(groupLayout);
 
         create(root);
-
+        
+        border.setSelection(0);
+        border.setEnabled(true);
         reset();
     }
 
+    /* (non-Javadoc)
+     * @see org.deidentifier.arx.gui.view.def.IView#dispose()
+     */
+    @Override
+    public void dispose() {
+        controller.removeListener(this);
+        IMG_RESET.dispose();
+        IMG_OPTIMUM.dispose();
+    }
+    
+    /* (non-Javadoc)
+     * @see org.deidentifier.arx.gui.view.def.IView#reset()
+     */
+    @Override
+    public void reset() {
+        filter = null;
+        result = null;
+        anonymous.setSelection(false);
+        nonanonymous.setSelection(false);
+        unknown.setSelection(false);
+        min.setSelection(min.getMinimum());
+        max.setSelection(max.getMaximum());
+        min.setEnabled(false);
+        max.setEnabled(false);
+        generalization.clear();
+        SWTUtil.disable(root);
+    }
+
+    /* (non-Javadoc)
+     * @see org.deidentifier.arx.gui.view.def.IView#update(org.deidentifier.arx.gui.model.ModelEvent)
+     */
+    @Override
+    public void update(final ModelEvent event) {
+        if (event.part == ModelPart.INPUT) {
+            reset();
+        } else if (event.part == ModelPart.RESULT) {
+            if (model.getResult() == null || model.getResult().getLattice() == null){
+                reset();
+                SWTUtil.disable(root);
+            } else {
+                initialize(model.getResult(), null);
+                SWTUtil.enable(root);
+            }
+        } else if (event.part == ModelPart.MODEL) {
+            model = (Model) event.data;
+            reset();
+        } else if (event.part == ModelPart.FILTER) {
+            // Only update if we receive a new filter
+            if ((filter == null) || (model.getNodeFilter() != filter)) {
+                if (model.getResult() == null || model.getResult().getLattice() == null){
+                    reset();
+                    SWTUtil.disable(root);
+                } else {
+                    initialize(model.getResult(), model.getNodeFilter());
+                    SWTUtil.enable(root);
+                }
+            }
+        }
+    }
+
+    /**
+     * Action.
+     */
+    private void actionAnonymousChanged() {
+        if (filter != null) {
+            if (!anonymous.getSelection()) filter.disallowAnonymous();
+            else filter.allowAnonymous();
+            fireModelEvent();
+        }
+    }
+
+    /**
+     * Action.
+     */
+    private void actionMaxInfoLossChanged() {
+        if (filter != null) {
+            double maxLoss = (double)max.getSelection() / (double)SCALE_MAX_VALUE;
+            double minLoss = filter.getAllowedMinInformationLoss();
+            filter.allowInformationLoss(minLoss, maxLoss);
+            fireModelEvent();
+        }
+    }
+
+    /**
+     * Action.
+     */
+    private void actionMinInfoLossChanged() {
+        if (filter != null) {
+            double minLoss = (double)min.getSelection() / (double)SCALE_MAX_VALUE;
+            double maxLoss = filter.getAllowedMaxInformationLoss();
+            filter.allowInformationLoss(minLoss, maxLoss);
+            fireModelEvent();
+        }
+    }
+
+    /**
+     * Action.
+     */
+    private void actionNonAnonymousChanged() {
+        if (filter != null) {
+            if (!nonanonymous.getSelection()) filter.disallowNonAnonymous();
+            else filter.allowNonAnonymous();
+            fireModelEvent();
+        }
+    }
+
+    /**
+     * Action.
+     */
+    private void actionReset() {
+        if (filter != null) {
+
+            // Create ordered list of qis
+            DataDefinition definition = model.getOutputDefinition();
+            if (definition == null) {
+                reset();
+                return;
+            }
+
+            List<String> attributes = new ArrayList<String>();
+            attributes.addAll(definition.getQuasiIdentifyingAttributes());
+            Collections.sort(attributes, new Comparator<String>(){
+                public int compare(String arg0, String arg1) {
+                    return model.getOutput().getColumnIndexOf(arg0)-
+                           model.getOutput().getColumnIndexOf(arg1);
+                }
+            });
+            
+
+            int dimension=0;
+            for (String attribute : attributes) {
+                int attributeMin = definition.getMinimumGeneralization(attribute);
+                int attributeMax = definition.getMaximumGeneralization(attribute);
+                for (int i=attributeMin; i<=attributeMax; i++){
+                    filter.allowGeneralization(dimension, i);
+                }
+                dimension++;
+            }
+
+            filter.allowAllInformationLoss();
+            filter.allowAnonymous();
+            filter.allowNonAnonymous();
+            filter.allowUnknown();
+            
+            update();
+            fireModelEvent();
+        }
+    }
+
+    /**
+     * Action.
+     */
+    private void actionShowOptimum() {
+        if (filter != null) {
+            filter.initialize(model.getResult());
+            update();
+            fireModelEvent();
+        }
+    }
+    
+    /**
+     * Action.
+     */
+    private void actionUnknownChanged() {
+        if (filter != null) {
+            if (!unknown.getSelection()) filter.disallowUnknown();
+            else filter.allowUnknown();
+            fireModelEvent();
+        }
+    }
+    
+    /**
+     * Creates the view.
+     *
+     * @param parent
+     */
     private void create(final Composite parent) {
 
-        final IView outer = this;
-        final Label tableItem1 = new Label(parent, SWT.NONE);
-        tableItem1.setText(Resources.getMessage("NodeFilterView.4")); //$NON-NLS-1$
-        attribute = new Combo(parent, SWT.BORDER);
-        attribute.pack();
-        attribute.setLayoutData(SWTUtil.createFillHorizontallyGridData());
-        attribute.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(final SelectionEvent arg0) {
-                if (attribute.getSelectionIndex() != -1) {
-                    if (result != null) {
-                        createGeneralization(result.getLattice()
-                                                   .getBottom()
-                                                   .getQuasiIdentifyingAttributes()[attribute.getSelectionIndex()]);
-                    }
-                }
-            }
-        });
-
         // Add table
-        generalization = new Table(parent, SWT.CHECK | SWT.BORDER |
-                                           SWT.V_SCROLL | SWT.SINGLE);
-        final GridData d = SWTUtil.createFillVerticallyGridData();
-        d.verticalSpan = 6;
-        generalization.setLayoutData(d);
-        generalization.setHeaderVisible(true);
-        generalization.setLinesVisible(true);
-        final TableColumn col = new TableColumn(generalization, SWT.NONE);
-        col.setText(Resources.getMessage("NodeFilterView.5")); //$NON-NLS-1$
-        col.pack();
-        generalization.pack();
-
-        generalization.addListener(SWT.Selection, new Listener() {
-            @Override
-            public void handleEvent(Event event) {
-
-                if (event.detail == SWT.CHECK &&
-                    event.item instanceof TableItem) {
-
-                    if (filter != null) {
-                        final int level = generalization.indexOf((TableItem) event.item);
-                        if (generalization.getItems()[level].getChecked()) {
-                            filter.allowGeneralization(selectedDimension, level);
+        generalization = new ComponentFilterTable(parent, controller, new ArrayList<String>());
+        GridData data = SWTUtil.createFillGridData();
+        data.heightHint = 70;
+        data.horizontalSpan = 2;
+        generalization.setLayoutData(data);
+        generalization.addSelectionListener(new SelectionAdapter() {
+            public void widgetSelected(SelectionEvent arg0) {
+                    if (filter != null && 
+                        generalization.getSelectedEntry() != null &&
+                        generalization.getSelectedProperty() != null) {
+                        
+                        String entry = generalization.getSelectedEntry();
+                        String property = generalization.getSelectedProperty();
+                        int dimension = generalization.getEntries().indexOf(entry);
+                        int level = Integer.valueOf(property);
+                        boolean enabled = generalization.isSelected(entry, property);
+                        
+                        if (enabled) {
+                            filter.allowGeneralization(dimension, level);
                         } else {
-                            filter.disallowGeneralization(selectedDimension,
-                                                          level);
+                            filter.disallowGeneralization(dimension, level);
                         }
                     }
-                    controller.update(new ModelEvent(outer,
-                                                     ModelPart.FILTER,
-                                                     filter));
+                    fireModelEvent();
                 }
-            }
-        });
+            });
 
-        final Label tableItem2 = new Label(parent, SWT.NONE);
-        tableItem2.setText(Resources.getMessage("NodeFilterView.6")); //$NON-NLS-1$
-        anonymous = new Combo(parent, SWT.BORDER);
-        anonymous.add(Resources.getMessage("NodeFilterView.7")); //$NON-NLS-1$
-        anonymous.add(Resources.getMessage("NodeFilterView.8")); //$NON-NLS-1$
-        anonymous.pack();
-        anonymous.setLayoutData(SWTUtil.createFillHorizontallyGridData());
+        Composite composite = new Composite(parent, SWT.NONE);
+        GridData gdata = SWTUtil.createFillHorizontallyGridData();
+        gdata.horizontalSpan = 2;
+        composite.setLayoutData(gdata);
+        composite.setLayout(GridLayoutFactory.swtDefaults().numColumns(6)
+                                             .spacing(0, 0).margins(0, 0).create());
+        
+        anonymous = new Button(composite, SWT.CHECK | SWT.NO_FOCUS);
+        anonymous.setLayoutData(GridDataFactory.swtDefaults().grab(false, false).create());
+        anonymous.setToolTipText("Anonymous");
+        anonymous.setText("");
+        anonymous.setSelection(false);
         anonymous.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(final SelectionEvent arg0) {
-                if (filter != null) {
-                    if (anonymous.getSelectionIndex() == 0) {
-                        filter.allowAnonymous();
-                    } else {
-                        filter.disallowAnonymous();
-                    }
-                    controller.update(new ModelEvent(outer,
-                                                     ModelPart.FILTER,
-                                                     filter));
-                }
+            public void widgetSelected(SelectionEvent arg0) {
+               actionAnonymousChanged();
             }
         });
-
-        final Label tableItem3 = new Label(parent, SWT.NONE);
-        tableItem3.setText(Resources.getMessage("NodeFilterView.9")); //$NON-NLS-1$
-        notanonymous = new Combo(parent, SWT.BORDER);
-        notanonymous.add(Resources.getMessage("NodeFilterView.10")); //$NON-NLS-1$
-        notanonymous.add(Resources.getMessage("NodeFilterView.11")); //$NON-NLS-1$
-        notanonymous.pack();
-        notanonymous.setLayoutData(SWTUtil.createFillHorizontallyGridData());
-        notanonymous.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(final SelectionEvent arg0) {
-                if (filter != null) {
-                    if (notanonymous.getSelectionIndex() == 0) {
-                        filter.allowNonAnonymous();
-                    } else {
-                        filter.disallowNonAnonymous();
-                    }
-                    controller.update(new ModelEvent(outer,
-                                                     ModelPart.FILTER,
-                                                     filter));
-                }
+        
+        final Label anonymousLabel = new Label(composite, SWT.NONE);
+        anonymousLabel.setText(" Anonymous");
+        anonymousLabel.setLayoutData(GridDataFactory.swtDefaults().grab(true, false).create());
+        anonymousLabel.addMouseListener(new MouseAdapter(){
+            public void mouseDown(MouseEvent arg0) {
+                anonymous.setSelection(!anonymous.getSelection());
+                actionAnonymousChanged();
             }
         });
-
-        final Label tableItem4 = new Label(parent, SWT.NONE);
-        tableItem4.setText(Resources.getMessage("NodeFilterView.12")); //$NON-NLS-1$
-        unknown = new Combo(parent, SWT.BORDER);
-        unknown.add(Resources.getMessage("NodeFilterView.13")); //$NON-NLS-1$
-        unknown.add(Resources.getMessage("NodeFilterView.14")); //$NON-NLS-1$
-        unknown.pack();
-        unknown.setLayoutData(SWTUtil.createFillHorizontallyGridData());
+        
+        
+        nonanonymous = new Button(composite, SWT.CHECK | SWT.NO_FOCUS);
+        nonanonymous.setToolTipText("Non-anonymous");
+        nonanonymous.setText("");
+        nonanonymous.setSelection(false);
+        nonanonymous.setLayoutData(GridDataFactory.swtDefaults().grab(false, false).create());
+        nonanonymous.addSelectionListener(new SelectionAdapter() {
+            public void widgetSelected(SelectionEvent arg0) {
+                actionNonAnonymousChanged();
+            }
+        });
+        
+        final Label nonanonymousLabel = new Label(composite, SWT.NONE);
+        nonanonymousLabel.setText(" Non-anonymous");
+        nonanonymousLabel.setLayoutData(GridDataFactory.swtDefaults().grab(true, false).create());
+        nonanonymousLabel.addMouseListener(new MouseAdapter(){
+            public void mouseDown(MouseEvent arg0) {
+                nonanonymous.setSelection(!nonanonymous.getSelection());
+                actionNonAnonymousChanged();
+            }
+        });
+        
+        unknown = new Button(composite, SWT.CHECK | SWT.NO_FOCUS);
+        unknown.setToolTipText("Unknown");
+        unknown.setText("");
+        unknown.setLayoutData(GridDataFactory.swtDefaults().grab(false, false).create());
+        unknown.setSelection(false);
         unknown.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(final SelectionEvent arg0) {
-                if (filter != null) {
-                    if (unknown.getSelectionIndex() == 0) {
-                        filter.allowUnknown();
-                    } else {
-                        filter.disallowUnknown();
-                    }
-                    controller.update(new ModelEvent(outer,
-                                                     ModelPart.FILTER,
-                                                     filter));
-                }
+            public void widgetSelected(SelectionEvent arg0) {
+                actionUnknownChanged();
             }
         });
-
+        
+        final Label unknownLabel = new Label(composite, SWT.NONE);
+        unknownLabel.setText(" Unknown");
+        unknownLabel.setLayoutData(GridDataFactory.swtDefaults().grab(true, false).create());
+        unknownLabel.addMouseListener(new MouseAdapter(){
+            public void mouseDown(MouseEvent arg0) {
+                unknown.setSelection(!unknown.getSelection());
+                actionUnknownChanged();
+            }
+        });
+        
         final Label tableItem5 = new Label(parent, SWT.NONE);
         tableItem5.setText(Resources.getMessage("NodeFilterView.15")); //$NON-NLS-1$
         min = new Scale(parent, SWT.HORIZONTAL);
@@ -229,15 +437,8 @@ public class ViewFilter implements IView {
         min.setMinimum(0);
         min.setLayoutData(SWTUtil.createFillHorizontallyGridData());
         min.addSelectionListener(new SelectionAdapter() {
-            @Override
             public void widgetSelected(final SelectionEvent arg0) {
-                if (filter != null) {
-                    filter.allowInformationLoss(intToInformationLoss(min.getSelection()),
-                                                filter.getAllowedMaxInformationLoss());
-                    controller.update(new ModelEvent(outer,
-                                                     ModelPart.FILTER,
-                                                     filter));
-                }
+                actionMinInfoLossChanged();
             }
         });
 
@@ -250,270 +451,139 @@ public class ViewFilter implements IView {
         max.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(final SelectionEvent arg0) {
-                if (filter != null) {
-                    filter.allowInformationLoss(filter.getAllowedMinInformationLoss(),
-                                                intToInformationLoss(max.getSelection()));
-                    controller.update(new ModelEvent(outer,
-                                                     ModelPart.FILTER,
-                                                     filter));
-                }
+                actionMaxInfoLossChanged();
             }
         });
     }
 
     /**
-     * Initializes the generalization table
-     * 
-     * @param string
+     * Fires a model event when the filter changes.
      */
-    private void createGeneralization(final String attribute) {
-
-        generalization.removeAll();
-
-        final int max = result.getLattice()
-                              .getTop()
-                              .getGeneralization(attribute);
-        selectedDimension = result.getLattice()
-                                  .getTop()
-                                  .getDimension(attribute);
-
-        for (int i = 0; i <= max; i++) {
-            final TableItem item = new TableItem(generalization, SWT.BORDER);
-            item.setText(0, String.valueOf(i));
-            item.setImage(0,
-                          getImage(result.getLattice(), selectedDimension, i));
-            if (filter.isAllowedGeneralization(selectedDimension, i)) {
-                item.setChecked(true);
-            } else {
-                item.setChecked(false);
-            }
-        }
-    }
-
-    @Override
-    public void dispose() {
-        controller.removeListener(this);
-    }
-
-    private Image getImage(final ARXLattice lattice,
-                           final int dimension,
-                           final int level) {
-
-        boolean anonymous = false;
-        boolean nonanonymous = false;
-
-        for (final ARXNode[] lvl : lattice.getLevels()) {
-            for (final ARXNode node : lvl) {
-                if (node.getTransformation()[dimension] == level) {
-                    if (node.isAnonymous() == Anonymity.ANONYMOUS) {
-                        anonymous = true;
-                    } else {
-                        nonanonymous = true;
-                    }
-                }
-                if (anonymous && nonanonymous) {
-                    break;
-                }
-            }
-            if (anonymous && nonanonymous) {
-                break;
-            }
-        }
-
-        if (anonymous && !nonanonymous) {
-            return IMG_GREEN;
-        } else if (anonymous && nonanonymous) {
-            return IMG_ORANGE;
-        } else {
-            return IMG_RED;
-        }
+    private void fireModelEvent(){
+        controller.update(new ModelEvent(this,
+                                         ModelPart.FILTER,
+                                         filter));
     }
 
     /**
-     * Converter TODO: Seems to not work
-     * 
-     * @param value
-     * @return
+     * Initializes the view.
+     *
+     * @param result
+     * @param nodeFilter
      */
-    private int informationLossToInt(final double value) {
-
-        // Baseline is bottom.min
-        double val = value -
-                     result.getLattice()
-                           .getBottom()
-                           .getMinimumInformationLoss()
-                           .getValue();
-        // In relation to top.max - bottom.min
-        val = val /
-              (result.getLattice()
-                     .getTop()
-                     .getMaximumInformationLoss()
-                     .getValue() - result.getLattice()
-                                         .getBottom()
-                                         .getMinimumInformationLoss()
-                                         .getValue());
-        // Scaled with integer.max
-        val = val * SCALE_MAX_VALUE;
-        // Return
-        return (int) val;
-    }
-
     private void initialize(final ARXResult result,
                             final ModelNodeFilter nodeFilter) {
 
         // Reset
         reset();
+        
+        // Return if there is no lattice
+        if (result==null || result.getLattice() == null) {
+            return;
+        }
+        
+        // Store data definition
+        this.result = result;
 
         // Reset filter
-        maxlevels = result.getLattice().getTop().getTransformation();
         if (nodeFilter == null) {
-            filter = new ModelNodeFilter(maxlevels, model.getInitialNodesInViewer());
+
+            // Create filter
+            filter = new ModelNodeFilter(result.getLattice().getTop().getTransformation(), 
+                                         model.getInitialNodesInViewer());
+            
+            // Initialize filter
             filter.initialize(result);
+            
+            // Update model
+            if (model != null) {
+                model.setNodeFilter(filter);
+                controller.update(new ModelEvent(this, ModelPart.FILTER, filter));
+            }
         } else {
             filter = nodeFilter;
         }
-        this.result = result;
-
-        // Attr
-        for (final String attr : result.getLattice()
-                                       .getBottom()
-                                       .getQuasiIdentifyingAttributes()) {
-            attribute.add(attr);
-        }
-        attribute.select(0);
-        attribute.setEnabled(true);
-
-        // Anonymous
-        if (filter.isAllowedAnonymous()) {
-            anonymous.select(0);
-        } else {
-            anonymous.select(1);
-        }
-        anonymous.setEnabled(true);
-
-        // NotAnonymous
-        if (filter.isAllowedNonAnonymous()) {
-            notanonymous.select(0);
-        } else {
-            notanonymous.select(1);
-        }
-        notanonymous.setEnabled(true);
-
-        // Unknown
-        if (filter.isAllowedUnknown()) {
-            unknown.select(0);
-        } else {
-            unknown.select(1);
-        }
-        unknown.setEnabled(true);
-
-        // Min and max
-        min.setMinimum(informationLossToInt(result.getLattice()
-                                                  .getBottom()
-                                                  .getMinimumInformationLoss()
-                                                  .getValue()));
-        max.setMaximum(informationLossToInt(result.getLattice()
-                                                  .getTop()
-                                                  .getMaximumInformationLoss()
-                                                  .getValue()));
-        min.setSelection(informationLossToInt(filter.getAllowedMinInformationLoss()));
-        max.setSelection(informationLossToInt(filter.getAllowedMaxInformationLoss()));
-        min.setEnabled(true);
-        max.setEnabled(true);
-
-        generalization.removeAll();
-        createGeneralization(result.getLattice()
-                                   .getBottom()
-                                   .getQuasiIdentifyingAttributes()[attribute.getSelectionIndex()]);
-        generalization.setEnabled(true);
-
-        if (model != null) {
-            model.setNodeFilter(filter);
-            controller.update(new ModelEvent(this, ModelPart.FILTER, filter));
-        }
+        
+        // Update
+        this.update();
     }
 
     /**
-     * Converter TODO: Seems to not work
-     * 
-     * @param value
-     * @return
+     * Initializes the everything.
      */
-    private double intToInformationLoss(final int value) {
-
-        // Corner cases
-        if (value == 0) {
-            return result.getLattice()
-                         .getBottom()
-                         .getMinimumInformationLoss()
-                         .getValue();
-        } else if (value >= SCALE_MAX_VALUE - 1) { return result.getLattice()
-                                                                  .getTop()
-                                                                  .getMaximumInformationLoss()
-                                                                  .getValue(); }
-
-        // In relation to integer.max
-        double val = (double) value / (double) SCALE_MAX_VALUE;
-        // Scaled with top.max-bottom.min
-        val *= (result.getLattice()
-                      .getTop()
-                      .getMaximumInformationLoss()
-                      .getValue() - result.getLattice()
-                                          .getBottom()
-                                          .getMinimumInformationLoss()
-                                          .getValue());
-        // Baseline is bottom.min
-        val += result.getLattice()
-                     .getBottom()
-                     .getMinimumInformationLoss()
-                     .getValue();
-
-        // Return
-        return (int) val;
-    }
-
-    @Override
-    public void reset() {
-        filter = null;
-        result = null;
-        maxlevels = null;
-        attribute.removeAll();
-        anonymous.select(-1);
-        notanonymous.select(-1);
-        unknown.select(-1);
-        min.setSelection(min.getMinimum());
-        min.setMinimum(0);
-        min.setMaximum(SCALE_MAX_VALUE);
-        max.setSelection(max.getMaximum());
-        max.setMinimum(0);
-        max.setMaximum(SCALE_MAX_VALUE);
-        attribute.setEnabled(false);
-        anonymous.setEnabled(false);
-        notanonymous.setEnabled(false);
-        unknown.setEnabled(false);
-        min.setEnabled(false);
-        max.setEnabled(false);
-        generalization.removeAll();
-        generalization.setEnabled(false);
-        SWTUtil.disable(root);
-    }
-
-    @Override
-    public void update(final ModelEvent event) {
-        if (event.part == ModelPart.INPUT) {
+    private void update() {
+        
+        // Check
+        if (result == null) {
             reset();
-        } else if (event.part == ModelPart.RESULT) {
-            initialize(model.getResult(), null);
-            SWTUtil.enable(root);
-        } else if (event.part == ModelPart.MODEL) {
-            model = (Model) event.data;
-            reset();
-        } else if (event.part == ModelPart.FILTER) {
-            // Only update if we receive a new filter
-            if ((filter == null) || (model.getNodeFilter() != filter)) {
-                initialize(model.getResult(), model.getNodeFilter());
-                SWTUtil.enable(root);
-            }
+            return;
         }
+
+        // Disable drawing
+        this.root.setRedraw(false);
+        
+        // Clear
+        this.generalization.clear();
+
+        // Create ordered list of qis
+        String[] attributes = result.getLattice().getBottom().getQuasiIdentifyingAttributes();
+        
+        int min = Integer.MAX_VALUE;
+        int max = Integer.MIN_VALUE;
+        for (String attribute : attributes) {
+            min = Math.min(min, result.getLattice().getBottom().getGeneralization(attribute));
+            max = Math.max(max, result.getLattice().getTop().getGeneralization(attribute));
+        }
+
+        List<String> properties = new ArrayList<String>();
+        for (int i=min; i<=max; i++){
+            properties.add(String.valueOf(i));
+        }
+        
+        generalization.setProperties(properties);
+
+        for (String attribute : attributes) {
+            List<String> attributeProperties = new ArrayList<String>();
+            int attributeMin = result.getLattice().getBottom().getGeneralization(attribute);
+            int attributeMax = result.getLattice().getTop().getGeneralization(attribute);
+            for (int i=attributeMin; i<=attributeMax; i++){
+                attributeProperties.add(String.valueOf(i));
+            }
+            generalization.addEntry(attribute, attributeProperties);
+        }
+
+        int i=0;
+        for (String attribute : attributes) {;
+            Set<Integer> selected = filter.getAllowedGeneralizations(i); 
+            Set<Integer> unselected = new HashSet<Integer>();
+            for (String property : properties){
+                unselected.add(Integer.valueOf(property));
+            }
+            unselected.removeAll(selected);
+            for (int level : selected) {
+                generalization.setSelected(attribute, String.valueOf(level), true);
+            }
+            for (int level : unselected) {
+                generalization.setSelected(attribute, String.valueOf(level), false);
+            }
+            i++;
+        }
+        
+        // Initialize classification
+        anonymous.setSelection(filter.isAllowedAnonymous());
+        nonanonymous.setSelection(filter.isAllowedNonAnonymous());
+        unknown.setSelection(filter.isAllowedUnknown());
+        
+        // Min and max
+        this.min.setSelection((int)Math.round(filter.getAllowedMinInformationLoss() * (double)SCALE_MAX_VALUE));
+        this.max.setSelection((int)Math.round(filter.getAllowedMaxInformationLoss() * (double)SCALE_MAX_VALUE));
+        
+        // Draw
+        this.root.setRedraw(true);
+        this.root.redraw();
+
+        // Enable
+        SWTUtil.enable(root);
     }
 }
+

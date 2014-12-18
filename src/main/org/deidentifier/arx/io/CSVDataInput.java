@@ -1,5 +1,5 @@
 /*
- * ARX: Efficient, Stable and Optimal Data Anonymization
+ * ARX: Powerful Data Anonymization
  * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -26,24 +26,25 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 /**
- * This class implements a reader for CSV encoded information
- * 
- * @author Prasser, Kohlmayer
+ * This class implements a reader for CSV encoded information.
+ *
+ * @author Fabian Prasser
+ * @author Florian Kohlmayer
  */
 public class CSVDataInput extends CSVAbstractInput {
 
-    /** The number of columns in the dataset */
+    /** The number of columns in the dataset. */
     private int                  columns     = -1;
 
-    /** A reader */
+    /** A reader. */
     private final BufferedReader reader;
 
-    /** Size of the buffer */
+    /** Size of the buffer. */
     private static final int     BUFFER_SIZE = 1024 * 1024;
 
     /**
-     * Instantiate
-     * 
+     * Instantiate.
+     *
      * @param file
      * @param separator
      * @throws IOException
@@ -54,8 +55,8 @@ public class CSVDataInput extends CSVAbstractInput {
     }
 
     /**
-     * Instantiate
-     * 
+     * Instantiate.
+     *
      * @param stream
      * @param separator
      * @throws IOException
@@ -66,8 +67,8 @@ public class CSVDataInput extends CSVAbstractInput {
     }
 
     /**
-     * Instantiate
-     * 
+     * Instantiate.
+     *
      * @param file
      * @param separator
      * @throws IOException
@@ -77,14 +78,17 @@ public class CSVDataInput extends CSVAbstractInput {
         reader = new BufferedReader(new FileReader(file), BUFFER_SIZE);
     }
 
+    /* (non-Javadoc)
+     * @see org.deidentifier.arx.io.CSVAbstractInput#close()
+     */
     @Override
     public void close() throws IOException {
         reader.close();
     }
 
     /**
-     * Counts the number of columns
-     * 
+     * Counts the number of columns.
+     *
      * @param line
      * @return
      */
@@ -100,6 +104,9 @@ public class CSVDataInput extends CSVAbstractInput {
         return result;
     }
 
+    /* (non-Javadoc)
+     * @see org.deidentifier.arx.io.CSVAbstractInput#readRow()
+     */
     @Override
     protected String[] readRow() throws IOException {
 
@@ -122,6 +129,9 @@ public class CSVDataInput extends CSVAbstractInput {
         int index = 0;
         while (column < (columns - 1)) {
             index = line.indexOf(separator, offset);
+            if (index < 0) {
+                throw new IOException("Each line must have at least ("+tuple.length+") columns");
+            }
             tuple[column++] = line.substring(offset, index);
             offset = index + 1;
         }

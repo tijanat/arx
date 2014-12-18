@@ -1,5 +1,5 @@
 /*
- * ARX: Efficient, Stable and Optimal Data Anonymization
+ * ARX: Powerful Data Anonymization
  * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -27,18 +27,31 @@ import org.deidentifier.arx.gui.model.Model;
 import org.deidentifier.arx.gui.resources.Resources;
 import org.eclipse.core.runtime.IProgressMonitor;
 
+/**
+ * This worker performs the anonymization process.
+ *
+ * @author Fabian Prasser
+ */
 public class WorkerAnonymize extends Worker<ARXResult> {
 
+	/** The model. */
     private final Model      model;
 
+    /**
+     * Creates a new instance.
+     *
+     * @param model
+     */
     public WorkerAnonymize(final Model model) {
         this.model = model;
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.operation.IRunnableWithProgress#run(org.eclipse.core.runtime.IProgressMonitor)
+     */
     @Override
-    public void
-            run(final IProgressMonitor arg0) throws InvocationTargetException,
-                                            InterruptedException {
+    public void run(final IProgressMonitor arg0) throws InvocationTargetException,
+                                                        InterruptedException {
 
         // Track progress
         arg0.beginTask(Resources.getMessage("WorkerAnonymize.0"), 110); //$NON-NLS-1$
@@ -46,15 +59,24 @@ public class WorkerAnonymize extends Worker<ARXResult> {
         // Initialize anonymizer
         final ARXAnonymizer anonymizer = model.createAnonymizer();
 
-        // Add listener
+        // Update the progress bar
         anonymizer.setListener(new ARXListener() {
             int count = 0;
-
-            @Override
-            public void nodeTagged(final int numNodes) {
-                final int val = (int) (((double) (++count) / (double) numNodes) * 100d);
-                arg0.worked(10 + Math.min(val, 99));
-                if (arg0.isCanceled()) { throw new RuntimeException(Resources.getMessage("WorkerAnonymize.1")); } //$NON-NLS-1$
+            int previous = 0;
+            public void nodeTagged(final int searchSpaceSize) {
+                if (arg0.isCanceled()) { 
+                    throw new RuntimeException(Resources.getMessage("WorkerAnonymize.1")); //$NON-NLS-1$ 
+                } 
+                if (count==0) {
+                    arg0.worked(10);
+                }
+                
+                count++;
+                int progress = (int) ((double)count / (double) searchSpaceSize * 100d);
+                if (progress != previous) {
+                    previous = progress;
+                    arg0.worked(1);
+                }
             }
         });
 
@@ -62,20 +84,17 @@ public class WorkerAnonymize extends Worker<ARXResult> {
         try {
             
             // Anonymize
+            model.getInputConfig().getInput().getHandle().release();
         	result = anonymizer.anonymize(model.getInputConfig().getInput(), model.getInputConfig().getConfig());
-            arg0.beginTask(Resources.getMessage("WorkerAnonymize.2"), 2); //$NON-NLS-1$
 
-            // Determine minimum and maximum information loss
-            result.getHandle(result.getLattice().getBottom());
-            arg0.worked(1);
-            result.getHandle(result.getLattice().getTop());
-            arg0.beginTask(Resources.getMessage("WorkerAnonymize.3"), 1); //$NON-NLS-1$
+            // Apply optimal transformation, if any
+            arg0.beginTask(Resources.getMessage("WorkerAnonymize.3"), 10); //$NON-NLS-1$
             if (result.isResultAvailable()) {
-                result.getHandle();
+                result.getOutput(false);
             }
             model.setAnonymizer(anonymizer);
             model.setTime(result.getTime());
-            arg0.worked(2);
+            arg0.worked(10);
             arg0.done();
         } catch (final Exception e) {
             error = e;

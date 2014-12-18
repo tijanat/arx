@@ -1,5 +1,5 @@
 /*
- * ARX: Efficient, Stable and Optimal Data Anonymization
+ * ARX: Powerful Data Anonymization
  * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -24,33 +24,41 @@ import org.deidentifier.arx.framework.check.distribution.Distribution;
 import org.deidentifier.arx.framework.check.groupify.HashGroupifyEntry;
 
 /**
- * The recursive-(c,l)-diversity criterion
- * @author Prasser, Kohlmayer
+ * The recursive-(c,l)-diversity criterion.
+ *
+ * @author Fabian Prasser
+ * @author Florian Kohlmayer
  */
 public class RecursiveCLDiversity extends LDiversity{
 
+    /**  TODO */
     private static final long serialVersionUID = -5893481096346270328L;
 
-    /** The parameter c */
+    /** The parameter c. */
     private final double c;
     
     /**
      * Creates a new instance of the recursive-(c,l)-diversity criterion as proposed in:
-     * Machanavajjhala A, Kifer D, Gehrke J. 
-     * l-diversity: Privacy beyond k-anonymity. 
+     * Machanavajjhala A, Kifer D, Gehrke J.
+     * l-diversity: Privacy beyond k-anonymity.
      * Transactions on Knowledge Discovery from Data (TKDD). 2007;1(1):3.
+     *
+     * @param attribute
      * @param c
      * @param l
      */
     public RecursiveCLDiversity(String attribute, double c, int l){
-        super(attribute, l);
+        super(attribute, l, false);
         this.c = c;
     }
 
+    /* (non-Javadoc)
+     * @see org.deidentifier.arx.criteria.PrivacyCriterion#isAnonymous(org.deidentifier.arx.framework.check.groupify.HashGroupifyEntry)
+     */
     @Override
     public boolean isAnonymous(HashGroupifyEntry entry) {
 
-        Distribution d = entry.distribution;
+        Distribution d = entry.distributions[index];
         
         // if less than l values are present skip
         if (d.size() < minSize) { return false; }
@@ -80,13 +88,17 @@ public class RecursiveCLDiversity extends LDiversity{
     }
 
     /**
-     * Returns the parameter c
+     * Returns the parameter c.
+     *
      * @return
      */
     public double getC() {
         return c;
     }
     
+	/* (non-Javadoc)
+	 * @see org.deidentifier.arx.criteria.PrivacyCriterion#toString()
+	 */
 	@Override
 	public String toString() {
 		return "recursive-("+c+","+minSize+")-diversity for attribute '"+attribute+"'";

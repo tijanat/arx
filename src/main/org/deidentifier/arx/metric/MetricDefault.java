@@ -1,5 +1,5 @@
 /*
- * ARX: Efficient, Stable and Optimal Data Anonymization
+ * ARX: Powerful Data Anonymization
  * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -19,35 +19,73 @@
 package org.deidentifier.arx.metric;
 
 import org.deidentifier.arx.ARXConfiguration;
+import org.deidentifier.arx.DataDefinition;
+import org.deidentifier.arx.framework.check.groupify.IHashGroupify;
 import org.deidentifier.arx.framework.data.Data;
 import org.deidentifier.arx.framework.data.GeneralizationHierarchy;
+import org.deidentifier.arx.framework.lattice.Node;
 
 /**
  * This class provides an abstract skeleton for the implementation of metrics.
  * 
- * @author Prasser, Kohlmayer
+ * @author Fabian Prasser
+ * @author Florian Kohlmayer
  */
 public abstract class MetricDefault extends Metric<InformationLossDefault> {
 
+    /**  TODO */
     private static final long serialVersionUID = 2672819203235170632L;
 
+    /**
+     * 
+     *
+     * @param monotonic
+     * @param independent
+     */
     public MetricDefault(final boolean monotonic, final boolean independent) {
         super(monotonic, independent);
     }
-
+    
+    /* (non-Javadoc)
+     * @see org.deidentifier.arx.metric.Metric#createMaxInformationLoss()
+     */
     @Override
-    protected void initializeInternal(final Data input, final GeneralizationHierarchy[] hierarchies, final ARXConfiguration config) {
+    public InformationLoss<?> createMaxInformationLoss() {
+        return new InformationLossDefault(Double.MAX_VALUE);
+    }
+
+    /* (non-Javadoc)
+     * @see org.deidentifier.arx.metric.Metric#createMinInformationLoss()
+     */
+    @Override
+    public InformationLoss<?> createMinInformationLoss() {
+        return new InformationLossDefault(0d);
+    }
+    
+    /* (non-Javadoc)
+     * @see org.deidentifier.arx.metric.Metric#getLowerBoundInternal(org.deidentifier.arx.framework.lattice.Node)
+     */
+    @Override
+    protected InformationLossDefault getLowerBoundInternal(final Node node) {
+        return (InformationLossDefault)node.getLowerBound();
+    }
+
+    /* (non-Javadoc)
+     * @see org.deidentifier.arx.metric.Metric#getLowerBoundInternal(org.deidentifier.arx.framework.lattice.Node, org.deidentifier.arx.framework.check.groupify.IHashGroupify)
+     */
+    @Override
+    protected InformationLossDefault getLowerBoundInternal(final Node node, final IHashGroupify groupify) {
+        return (InformationLossDefault)node.getLowerBound();
+    }
+    
+    /* (non-Javadoc)
+     * @see org.deidentifier.arx.metric.Metric#initializeInternal(org.deidentifier.arx.DataDefinition, org.deidentifier.arx.framework.data.Data, org.deidentifier.arx.framework.data.GeneralizationHierarchy[], org.deidentifier.arx.ARXConfiguration)
+     */
+    @Override
+    protected void initializeInternal(final DataDefinition definition,
+                                      final Data input, 
+                                      final GeneralizationHierarchy[] hierarchies, 
+                                      final ARXConfiguration config) {
         // Empty by design
     }
-
-    @Override
-    protected InformationLoss maxInternal() {
-        return InformationLossDefault.MAX;
-    }
-
-    @Override
-    protected InformationLoss minInternal() {
-        return InformationLossDefault.MIN;
-    }
-
 }

@@ -1,5 +1,5 @@
 /*
- * ARX: Efficient, Stable and Optimal Data Anonymization
+ * ARX: Powerful Data Anonymization
  * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -21,7 +21,8 @@ package org.deidentifier.arx.framework.lattice;
 /**
  * The class LatticeBuilder.
  * 
- * @author Prasser, Kohlmayer
+ * @author Fabian Prasser
+ * @author Florian Kohlmayer
  */
 public class LatticeBuilder {
 
@@ -31,26 +32,20 @@ public class LatticeBuilder {
     /** The maxlevels. */
     private int[]    maxLevels  = null;
 
-    /** The minlevels */
+    /** The minlevels. */
     private int[]    minLevels  = null;
-
-    /** The maxheights */
-    private int[]    maxHeights = null;
 
     /**
      * Instantiates a new lattice builder.
-     * 
-     * @param maxLevels
-     *            the maxlevels
-     * @param minLevels
-     *            the minlevels
+     *
+     * @param maxLevels the maxlevels
+     * @param minLevels the minlevels
+     * @param maxHeights
      */
     public LatticeBuilder(final int[] maxLevels,
-                          final int[] minLevels,
-                          final int[] maxHeights) {
+                          final int[] minLevels) {
         this.maxLevels = maxLevels;
         this.minLevels = minLevels;
-        this.maxHeights = maxHeights;
     }
 
     /**
@@ -60,7 +55,7 @@ public class LatticeBuilder {
      */
     public Lattice build() {
         final int numNodes = buildLevelsAndMap();
-        return new Lattice(levels, maxHeights, numNodes);
+        return new Lattice(levels, numNodes);
     }
 
     /**

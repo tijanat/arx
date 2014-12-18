@@ -1,5 +1,5 @@
 /*
- * ARX: Efficient, Stable and Optimal Data Anonymization
+ * ARX: Powerful Data Anonymization
  * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -23,7 +23,8 @@ import org.deidentifier.arx.framework.check.distribution.Distribution;
 /**
  * Implements an equivalence class.
  * 
- * @author Prasser, Kohlmayer
+ * @author Fabian Prasser
+ * @author Florian Kohlmayer
  */
 public class HashGroupifyEntry {
 
@@ -51,8 +52,8 @@ public class HashGroupifyEntry {
     /** Is this class not an outlier?. */
     public boolean           isNotOutlier = false;
 
-    /** Frequency set for l-diveryity **/
-    public Distribution      distribution;
+    /** Frequency set for sensitive attributes *. */
+    public Distribution[]    distributions;
 
     /**
      * Creates a new entry.

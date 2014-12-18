@@ -1,5 +1,5 @@
 /*
- * ARX: Efficient, Stable and Optimal Data Anonymization
+ * ARX: Powerful Data Anonymization
  * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -27,6 +27,7 @@ import org.deidentifier.arx.gui.model.ModelTClosenessCriterion;
 import org.deidentifier.arx.gui.resources.Resources;
 import org.deidentifier.arx.gui.view.SWTUtil;
 import org.deidentifier.arx.gui.view.def.IView;
+import org.deidentifier.arx.gui.view.impl.common.ClipboardHandlerTable;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
@@ -36,20 +37,52 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 
+/**
+ * This class displays a list of all defined privacy criteria.
+ *
+ * @author fabian
+ */
 public class ViewCriteriaList implements IView {
 
+    /**  TODO */
     private Controller  controller;
+    
+    /**  TODO */
     private Model       model = null;
+    
+    /**  TODO */
     private Table       table;
+    
+    /**  TODO */
     private TableColumn column1;
+    
+    /**  TODO */
     private TableColumn column2;
+    
+    /**  TODO */
     private TableColumn column3;
+    
+    /**  TODO */
     private Composite   root;
+    
+    /**  TODO */
     private Image       symbolL;
+    
+    /**  TODO */
     private Image       symbolT;
+    
+    /**  TODO */
     private Image       symbolK;
+    
+    /**  TODO */
     private Image       symbolD;
 
+    /**
+     * Creates a new instance.
+     *
+     * @param parent
+     * @param controller
+     */
     public ViewCriteriaList(final Composite parent, final Controller controller) {
 
         // Register
@@ -70,6 +103,7 @@ public class ViewCriteriaList implements IView {
         table.setHeaderVisible(true);
         final GridData d = SWTUtil.createFillGridData();
         table.setLayoutData(d);
+        table.setMenu(new ClipboardHandlerTable(table).getMenu());
 
         column1 = new TableColumn(table, SWT.NONE);
         column1.setText("");
@@ -83,6 +117,9 @@ public class ViewCriteriaList implements IView {
         column3.pack();
     }
 
+    /* (non-Javadoc)
+     * @see org.deidentifier.arx.gui.view.def.IView#dispose()
+     */
     @Override
     public void dispose() {
         controller.removeListener(this);
@@ -92,6 +129,9 @@ public class ViewCriteriaList implements IView {
         this.symbolD.dispose();
     }
 
+    /* (non-Javadoc)
+     * @see org.deidentifier.arx.gui.view.def.IView#reset()
+     */
     @Override
     public void reset() {
         root.setRedraw(false);
@@ -102,11 +142,17 @@ public class ViewCriteriaList implements IView {
         root.setRedraw(true);
     }
 
+    /* (non-Javadoc)
+     * @see org.deidentifier.arx.gui.view.def.IView#update(org.deidentifier.arx.gui.model.ModelEvent)
+     */
     @Override
     public void update(ModelEvent event) {
         if (event.part == ModelPart.MODEL) {
             this.model = (Model)event.data;
-        } else if (event.part == ModelPart.CRITERION_DEFINITION) {
+        } 
+        
+        if (event.part == ModelPart.CRITERION_DEFINITION ||
+            event.part == ModelPart.MODEL) {
             if (model!=null) {
                 root.setRedraw(false);
                 table.removeAll();

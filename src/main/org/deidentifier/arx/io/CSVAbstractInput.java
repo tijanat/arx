@@ -1,5 +1,5 @@
 /*
- * ARX: Efficient, Stable and Optimal Data Anonymization
+ * ARX: Powerful Data Anonymization
  * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -22,22 +22,22 @@ import java.io.IOException;
 import java.util.Iterator;
 
 /**
- * Abstract class for reading CSV encoded information
- * 
- * @author Prasser, Kohlmayer
+ * Abstract class for reading CSV encoded information.
+ *
+ * @author Fabian Prasser
+ * @author Florian Kohlmayer
  */
 public abstract class CSVAbstractInput {
 
-    /** The iterator */
+    /** The iterator. */
     protected Iterator<String[]> iterator;
 
     /** The separator. */
     protected final char         separator;
 
     /**
-     * Constructor
-     * 
-     * @param file
+     * Constructor.
+     *
      * @param separator
      */
     public CSVAbstractInput(final char separator) {
@@ -45,8 +45,8 @@ public abstract class CSVAbstractInput {
     }
 
     /**
-     * Builds the iterator
-     * 
+     * Builds the iterator.
+     *
      * @return
      * @throws IOException
      */
@@ -79,16 +79,17 @@ public abstract class CSVAbstractInput {
     }
 
     /**
-     * Closes the input
-     * 
+     * Closes the input.
+     *
      * @throws IOException
      */
     public abstract void close() throws IOException;
 
     /**
-     * Returns an iterator
-     * 
+     * Returns an iterator.
+     *
      * @return
+     * @throws IOException
      */
     public Iterator<String[]> iterator() throws IOException {
         if (iterator == null) {
@@ -97,6 +98,11 @@ public abstract class CSVAbstractInput {
         return iterator;
     }
 
-    /** Reads a row */
+    /**
+     * Reads a row.
+     *
+     * @return
+     * @throws IOException
+     */
     protected abstract String[] readRow() throws IOException;
 }

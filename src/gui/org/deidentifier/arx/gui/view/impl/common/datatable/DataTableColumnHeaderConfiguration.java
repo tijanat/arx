@@ -1,5 +1,5 @@
 /*
- * ARX: Efficient, Stable and Optimal Data Anonymization
+ * ARX: Powerful Data Anonymization
  * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -30,31 +30,42 @@ import org.eclipse.nebula.widgets.nattable.sort.painter.SortableHeaderTextPainte
 import org.eclipse.nebula.widgets.nattable.style.DisplayMode;
 import org.eclipse.nebula.widgets.nattable.ui.util.CellEdgeEnum;
 import org.eclipse.nebula.widgets.nattable.util.GUIHelper;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Image;
 
+/**
+ * A column style for the data view.
+ *
+ * @author Fabian Prasser
+ */
 public class DataTableColumnHeaderConfiguration extends DefaultColumnHeaderStyleConfiguration {
 
-    private final Image     IMAGE_COL_BACK;
-    private final Image     IMAGE_COL_SELECT;
-
+    /**  TODO */
+    private final Image            IMAGE_COL_BACK;
+    
+    /**  TODO */
+    private final Image            IMAGE_COL_SELECT;
+    
+    /**  TODO */
     private final DataTableContext context;
 
+    /**
+     * Creates a new instance.
+     *
+     * @param context
+     */
     public DataTableColumnHeaderConfiguration(DataTableContext context) {
-        this.font = GUIHelper.getFont(new FontData("Verdana", 8, SWT.NORMAL)); //$NON-NLS-1$
         this.context = context;
+        this.font = context.getFont();
+        // TODO: Dispose properly, and look for similar cases
         IMAGE_COL_BACK   = context.getController().getResources().getImage("column_header_bg.png"); //$NON-NLS-1$
         IMAGE_COL_SELECT = context.getController().getResources().getImage("selected_column_header_bg.png"); //$NON-NLS-1$
     }
 
-    @Override
-    public void configureRegistry(final IConfigRegistry configRegistry) {
-        super.configureRegistry(configRegistry);
-        addNormalModeStyling(configRegistry);
-        addSelectedModeStyling(configRegistry);
-    }
-
+    /**
+     * Add normal styling to the registry.
+     *
+     * @param configRegistry
+     */
     private void addNormalModeStyling(final IConfigRegistry configRegistry) {
 
         final TextPainter txtPainter = new TextPainter(false, false);
@@ -77,6 +88,11 @@ public class DataTableColumnHeaderConfiguration extends DefaultColumnHeaderStyle
                                                GridRegion.CORNER);
     }
 
+    /**
+     * Add selected styling to the registry.
+     *
+     * @param configRegistry
+     */
     private void addSelectedModeStyling(final IConfigRegistry configRegistry) {
 
         final TextPainter txtPainter = new TextPainter(false, false);
@@ -92,5 +108,15 @@ public class DataTableColumnHeaderConfiguration extends DefaultColumnHeaderStyle
                                                selectedHeaderPainter,
                                                DisplayMode.SELECT,
                                                GridRegion.COLUMN_HEADER);
+    }
+
+    /* (non-Javadoc)
+     * @see org.eclipse.nebula.widgets.nattable.layer.config.DefaultColumnHeaderStyleConfiguration#configureRegistry(org.eclipse.nebula.widgets.nattable.config.IConfigRegistry)
+     */
+    @Override
+    public void configureRegistry(final IConfigRegistry configRegistry) {
+        super.configureRegistry(configRegistry);
+        addNormalModeStyling(configRegistry);
+        addSelectedModeStyling(configRegistry);
     }
 }

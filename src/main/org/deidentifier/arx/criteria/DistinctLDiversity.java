@@ -1,5 +1,5 @@
 /*
- * ARX: Efficient, Stable and Optimal Data Anonymization
+ * ARX: Powerful Data Anonymization
  * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -21,29 +21,40 @@ package org.deidentifier.arx.criteria;
 import org.deidentifier.arx.framework.check.groupify.HashGroupifyEntry;
 
 /**
- * The distinct l-diversity privacy criterion
- * @author Prasser, Kohlmayer
+ * The distinct l-diversity privacy criterion.
+ *
+ * @author Fabian Prasser
+ * @author Florian Kohlmayer
  */
 public class DistinctLDiversity extends LDiversity{
 
+    /**  TODO */
     private static final long serialVersionUID = -7973221140269608088L;
     
     /**
      * Creates a new instance of the distinct l-diversity privacy criterion as proposed in
-     * Machanavajjhala A, Kifer D, Gehrke J. 
-     * l-diversity: Privacy beyond k-anonymity. 
-     * Transactions on Knowledge Discovery from Data (TKDD). 2007;1(1):3. 
+     * Machanavajjhala A, Kifer D, Gehrke J.
+     * l-diversity: Privacy beyond k-anonymity.
+     * Transactions on Knowledge Discovery from Data (TKDD). 2007;1(1):3.
+     *
+     * @param attribute
      * @param l
      */
     public DistinctLDiversity(String attribute, int l){
-        super(attribute, l);
+        super(attribute, l, true);
     }
 
+    /* (non-Javadoc)
+     * @see org.deidentifier.arx.criteria.PrivacyCriterion#isAnonymous(org.deidentifier.arx.framework.check.groupify.HashGroupifyEntry)
+     */
     @Override
     public boolean isAnonymous(HashGroupifyEntry entry) {
-        return entry.distribution.size() >= minSize; // minSize=(int)l;
+        return entry.distributions[index].size() >= minSize; // minSize=(int)l;
     }
 
+	/* (non-Javadoc)
+	 * @see org.deidentifier.arx.criteria.PrivacyCriterion#toString()
+	 */
 	@Override
 	public String toString() {
 		return "distinct-"+minSize+"-diversity for attribute '"+attribute+"'";

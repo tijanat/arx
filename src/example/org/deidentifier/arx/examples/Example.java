@@ -1,5 +1,5 @@
 /*
- * ARX: Efficient, Stable and Optimal Data Anonymization
+ * ARX: Powerful Data Anonymization
  * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -27,17 +27,19 @@ import java.util.List;
 import org.deidentifier.arx.ARXLattice.ARXNode;
 import org.deidentifier.arx.ARXResult;
 import org.deidentifier.arx.Data;
+import org.deidentifier.arx.DataHandle;
 
 /**
- * This class provides a base class for examples
- * 
- * @author Prasser, Kohlmayer
+ * This class provides a base class for examples.
+ *
+ * @author Fabian Prasser
+ * @author Florian Kohlmayer
  */
 public abstract class Example {
 
     /**
-     * Prints the result
-     * 
+     * Prints the result.
+     *
      * @param result
      * @param data
      */
@@ -66,9 +68,9 @@ public abstract class Example {
             identifiers[i] = new StringBuffer();
             generalizations[i] = new StringBuffer();
             identifiers[i].append(qis.get(i));
-            generalizations[i].append(optimum.getGeneralization(qis.get(i)))
-                              .append("/")
-                              .append(data.getDefinition().getHierarchyHeight(qis.get(i)) - 1);
+            generalizations[i].append(optimum.getGeneralization(qis.get(i)));
+            if (data.getDefinition().isHierarchyAvailable(qis.get(i)))
+                generalizations[i].append("/").append(data.getDefinition().getHierarchy(qis.get(i))[0].length - 1);
             lengthI = Math.max(lengthI, identifiers[i].length());
             lengthG = Math.max(lengthG, generalizations[i].length());
         }
@@ -84,17 +86,92 @@ public abstract class Example {
         }
 
         // Print
-        System.out.println(" - Information loss: " + result.getGlobalOptimum().getMaximumInformationLoss().getValue());
+        System.out.println(" - Information loss: " + result.getGlobalOptimum().getMaximumInformationLoss());
         System.out.println(" - Optimal generalization");
         for (int i = 0; i < qis.size(); i++) {
             System.out.println("   * " + identifiers[i] + ": " + generalizations[i]);
         }
     }
 
+    /**
+     * Prints a given data handle.
+     *
+     * @param handle
+     */
+    protected static void print(DataHandle handle) {
+        final Iterator<String[]> itHandle = handle.iterator();
+        print(itHandle);
+    }
+
+    /**
+     * Prints a given iterator.
+     *
+     * @param iterator
+     */
     protected static void print(Iterator<String[]> iterator) {
         while (iterator.hasNext()) {
             System.out.print("   ");
             System.out.println(Arrays.toString(iterator.next()));
         }
+    }
+
+    /**
+     * Prints java array.
+     *
+     * @param array
+     */
+    protected static void printArray(String[][] array) {
+        System.out.print("{");
+        for (int j=0; j<array.length; j++){
+            String[] next = array[j];
+            System.out.print("{");
+            for (int i = 0; i < next.length; i++) {
+                String string = next[i];
+                System.out.print("\"" + string + "\"");
+                if (i < next.length - 1) {
+                    System.out.print(",");
+                }
+            }
+            System.out.print("}");
+            if (j<array.length-1) {
+                System.out.print(",\n");
+            }
+        }
+        System.out.println("}");
+    }
+    
+    /**
+     * Prints java array.
+     *
+     * @param iterator
+     */
+    protected static void printIterator(Iterator<String[]> iterator) {
+        System.out.print("{");
+        while (iterator.hasNext()) {
+            System.out.print("{");
+            String[] next = iterator.next();
+            for (int i = 0; i < next.length; i++) {
+                String string = next[i];
+                System.out.print("\"" + string + "\"");
+                if (i < next.length - 1) {
+                    System.out.print(",");
+                }
+            }
+            System.out.print("}");
+            if (iterator.hasNext()) {
+                System.out.print(",");
+            }
+        }
+        System.out.println("}");
+    }
+    
+    /**
+     * Prints a given data handle.
+     *
+     * @param handle
+     */
+    protected static void printHandle(DataHandle handle) {
+        final Iterator<String[]> itHandle = handle.iterator();
+        printIterator(itHandle);
     }
 }

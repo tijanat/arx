@@ -1,5 +1,5 @@
 /*
- * ARX: Efficient, Stable and Optimal Data Anonymization
+ * ARX: Powerful Data Anonymization
  * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -18,31 +18,34 @@
 
 package org.deidentifier.arx.framework.check.transformer;
 
-import org.deidentifier.arx.ARXConfiguration;
+import org.deidentifier.arx.ARXConfiguration.ARXConfigurationInternal;
 import org.deidentifier.arx.framework.check.distribution.IntArrayDictionary;
 import org.deidentifier.arx.framework.data.GeneralizationHierarchy;
 
 /**
  * The class Transformer02.
  * 
- * @author Prasser, Kohlmayer
+ * @author Fabian Prasser
+ * @author Florian Kohlmayer
  */
 public class Transformer02 extends AbstractTransformer {
 
     /**
      * Instantiates a new transformer.
-     * 
-     * @param data
-     *            the data
-     * @param hierarchies
-     *            the hierarchies
+     *
+     * @param data the data
+     * @param hierarchies the hierarchies
+     * @param sensitiveValues
+     * @param dictionarySensValue
+     * @param dictionarySensFreq
+     * @param config
      */
     public Transformer02(final int[][] data,
                          final GeneralizationHierarchy[] hierarchies,
-                         final int[] sensitiveValues,
+                         final int[][] sensitiveValues,
                          final IntArrayDictionary dictionarySensValue,
                          final IntArrayDictionary dictionarySensFreq,
-                         final ARXConfiguration config) {
+                         final ARXConfigurationInternal config) {
         super(data, hierarchies, sensitiveValues, dictionarySensValue, dictionarySensFreq, config);
     }
 
@@ -57,8 +60,8 @@ public class Transformer02 extends AbstractTransformer {
         for (int i = startIndex; i < stopIndex; i++) {
             intuple = data[i];
             outtuple = buffer[i];
-            outtuple[outindex0] = idindex0[intuple[index0]][stateindex0];
-            outtuple[outindex1] = idindex1[intuple[index1]][stateindex1];
+            outtuple[outindex0] = idindex0[intuple[index0]][generalizationindex0];
+            outtuple[outindex1] = idindex1[intuple[index1]][generalizationindex1];
 
             // Call
             delegate.callAll(outtuple, i);
@@ -79,8 +82,8 @@ public class Transformer02 extends AbstractTransformer {
 
             intuple = data[element.representant];
             outtuple = buffer[element.representant];
-            outtuple[outindex0] = idindex0[intuple[index0]][stateindex0];
-            outtuple[outindex1] = idindex1[intuple[index1]][stateindex1];
+            outtuple[outindex0] = idindex0[intuple[index0]][generalizationindex0];
+            outtuple[outindex1] = idindex1[intuple[index1]][generalizationindex1];
 
             // Call
             delegate.callGroupify(outtuple, element);
@@ -107,8 +110,8 @@ public class Transformer02 extends AbstractTransformer {
         for (int i = startIndex; i < stopIndex; i += ssStepWidth) {
             intuple = data[snapshot[i]];
             outtuple = buffer[snapshot[i]];
-            outtuple[outindex0] = idindex0[intuple[index0]][stateindex0];
-            outtuple[outindex1] = idindex1[intuple[index1]][stateindex1];
+            outtuple[outindex0] = idindex0[intuple[index0]][generalizationindex0];
+            outtuple[outindex1] = idindex1[intuple[index1]][generalizationindex1];
 
             // Call
             delegate.callSnapshot(outtuple, snapshot, i);

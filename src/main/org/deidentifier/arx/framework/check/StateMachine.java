@@ -1,5 +1,5 @@
 /*
- * ARX: Efficient, Stable and Optimal Data Anonymization
+ * ARX: Powerful Data Anonymization
  * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -26,14 +26,16 @@ import org.deidentifier.arx.framework.lattice.Node;
  * can be applied to the current transition depending on the previous
  * transition.
  * 
- * @author Prasser, Kohlmayer
+ * @author Fabian Prasser
+ * @author Florian Kohlmayer
  */
 public class StateMachine {
 
     /**
      * The resulting transition.
      * 
-     * @author Prasser, Kohlmayer
+     * @author Fabian Prasser
+ * @author Florian Kohlmayer
      */
     public static class Transition {
 
@@ -50,7 +52,8 @@ public class StateMachine {
     /**
      * The possible transition type.
      * 
-     * @author Prasser, Kohlmayer
+     * @author Fabian Prasser
+ * @author Florian Kohlmayer
      */
     public static enum TransitionType {
 
@@ -76,7 +79,7 @@ public class StateMachine {
     /** The current snapshot, if any. */
     private int[]      snapshot = null;
 
-    /** The node for the current snapshot */
+    /** The node for the current snapshot. */
     private Node       snapshotNode;
 
     /**
@@ -92,14 +95,19 @@ public class StateMachine {
     }
 
     /**
-     * Returns the last node
-     * 
+     * Returns the last node.
+     *
      * @return the last node, which has been checked for k-anonymity
      */
     public Node getLastNode() {
         return lastNode;
     }
 
+    /**
+     * 
+     *
+     * @return
+     */
     public Transition getLastTransition() {
         return lastTransition;
     }
@@ -146,24 +154,23 @@ public class StateMachine {
      */
     private boolean isPossibleSnapshot(final Node currentNode) {
         snapshot = history.get(currentNode);
-        snapshotNode = history.getNode();
+        snapshotNode = history.getTransformation();
         if (snapshot != null) { return true; }
         return false;
     }
 
     /**
-     * Is node1 a predecessor of or equal to node2 ?
-     * 
-     * @param currentNode
-     *            the current node
-     * @return true, if is possible rollup
+     * Is node2 a predecessor of or equal to node1?.
+     *
+     * @param node1
+     * @param node2
+     * @return
      */
     private boolean isPredecessor(final Node node1, final Node node2) {
         for (int i = 0; i < node2.getTransformation().length; i++) {
             if (node1.getTransformation()[i] < node2.getTransformation()[i]) { return false; }
         }
         return true;
-
     }
 
     /**

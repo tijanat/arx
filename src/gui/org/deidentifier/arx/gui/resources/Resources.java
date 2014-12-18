@@ -1,5 +1,5 @@
 /*
- * ARX: Efficient, Stable and Optimal Data Anonymization
+ * ARX: Powerful Data Anonymization
  * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -18,8 +18,7 @@
 
 package org.deidentifier.arx.gui.resources;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.InputStream;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
@@ -27,69 +26,46 @@ import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.SimpleLayout;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 
+/**
+ * This class provides access to basic resources.
+ *
+ * @author Fabian Prasser
+ */
 public class Resources {
 
-    private static final ResourceBundle MESSAGES_BUNDLE = ResourceBundle.getBundle("org.deidentifier.arx.gui.resources.messages"); //$NON-NLS-1$
-    private static final ResourceBundle FORMATS_BUNDLE  = ResourceBundle.getBundle("org.deidentifier.arx.gui.resources.formats"); //$NON-NLS-1$
-
-    private final String                VERSION         = Resources.getMessage("Resources.0"); //$NON-NLS-1$
-
-    private final List<String>          DATE_FORMATS    = new ArrayList<String>();
-
-    private Logger                      LOGGER          = Logger.getRootLogger();
+    /**
+     * Returns the logo.
+     *
+     * @param display
+     * @return
+     */
+	public static Image[] getIconSet(Display display) {
+	    
+	    if (iconset == null){
+    	    int[] sizes = new int[]{16,24,32,48,64,96,128,256};
+    	    iconset = new Image[sizes.length];
+    	    int idx = 0;
+    	    for (int size : sizes){
+    	        iconset[idx++] = getImage(display, "logo_"+size+".png"); //$NON-NLS-1$ //$NON-NLS-2$
+    	    }
+	    }
+	    return iconset;
+	}
     
-    public Resources(final Shell shell) {
-
-        this.shell = shell;
-
-        DATE_FORMATS.add(this.getFormat("Formats.1")); //$NON-NLS-1$
-        DATE_FORMATS.add(this.getFormat("Formats.2")); //$NON-NLS-1$
-        DATE_FORMATS.add(this.getFormat("Formats.3")); //$NON-NLS-1$
-        DATE_FORMATS.add(this.getFormat("Formats.4")); //$NON-NLS-1$
-        DATE_FORMATS.add(this.getFormat("Formats.5")); //$NON-NLS-1$
-        DATE_FORMATS.add(this.getFormat("Formats.6")); //$NON-NLS-1$
-        DATE_FORMATS.add(this.getFormat("Formats.7")); //$NON-NLS-1$
-        DATE_FORMATS.add(this.getFormat("Formats.8")); //$NON-NLS-1$
-        DATE_FORMATS.add(this.getFormat("Formats.9")); //$NON-NLS-1$
-        DATE_FORMATS.add(this.getFormat("Formats.10")); //$NON-NLS-1$
-        DATE_FORMATS.add(this.getFormat("Formats.11")); //$NON-NLS-1$
-        DATE_FORMATS.add(this.getFormat("Formats.12")); //$NON-NLS-1$
-        DATE_FORMATS.add(this.getFormat("Formats.13")); //$NON-NLS-1$
-        DATE_FORMATS.add(this.getFormat("Formats.14")); //$NON-NLS-1$
-        DATE_FORMATS.add(this.getFormat("Formats.15")); //$NON-NLS-1$
-        DATE_FORMATS.add(this.getFormat("Formats.16")); //$NON-NLS-1$
-        DATE_FORMATS.add(this.getFormat("Formats.17")); //$NON-NLS-1$
-        DATE_FORMATS.add(this.getFormat("Formats.18")); //$NON-NLS-1$
-        DATE_FORMATS.add(this.getFormat("Formats.19")); //$NON-NLS-1$
-        DATE_FORMATS.add(this.getFormat("Formats.20")); //$NON-NLS-1$
-        DATE_FORMATS.add(this.getFormat("Formats.21")); //$NON-NLS-1$
-        DATE_FORMATS.add(this.getFormat("Formats.22")); //$NON-NLS-1$
-        DATE_FORMATS.add(this.getFormat("Formats.23")); //$NON-NLS-1$
-        DATE_FORMATS.add(this.getFormat("Formats.24")); //$NON-NLS-1$
-        DATE_FORMATS.add(this.getFormat("Formats.25")); //$NON-NLS-1$
-        DATE_FORMATS.add(this.getFormat("Formats.26")); //$NON-NLS-1$
-
-        // Release config
-        SimpleLayout layout = new SimpleLayout();
-        ConsoleAppender consoleAppender = new ConsoleAppender(layout);
-        LOGGER.addAppender(consoleAppender);
-        LOGGER.setLevel(Level.ALL);
-    }
-
-    private String getFormat(String key) {
-        try {
-            return FORMATS_BUNDLE.getString(key);
-        } catch (MissingResourceException e) {
-            return '!' + key + '!';
-        }
-    }
-
-    /*
-     * TODO: Make this method non-static
+    /**
+     * 
+     * Returns the associated message
+     * TODO: Make this method non-static.
+     *
+     * @param key
+     * @return
      */
     public static String getMessage(String key) {
         try {
@@ -98,35 +74,133 @@ public class Resources {
             return '!' + key + '!';
         }
     }
-
-    private final Shell shell;
-
-    public List<String> getDateFormats() {
-        return DATE_FORMATS;
+    
+    /**
+     * Returns the splash image.
+     *
+     * @param display
+     * @return
+     */
+    public static Image getSplash(Display display) {
+        if (splash == null) {
+            splash = getImage(display, "splash.png"); //$NON-NLS-1$
+        }
+        return splash;
     }
 
+    /**
+     * Returns the version.
+     *
+     * @return
+     */
+    public static String getVersion() {
+        return Resources.getMessage("Resources.0"); //$NON-NLS-1$;
+    }
+    
+    /**
+     * Loads an image. Adds a dispose listener that disposes the image when the display is disposed
+     * @param display
+     * @param resource
+     * @return
+     */
+    private static final Image getImage(Display display, String resource){
+        final Image image = new Image(display, Resources.class.getResourceAsStream(resource));
+        display.addListener(SWT.Dispose, new Listener(){
+            public void handleEvent(Event arg0) {
+                if (image != null && !image.isDisposed()) {
+                    image.dispose();
+                }
+            }
+        });
+        return image;
+    }
+
+    /**  TODO */
+    private static final ResourceBundle MESSAGES_BUNDLE = ResourceBundle.getBundle("org.deidentifier.arx.gui.resources.messages"); //$NON-NLS-1$
+
+    /** The splash. */
+    private static Image splash = null;
+    
+    /** The iconset. */
+    private static Image[] iconset = null;
+
+    /** Logger. */
+    private final Logger logger = Logger.getRootLogger();
+
+    /** Shell. */
+    private final Shell  shell;
+    
+    /**
+     * Creates a new instance.
+     *
+     * @param shell
+     */
+    public Resources(final Shell shell) {
+
+        this.shell = shell;
+        
+        // Release config
+        SimpleLayout layout = new SimpleLayout();
+        ConsoleAppender consoleAppender = new ConsoleAppender(layout);
+        logger.addAppender(consoleAppender);
+        logger.setLevel(Level.OFF);
+    }
+    
+    /**
+     * Returns the display.
+     *
+     * @return
+     */
     public Display getDisplay() {
         return shell.getDisplay();
     }
 
+    /**
+     * Returns the size of the gradient used in heatmaps.
+     *
+     * @return
+     */
+    public int getGradientLength() {
+        return 256;
+    }
+
+    /**
+     * Returns an image.
+     *
+     * @param name
+     * @return
+     */
     public Image getImage(final String name) {
+        if (shell.isDisposed()) return null;
         return new Image(shell.getDisplay(), this.getClass()
                                                  .getResourceAsStream(name));
     }
 
+    /**
+     * Returns the logger.
+     *
+     * @return
+     */
     public Logger getLogger() {
-        return LOGGER;
+        return logger;
     }
 
+    /**
+     * Returns the shell.
+     *
+     * @return
+     */
     public Shell getShell() {
         return shell;
     }
 
-    public String getVersion() {
-        return VERSION;
-    }
-
-    public int getGradientLength() {
-        return 256;
+    /**
+     * Returns a stream.
+     *
+     * @param name
+     * @return
+     */
+    public InputStream getStream(final String name) {
+        return this.getClass().getResourceAsStream(name);
     }
 }

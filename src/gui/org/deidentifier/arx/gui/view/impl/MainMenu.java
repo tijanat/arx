@@ -1,5 +1,5 @@
 /*
- * ARX: Efficient, Stable and Optimal Data Anonymization
+ * ARX: Powerful Data Anonymization
  * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -19,7 +19,11 @@
 package org.deidentifier.arx.gui.view.impl;
 
 import org.deidentifier.arx.gui.Controller;
+import org.deidentifier.arx.gui.model.Model;
+import org.deidentifier.arx.gui.model.ModelEvent;
+import org.deidentifier.arx.gui.model.ModelEvent.ModelPart;
 import org.deidentifier.arx.gui.resources.Resources;
+import org.deidentifier.arx.gui.view.def.IView;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -27,19 +31,38 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
 
-public class MainMenu {
+/**
+ * This class implements the global main menu.
+ *
+ * @author Fabian Prasser
+ */
+public class MainMenu implements IView {
 
+    /**  TODO */
     private static final String FILE_NAME = Resources.getMessage("MainMenu.0"); //$NON-NLS-1$
+    
+    /**  TODO */
     private static final String EDIT_NAME = Resources.getMessage("MainMenu.1"); //$NON-NLS-1$
+    
+    /**  TODO */
     private static final String HELP_NAME = Resources.getMessage("MainMenu.2"); //$NON-NLS-1$
 
+    /**  TODO */
+    private Menu menu;
+    
+    /**
+     * Creates a new instance.
+     *
+     * @param shell
+     * @param controller
+     */
     public MainMenu(final Shell shell, final Controller controller) {
 
         // Create Menu
-        final Menu menuBar = new Menu(shell, SWT.BAR);
+        menu = new Menu(shell, SWT.BAR);
 
         /** File Menu */
-        final MenuItem fileMenuItem = new MenuItem(menuBar, SWT.CASCADE);
+        final MenuItem fileMenuItem = new MenuItem(menu, SWT.CASCADE);
         final Menu fileMenu = new Menu(shell, SWT.DROP_DOWN);
         fileMenuItem.setText(FILE_NAME);
         fileMenuItem.setMenu(fileMenu);
@@ -149,10 +172,10 @@ public class MainMenu {
             }
         });
 
-        shell.setMenuBar(menuBar);
+        shell.setMenuBar(menu);
 
         /** Edit Menu */
-        final MenuItem editMenuItem = new MenuItem(menuBar, SWT.CASCADE);
+        final MenuItem editMenuItem = new MenuItem(menu, SWT.CASCADE);
         final Menu editMenu = new Menu(shell, SWT.DROP_DOWN);
         editMenuItem.setText(EDIT_NAME);
         editMenuItem.setMenu(editMenu);
@@ -195,7 +218,7 @@ public class MainMenu {
         });
 
         /** Help Menu */
-        final MenuItem helpMenuItem = new MenuItem(menuBar, SWT.CASCADE);
+        final MenuItem helpMenuItem = new MenuItem(menu, SWT.CASCADE);
         final Menu helpMenu = new Menu(shell, SWT.DROP_DOWN);
         helpMenuItem.setText(HELP_NAME);
         helpMenuItem.setMenu(helpMenu);
@@ -220,5 +243,62 @@ public class MainMenu {
             }
         });
 
+        final MenuItem debugItem = new MenuItem(helpMenu, SWT.PUSH);
+        debugItem.setText("Debug"); //$NON-NLS-1$
+        debugItem.setImage(controller.getResources().getImage("information.png")); //$NON-NLS-1$
+        debugItem.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(final SelectionEvent e) {
+                controller.actionMenuHelpDebug();
+            }
+        });
+        debugItem.setEnabled(false);
+    }
+    
+    /**
+     * Enable/disable a menu.
+     *
+     * @param menu
+     * @param text
+     * @param enabled
+     */
+    private void setEnabled(Menu menu, String text, boolean enabled) {
+        for (MenuItem item : menu.getItems()){
+            if (item.getText().equals(text)) {
+                item.setEnabled(enabled);
+            } else {
+                if (item.getMenu() != null){
+                    setEnabled(item.getMenu(), text, enabled);
+                }
+            }
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see org.deidentifier.arx.gui.view.def.IView#dispose()
+     */
+    @Override
+    public void dispose() {
+        // Nothing to do for now
+    }
+
+    /* (non-Javadoc)
+     * @see org.deidentifier.arx.gui.view.def.IView#reset()
+     */
+    @Override
+    public void reset() {
+        // Nothing to do for now
+    }
+
+    /* (non-Javadoc)
+     * @see org.deidentifier.arx.gui.view.def.IView#update(org.deidentifier.arx.gui.model.ModelEvent)
+     */
+    @Override
+    public void update(ModelEvent event) {
+        if (event.part == ModelPart.MODEL) {
+            if (event.data != null && (event.data instanceof Model)){
+                setEnabled(menu, "Debug", ((Model)event.data).isDebugEnabled());
+            }
+        }
     }
 }

@@ -1,5 +1,5 @@
 /*
- * ARX: Efficient, Stable and Optimal Data Anonymization
+ * ARX: Powerful Data Anonymization
  * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -18,6 +18,13 @@
 
 package org.deidentifier.arx;
 
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import org.deidentifier.arx.ARXLattice.ARXNode;
+import org.deidentifier.arx.aggregates.StatisticsEquivalenceClasses;
 import org.deidentifier.arx.criteria.DPresence;
 
 import cern.colt.GenericSorting;
@@ -25,67 +32,64 @@ import cern.colt.Swapper;
 import cern.colt.function.IntComparator;
 
 /**
- * This class implements sorting and swapping for a set of paired data handles
+ * This class implements sorting and swapping for a set of paired data handles.
+ *
  * @author Fabian Prasser
  */
 class DataRegistry {
 
-    /** The input handle, if any*/
+    /** The input handle, if any. */
     private DataHandleInput input;
-    /** The input subset handle, if any*/
+    
+    /** The input subset handle, if any. */
     private DataHandleSubset inputSubset;
-    /** The output handle, if any*/
-    private DataHandleOutput output;
-    /** The output subset handle, if any*/
-    private DataHandleSubset outputSubset;
+    
+    /** The output handle, if any. */
+    private Map<ARXNode, DataHandleOutput> output = new HashMap<ARXNode, DataHandleOutput>();
+    
+    /** The output subset handle, if any. */
+    private Map<ARXNode, DataHandleSubset> outputSubset = new HashMap<ARXNode, DataHandleSubset>();
 
     /**
-     * Default constructor
+     * Default constructor.
      */
     public DataRegistry(){
         // Empty by design
     }
     
     /**
-     * Clone constructor
-     * @param registry
-     */
-    public DataRegistry(DataRegistry other) {
-        this.input = other.input;
-        this.output = other.output;
-        this.inputSubset = other.inputSubset;
-        this.outputSubset = other.outputSubset;
-    }
-
-    /**
-     * Helper that creates a view on a research subset
+     * Helper that creates a view on a research subset.
+     *
      * @param handle
      * @param subset
+     * @param eqStatistics
      * @return
      */
-    private DataHandleSubset createSubset(DataHandle handle, DataSubset subset) {
+    private DataHandleSubset createSubset(DataHandle handle, DataSubset subset, StatisticsEquivalenceClasses eqStatistics) {
         
-        DataHandleSubset result = new DataHandleSubset(handle, subset);
+        DataHandleSubset result = new DataHandleSubset(handle, subset, eqStatistics);
         result.setRegistry(this);
         return result;
     }
     
     /**
-     * Returns any of the registered subsets
+     * Returns any of the registered subsets.
+     *
      * @return
      */
     private DataHandleSubset getSubset() {
         DataHandleSubset subset = null;
         if (inputSubset!=null){
             subset = inputSubset;
-        } else if (outputSubset!=null){
-            subset = outputSubset;
+        } else if (!outputSubset.isEmpty()){
+            return outputSubset.values().iterator().next();
         }
         return subset;
     }
     
     /**
-     * Sort
+     * Sort.
+     *
      * @param handle
      * @param swapper
      * @param from
@@ -94,12 +98,12 @@ class DataRegistry {
      * @param columns
      */
     private void sortAll(final DataHandle handle,
-                           final Swapper swapper, 
-                           final int from,
-                           final int to,
-                           final boolean ascending,
-                           final int... columns) {
-    
+                         final Swapper swapper,
+                         final int from,
+                         final int to,
+                         final boolean ascending,
+                         final int... columns) {
+
         final DataHandle outer = handle;
         final DataHandleSubset subset = getSubset();
         
@@ -113,7 +117,7 @@ class DataRegistry {
             @Override
             public void swap(final int arg0, final int arg1) {
                 if (input != null) input.internalSwap(arg0, arg1);
-                if (output != null) output.internalSwap(arg0, arg1);
+                for (DataHandleOutput handle : output.values()) handle.internalSwap(arg0, arg1);
                 if (subset != null) subset.internalSwap(arg0, arg1);
                 if (swapper != null) swapper.swap(arg0, arg1);
             }
@@ -127,7 +131,8 @@ class DataRegistry {
     }
     
     /**
-     * Sort
+     * Sort.
+     *
      * @param handle
      * @param swapper
      * @param from
@@ -153,7 +158,7 @@ class DataRegistry {
             @Override
             public void swap(final int arg0, final int arg1) {
                 if (input != null) input.internalSwap(outer.internalTranslate(arg0), outer.internalTranslate(arg1));
-                if (output != null) output.internalSwap(outer.internalTranslate(arg0), outer.internalTranslate(arg1));
+                for (DataHandleOutput handle : output.values()) handle.internalSwap(outer.internalTranslate(arg0), outer.internalTranslate(arg1));
                 if (swapper != null) swapper.swap(outer.internalTranslate(arg0), outer.internalTranslate(arg1));
             }
         };
@@ -163,14 +168,15 @@ class DataRegistry {
     }
 
     /**
-     * Swap
+     * Swap.
+     *
      * @param handle
      * @param row1
      * @param row2
      */
     private void swapAll(DataHandle handle, int row1, int row2) {
         if (input!=null) input.internalSwap(row1, row2);
-        if (output!=null) output.internalSwap(row1, row2);
+        for (DataHandleOutput outhandle : output.values()) outhandle.internalSwap(row1, row2);
         
         // Important to swap in only one subset
         DataHandleSubset subset = getSubset();
@@ -181,7 +187,8 @@ class DataRegistry {
     }
     
     /**
-     * Swap
+     * Swap.
+     *
      * @param handle
      * @param row1
      * @param row2
@@ -192,20 +199,18 @@ class DataRegistry {
         row1 = handle.internalTranslate(row1);
         row2 = handle.internalTranslate(row2);
         if (input!=null) input.internalSwap(row1, row2);
-        if (output!=null) output.internalSwap(row1, row2);
-        
-        // TODO: 
-        // Do input and output share some data?
-        // If yes, the shared part is swapped twice..
+        for (DataHandleOutput outhandle : output.values()) outhandle.internalSwap(row1, row2);
     }
     
     /**
-     * Creates the views on the subset
+     * Creates the views on the subset.
+     *
+     * @param config
      */
     protected void createInputSubset(ARXConfiguration config){
         
         if (config.containsCriterion(DPresence.class)) {
-            this.inputSubset = createSubset(this.input, config.getCriterion(DPresence.class).getSubset());
+            this.inputSubset = createSubset(this.input, config.getCriterion(DPresence.class).getSubset(), null);
         } else {
             this.inputSubset = null;
         }
@@ -213,53 +218,114 @@ class DataRegistry {
     }
 
     /**
-     * Creates the views on the subset
+     * Creates the views on the subset.
+     *
+     * @param node
+     * @param config
+     * @param peqStatistics
      */
-    protected void createOutputSubset(ARXConfiguration config){
+    protected void createOutputSubset(ARXNode node, ARXConfiguration config, StatisticsEquivalenceClasses peqStatistics){
         if (config.containsCriterion(DPresence.class)) {
-            this.outputSubset = createSubset(this.output, config.getCriterion(DPresence.class).getSubset());
+            this.outputSubset.put(node, createSubset(this.output.get(node), config.getCriterion(DPresence.class).getSubset(), peqStatistics));
         } else {
-            this.outputSubset = null;
+            this.outputSubset.remove(node);
         }
-        this.output.setView(this.outputSubset);
+        this.output.get(node).setView(this.outputSubset.get(node));
+    }
+
+    /**
+     * Returns the base data type without generalization.
+     *
+     * @param attribute
+     * @return
+     */
+    protected DataType<?> getBaseDataType(String attribute) {
+        return this.input.getBaseDataType(attribute);
+    }
+
+    /**
+     * Returns a registered handle, if any.
+     *
+     * @param node
+     * @return
+     */
+    protected DataHandle getOutputHandle(ARXNode node) {
+        return this.output.get(node);
     }
     
     /**
-     * Implementation of {@link DataHandle#isOutlier(row)}
+     * Implementation of {@link DataHandle#isOutlier(row)}.
+     *
      * @param handle
      * @param row
      * @return
      */
     protected boolean isOutlier(DataHandle handle, int row){
-        if (output == null){
+        
+        if (handle instanceof DataHandleInput){
             return false;
+        } else if (handle instanceof DataHandleOutput){
+            return ((DataHandleOutput)handle).internalIsOutlier(row);
+        } else if (handle instanceof DataHandleSubset){
+            return isOutlier(((DataHandleSubset)handle).getSource(), row);
         } else {
-            if (handle instanceof DataHandleSubset){
-                return output.internalIsOutlier(((DataHandleSubset)handle).internalTranslate(row));
-            } else {
-                return output.internalIsOutlier(row);
-            }
+            throw new RuntimeException("Illegal state");
         }
     }
 
     /**
-     * Removes the association to all handles, but the input handle
+     * Releases the given handle.
+     *
+     * @param handle
+     */
+    protected void release(DataHandle handle) {
+        
+        // Handle subsets
+        if (handle instanceof DataHandleSubset) {
+           return;
+        }
+        
+        // Handle output
+        Iterator<Entry<ARXNode, DataHandleOutput>> iter = output.entrySet().iterator();
+        while (iter.hasNext()) {
+            Entry<ARXNode, DataHandleOutput> entry = iter.next();
+            if (entry.getValue().equals(handle)) {
+                outputSubset.remove(entry.getKey());
+                iter.remove();
+                handle.doRelease();
+                return;
+            }
+        }
+        
+        // Handle input
+        if (handle.equals(input)) {
+            this.reset();
+            input.doRelease();
+        }
+    }
+
+    /**
+     * Removes the association to all handles, but the input handle.
      */
     protected void reset() {
-        if (this.output != null) {
-            this.output.setRegistry(null);
-            this.output = null;
+        while (!this.output.entrySet().isEmpty()) {
+            Entry<ARXNode, DataHandleOutput> entry = this.output.entrySet().iterator().next();
+            release(entry.getValue());
+            this.output.remove(entry.getKey());
         }
-        if (this.outputSubset != null) {
-            this.outputSubset.setRegistry(null);
-            this.outputSubset = null;
+        this.output.clear();
+        
+        for (DataHandle handle : this.outputSubset.values()) {
+            handle.setRegistry(null);
         }
+        this.outputSubset.clear();
+        
         if (this.inputSubset != null) {
             this.inputSubset.setRegistry(null);
             this.inputSubset = null;
         }
     }
-
+    
     /**
      * Implementation of {@link DataHandle#sort(boolean, int...)}
      * @param handle
@@ -269,7 +335,7 @@ class DataRegistry {
     protected void sort(final DataHandle handle, final boolean ascending, final int... columns) {
         sort(handle, 0, handle.getNumRows(), ascending, columns);
     }
-    
+
     /**
      * Implementation of {@link DataHandle#sort(int, int, boolean, int...)}
      * @param handle
@@ -307,11 +373,11 @@ class DataRegistry {
      * @param columns
      */
     protected void sort(final DataHandle handle,
-                     final Swapper swapper, 
-                     final int from,
-                     final int to,
-                     final boolean ascending,
-                     final int... columns) {
+                        final Swapper swapper,
+                        final int from,
+                        final int to,
+                        final boolean ascending,
+                        final int... columns) {
         handle.checkColumns(columns);
         handle.checkRow(from, handle.getNumRows());
         handle.checkRow(to, handle.getNumRows());
@@ -322,10 +388,11 @@ class DataRegistry {
             sortAll(handle, swapper, from, to, ascending, columns);
         }
     }
-    
+
     /**
-     * Implementation of {@link DataHandle#swap(int, int)}
-     * @param dataHandle
+     * Implementation of {@link DataHandle#swap(int, int)}.
+     *
+     * @param handle
      * @param row1
      * @param row2
      */
@@ -338,7 +405,8 @@ class DataRegistry {
     }
 
     /**
-     * Update the registry
+     * Update the registry.
+     *
      * @param input
      */
     protected void updateInput(DataHandleInput input){
@@ -346,7 +414,8 @@ class DataRegistry {
     }
 
     /**
-     * Update the registry
+     * Update the registry.
+     *
      * @param inputSubset
      */
     protected void updateInputSubset(DataHandleSubset inputSubset){
@@ -354,18 +423,22 @@ class DataRegistry {
     }
 
     /**
-     * Update the registry
+     * Update the registry.
+     *
+     * @param node
      * @param output
      */
-    protected void updateOutput(DataHandleOutput output){
-        this.output = output;
+    protected void updateOutput(ARXNode node, DataHandleOutput output){
+        this.output.put(node, output);
     }
 
     /**
-     * Update the registry
+     * Update the registry.
+     *
+     * @param node
      * @param outputSubset
      */
-    protected void updateOutputSubset(DataHandleSubset outputSubset){
-        this.outputSubset = outputSubset;
+    protected void updateOutputSubset(ARXNode node, DataHandleSubset outputSubset){
+        this.outputSubset.put(node, outputSubset);
     }
 }

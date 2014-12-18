@@ -1,5 +1,5 @@
 /*
- * ARX: Efficient, Stable and Optimal Data Anonymization
+ * ARX: Powerful Data Anonymization
  * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -24,20 +24,28 @@ import java.util.List;
 import org.deidentifier.arx.framework.check.INodeChecker;
 import org.deidentifier.arx.framework.lattice.Lattice;
 import org.deidentifier.arx.framework.lattice.Node;
+import org.deidentifier.arx.metric.InformationLoss;
+import org.deidentifier.arx.metric.InformationLossWithBound;
 
 /**
  * Abstract class for an algorithm, which provides some generic methods.
  * 
- * @author Prasser, Kohlmayer
+ * @author Fabian Prasser
+ * @author Florian Kohlmayer
  */
 public abstract class AbstractAlgorithm {
 
+    /** The optimal transformation. */
+    private Node               globalOptimum          = null;
+
+    /** The optimal information loss. */
+    private InformationLoss<?> optimalInformationLoss = null;
+
     /** A node checker. */
-    protected INodeChecker  checker  = null;
+    protected INodeChecker     checker                = null;
 
     /** The lattice. */
-    protected Lattice       lattice  = null;
-
+    protected Lattice          lattice                = null;
 
     /**
      * Walks the lattice.
@@ -62,7 +70,7 @@ public abstract class AbstractAlgorithm {
         final ArrayList<Node> results = new ArrayList<Node>();
         for (final Node[] level : lattice.getLevels()) {
             for (final Node n : level) {
-                if (n.isAnonymous()) {
+                if (n.hasProperty(Node.PROPERTY_ANONYMOUS)) {
                     results.add(n);
                 }
             }
@@ -71,8 +79,54 @@ public abstract class AbstractAlgorithm {
     }
 
     /**
+     * Returns the global optimum.
+     *
+     * @return
+     */
+    public Node getGlobalOptimum() {
+        return globalOptimum;
+    }
+
+    /**
      * Implement this method in order to provide a new algorithm.
      */
     public abstract void traverse();
 
+    /**
+     * Determine information loss of the given node if it can be
+     * used for estimating minimum and maximum information
+     * loss for tagged nodes.
+     *
+     * @param node
+     */
+    protected void computeUtilityForMonotonicMetrics(Node node) {
+        if ((checker.getMetric().isMonotonic() ||
+            (checker.getConfiguration().getMaxOutliers() == 0d)) &&
+            (node.getInformationLoss() == null)) {
+
+            // Independent evaluation or check
+            if (checker.getMetric().isIndependent()) {
+                InformationLossWithBound<?> loss = checker.getMetric().getInformationLoss(node, null);
+                lattice.setInformationLoss(node, loss.getInformationLoss());
+                lattice.setLowerBound(node, loss.getLowerBound());
+            } else {
+                lattice.setChecked(node, checker.check(node, true));
+            }
+        }
+    }
+
+    /**
+     * Keeps track of the global optimum.
+     *
+     * @param node
+     */
+    protected void trackOptimum(Node node) {
+        if (node.hasProperty(Node.PROPERTY_ANONYMOUS) &&
+            ((globalOptimum == null) ||
+             (node.getInformationLoss().compareTo(optimalInformationLoss) < 0) ||
+            ((node.getInformationLoss().compareTo(optimalInformationLoss) == 0) && (node.getLevel() < globalOptimum.getLevel())))) {
+            globalOptimum = node;
+            optimalInformationLoss = node.getInformationLoss();
+        }
+    }
 }

@@ -1,5 +1,5 @@
 /*
- * ARX: Efficient, Stable and Optimal Data Anonymization
+ * ARX: Powerful Data Anonymization
  * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -25,24 +25,38 @@ import org.deidentifier.arx.gui.model.Model;
 import org.deidentifier.arx.gui.resources.Resources;
 import org.eclipse.core.runtime.IProgressMonitor;
 
+/**
+ * This worker applies a transformation.
+ *
+ * @author Fabian Prasser
+ */
 public class WorkerTransform extends Worker<DataHandle> {
 
+	/** The model. */
     private final Model model;
 
+    /**
+     * Creates a new instance.
+     *
+     * @param model
+     */
     public WorkerTransform(final Model model) {
         this.model = model;
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.operation.IRunnableWithProgress#run(org.eclipse.core.runtime.IProgressMonitor)
+     */
     @Override
     public void
             run(final IProgressMonitor arg0) throws InvocationTargetException,
                                             InterruptedException {
 
-        arg0.beginTask(Resources.getMessage("WorkerTransform.0"), 100); //$NON-NLS-1$
+        arg0.beginTask(Resources.getMessage("WorkerTransform.0"), 1); //$NON-NLS-1$
 
         try {
             arg0.worked(1);
-            result = model.getResult().getHandle(model.getSelectedNode());
+            result = model.getResult().getOutput(model.getSelectedNode(), false);
         } catch (final Exception e) {
             error = e;
         }

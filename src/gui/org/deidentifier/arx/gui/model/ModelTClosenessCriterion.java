@@ -1,5 +1,5 @@
 /*
- * ARX: Efficient, Stable and Optimal Data Anonymization
+ * ARX: Powerful Data Anonymization
  * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -22,41 +22,72 @@ import org.deidentifier.arx.criteria.EqualDistanceTCloseness;
 import org.deidentifier.arx.criteria.HierarchicalDistanceTCloseness;
 import org.deidentifier.arx.criteria.PrivacyCriterion;
 
+/**
+ * This class implements a model for the t-closeness criterion.
+ *
+ * @author Fabian Prasser
+ */
 public class ModelTClosenessCriterion extends ModelExplicitCriterion{
 
-	private static final long serialVersionUID = 4901053938589514626L;
-	public ModelTClosenessCriterion(String attribute) {
-		super(attribute);
-	}
+    /** SVUID. */
+    private static final long serialVersionUID = 4901053938589514626L;
+        
+    /** Variant. */
+    public static final int   VARIANT_EQUAL        = 0;
+    
+    /** Variant. */
+    public static final int   VARIANT_HIERARCHICAL = 1;
+
+	/** The variant. */
 	private int variant = 0;
+	
+	/** T. */
 	private double t = 0.001d;
-	public int getVariant() {
-		return variant;
+
+    /**
+     * Creates a new instance.
+     *
+     * @param attribute
+     */
+    public ModelTClosenessCriterion(String attribute) {
+        super(attribute);
+    }
+    
+    /* (non-Javadoc)
+     * @see org.deidentifier.arx.gui.model.ModelCriterion#getCriterion(org.deidentifier.arx.gui.model.Model)
+     */
+    @Override
+	public PrivacyCriterion getCriterion(Model model) {
+	    switch (variant) {
+            case VARIANT_EQUAL: return new EqualDistanceTCloseness(getAttribute(), t);
+            case VARIANT_HIERARCHICAL: return new HierarchicalDistanceTCloseness(getAttribute(), t,
+                                                                            model.getInputConfig().getHierarchy(getAttribute()));
+            default: throw new RuntimeException("Internal error: invalid variant of t-closeness");
+	    }
 	}
-	public void setVariant(int variant) {
-		this.variant = variant;
-	}
+	
+	/**
+     * Returns T.
+     *
+     * @return
+     */
 	public double getT() {
 		return t;
 	}
-	public void setT(double t) {
-		this.t = t;
+	
+	/**
+     * Returns the variant.
+     *
+     * @return
+     */
+	public int getVariant() {
+		return variant;
 	}
-
+	
+	/* (non-Javadoc)
+	 * @see org.deidentifier.arx.gui.model.ModelExplicitCriterion#pull(org.deidentifier.arx.gui.model.ModelExplicitCriterion)
+	 */
 	@Override
-	public PrivacyCriterion getCriterion(Model model) {
-		if (variant == 0) {
-			return new EqualDistanceTCloseness(getAttribute(), t);
-		} else if (variant == 1) {
-			return new HierarchicalDistanceTCloseness(getAttribute(), t,
-					model.getInputConfig().getHierarchy(getAttribute()));
-		} else {
-			throw new RuntimeException(
-					"Internal error: invalid variant of t-closeness");
-		}
-	}
-
-    @Override
     public void pull(ModelExplicitCriterion criterion) {
         if (!(criterion instanceof ModelTClosenessCriterion)) {
             throw new RuntimeException("Invalid type of criterion");
@@ -65,15 +96,35 @@ public class ModelTClosenessCriterion extends ModelExplicitCriterion{
         this.variant = other.variant;
         this.t = other.t;
     }
+
+	/**
+     * Sets T.
+     *
+     * @param t
+     */
+	public void setT(double t) {
+		this.t = t;
+	}
+
+    /**
+     * Sets the variant.
+     *
+     * @param variant
+     */
+	public void setVariant(int variant) {
+		this.variant = variant;
+	}
+    
+    /* (non-Javadoc)
+     * @see org.deidentifier.arx.gui.model.ModelCriterion#toString()
+     */
     @Override
     public String toString() {
         // TODO: Move to messages.properties
-        if (variant==0){
-            return String.valueOf(t)+"-Closeness with equal-distance EMD";
-        } else if (variant==1){
-            return String.valueOf(t)+"-Closeness with hierarchical-distance EMD";
-        } else {
-            throw new RuntimeException("Internal error: invalid variant of l-diversity");
+        switch (variant) {
+            case VARIANT_EQUAL: return String.valueOf(t)+"-Closeness with equal-distance EMD";
+            case VARIANT_HIERARCHICAL: return String.valueOf(t)+"-Closeness with hierarchical-distance EMD";
+            default: throw new RuntimeException("Internal error: invalid variant of t-closeness");
         }
     }
 }

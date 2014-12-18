@@ -1,5 +1,5 @@
 /*
- * ARX: Efficient, Stable and Optimal Data Anonymization
+ * ARX: Powerful Data Anonymization
  * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -18,31 +18,34 @@
 
 package org.deidentifier.arx.framework.check.transformer;
 
-import org.deidentifier.arx.ARXConfiguration;
+import org.deidentifier.arx.ARXConfiguration.ARXConfigurationInternal;
 import org.deidentifier.arx.framework.check.distribution.IntArrayDictionary;
 import org.deidentifier.arx.framework.data.GeneralizationHierarchy;
 
 /**
  * The class TransformerAll.
  * 
- * @author Prasser, Kohlmayer
+ * @author Fabian Prasser
+ * @author Florian Kohlmayer
  */
 public class TransformerAll extends AbstractTransformer {
 
     /**
      * Instantiates a new transformer.
-     * 
-     * @param data
-     *            the data
-     * @param hierarchies
-     *            the hierarchies
+     *
+     * @param data the data
+     * @param hierarchies the hierarchies
+     * @param sensitiveValues
+     * @param dictionarySensValue
+     * @param dictionarySensFreq
+     * @param config
      */
     public TransformerAll(final int[][] data,
                           final GeneralizationHierarchy[] hierarchies,
-                          final int[] sensitiveValues,
+                          final int[][] sensitiveValues,
                           final IntArrayDictionary dictionarySensValue,
                           final IntArrayDictionary dictionarySensFreq,
-                          final ARXConfiguration config) {
+                          final ARXConfigurationInternal config) {
         super(data, hierarchies, sensitiveValues, dictionarySensValue, dictionarySensFreq, config);
     }
 
@@ -59,7 +62,7 @@ public class TransformerAll extends AbstractTransformer {
             intuple = data[i];
             outtuple = buffer[i];
             for (int d = 0; d < dimensions; d++) {
-                final int state = states[d];
+                final int state = generalization[d];
                 outtuple[d] = map[d][intuple[d]][state];
             }
 
@@ -82,7 +85,7 @@ public class TransformerAll extends AbstractTransformer {
             intuple = data[element.representant];
             outtuple = buffer[element.representant];
             for (int d = 0; d < dimensions; d++) {
-                final int state = states[d];
+                final int state = generalization[d];
                 outtuple[d] = map[d][intuple[d]][state];
             }
 
@@ -112,7 +115,7 @@ public class TransformerAll extends AbstractTransformer {
             intuple = data[snapshot[i]];
             outtuple = buffer[snapshot[i]];
             for (int d = 0; d < dimensions; d++) {
-                final int state = states[d];
+                final int state = generalization[d];
                 outtuple[d] = map[d][intuple[d]][state];
             }
 

@@ -1,5 +1,5 @@
 /*
- * ARX: Efficient, Stable and Optimal Data Anonymization
+ * ARX: Powerful Data Anonymization
  * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -23,24 +23,41 @@ import org.deidentifier.arx.DataHandleSubset;
 import org.deidentifier.arx.RowSet;
 import org.eclipse.nebula.widgets.nattable.data.IDataProvider;
 
+/**
+ * A data provider based on a data handle.
+ *
+ * @author Fabian Prasser
+ */
 public class DataTableHandleDataProvider implements IDataProvider {
 
-    private final DataHandle       data;
+    /**  TODO */
     private final DataTableContext context;
 
-    public DataTableHandleDataProvider(final DataHandle data, final DataTableContext context) {
-        this.data = data;
+    /**
+     * Creates a new instance.
+     *
+     * @param context
+     */
+    public DataTableHandleDataProvider(final DataTableContext context) {
         this.context = context;
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.nebula.widgets.nattable.data.IDataProvider#getColumnCount()
+     */
     @Override
     public int getColumnCount() {
+        DataHandle data = context.getHandle();
         if (data == null || data.isOrphaned()) { return 0; }
         return data.getNumColumns() + (context.getRows() != null ? 1 : 0);
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.nebula.widgets.nattable.data.IDataProvider#getDataValue(int, int)
+     */
     @Override
     public Object getDataValue(int arg0, int arg1) {
+        DataHandle data = context.getHandle();
         if (data == null) { return null; }
         RowSet rows = context.getRows();
         if (rows == null) {
@@ -57,12 +74,19 @@ public class DataTableHandleDataProvider implements IDataProvider {
         }
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.nebula.widgets.nattable.data.IDataProvider#getRowCount()
+     */
     @Override
     public int getRowCount() {
+        DataHandle data = context.getHandle();
         if (data == null || data.isOrphaned()) { return 0; }
         return data.getNumRows();
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.nebula.widgets.nattable.data.IDataProvider#setDataValue(int, int, java.lang.Object)
+     */
     @Override
     public void setDataValue(final int arg0, final int arg1, final Object arg2) {
         return;

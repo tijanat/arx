@@ -1,5 +1,5 @@
 /*
- * ARX: Efficient, Stable and Optimal Data Anonymization
+ * ARX: Powerful Data Anonymization
  * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -19,12 +19,15 @@
 package org.deidentifier.arx.gui.view.impl.analyze;
 
 import org.deidentifier.arx.gui.Controller;
+import org.deidentifier.arx.gui.model.ModelEvent;
 import org.deidentifier.arx.gui.model.ModelEvent.ModelPart;
 import org.deidentifier.arx.gui.view.SWTUtil;
 import org.deidentifier.arx.gui.view.def.ILayout;
 import org.deidentifier.arx.gui.view.impl.common.ViewData;
 import org.deidentifier.arx.gui.view.impl.common.ViewDataInput;
 import org.deidentifier.arx.gui.view.impl.common.ViewDataOutput;
+import org.eclipse.nebula.widgets.nattable.coordinate.PixelCoordinate;
+import org.eclipse.nebula.widgets.nattable.viewport.ViewportLayer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -35,35 +38,68 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 
+/**
+ * This class layouts the analysis view.
+ *
+ * @author Fabian Prasser
+ */
 public class LayoutAnalyze implements ILayout {
 
+    /**
+     * A runnable for synchronizing both tables.
+     *
+     * @author Fabian Prasser
+     */
     private class Synchronizer implements Runnable {
-        final ViewData in;
-        final ViewData out;
-        Boolean         stop     = false;
-        Runnable        runnable = null;
 
+        /**  TODO */
+        final ViewData in;
+        
+        /**  TODO */
+        final ViewData out;
+        
+        /**  TODO */
+        Boolean        stop     = false;
+        
+        /**  TODO */
+        Runnable       runnable = null;
+
+        /**
+         * Creates a new instance.
+         *
+         * @param in
+         * @param out
+         */
         public Synchronizer(final ViewData in, final ViewData out) {
             this.in = in;
             this.out = out;
             runnable = new Runnable() {
                 @Override
                 public void run() {
-                    out.getViewportLayer()
-                       .setOriginRowPosition(in.getViewportLayer()
-                                               .getOriginRowPosition());
-                    out.getViewportLayer()
-                       .setOriginColumnPosition(in.getViewportLayer()
-                                                  .getOriginColumnPosition());
+                    ViewportLayer outLayer = out.getViewportLayer();
+                    ViewportLayer inLayer = in.getViewportLayer();
+                    PixelCoordinate coordinate = inLayer.getOrigin();
+                    final int y = coordinate.getY();
+                    final int x = coordinate.getX();
+                    outLayer.setOriginY(y);
+                    outLayer.setOriginX(x);
                 }
             };
             new Thread(this).start();
         }
 
+        /**
+         * Returns the input view.
+         *
+         * @return
+         */
         public ViewData getIn() {
             return in;
         }
 
+        /* (non-Javadoc)
+         * @see java.lang.Runnable#run()
+         */
         @Override
         public void run() {
             final long time = System.currentTimeMillis();
@@ -76,50 +112,89 @@ public class LayoutAnalyze implements ILayout {
                             Display.getDefault().syncExec(runnable);
                         }
                     } catch (final Exception e) {
-                    } // Catch nattable bugs
+                        // Die silently
+                    } 
                 }
                 try {
                     Thread.sleep(10);
                 } catch (final InterruptedException e) {
+                    // Die silently
                 }
             }
             synchronizer = null;
-            synchronized (stop) {
-                stop.notify();
+            synchronized (monitor) {
+                monitor.notify();
             }
         }
 
+        /**
+         * 
+         */
         public void stop() {
             stop = true;
-            synchronized (stop) {
+            synchronized (monitor) {
                 try {
-                    stop.wait();
+                    while (synchronizer != null){
+                        monitor.wait();
+                    }
                 } catch (final InterruptedException e) {
+                    // Die silently
                 }
             }
         }
     }
 
-    private static final int      WEIGHT_TOP        = 75;
-    private static final int      WEIGHT_BOTTOM     = 25;
-    private static final int      WEIGHT_LEFT       = 50;
-    private static final int      WEIGHT_RIGHT      = 50;
+    /**  TODO */
+    private static final int       WEIGHT_TOP    = 75;
     
-    private final Composite       centerLeft;
-    private final Composite       centerRight;
-    private final Composite       bottomLeft;
+    /**  TODO */
+    private static final int       WEIGHT_BOTTOM = 25;
+    
+    /**  TODO */
+    private static final int       WEIGHT_LEFT   = 50;
+    
+    /**  TODO */
+    private static final int       WEIGHT_RIGHT  = 50;
 
-    private final Composite       bottomRight;
-    private final ViewData        dataInputView;
-    private final ViewData        dataOutputView;
+    /**  TODO */
+    private final Composite        centerLeft;
+    
+    /**  TODO */
+    private final Composite        centerRight;
+    
+    /**  TODO */
+    private final Composite        bottomLeft;
+    
+    /**  TODO */
+    private final Composite        bottomRight;
+    
+    /**  TODO */
+    private final SashForm         centerSash;
+    
+    /**  TODO */
+    private final ViewData         dataInputView;
+    
+    /**  TODO */
+    private final ViewData         dataOutputView;
 
+    /**  TODO */
     private final LayoutStatistics statisticsInputLayout;
+    
+    /**  TODO */
     private final LayoutStatistics statisticsOutputLayout;
 
-    private final SashForm        centerSash;
+    /**  TODO */
+    private Synchronizer           synchronizer  = null;
+    
+    /**  TODO */
+    private String[]               monitor = new String[0];
 
-    private Synchronizer          synchronizer      = null;
-
+    /**
+     * Creates a new instance.
+     *
+     * @param parent
+     * @param controller
+     */
     public LayoutAnalyze(final Composite parent, final Controller controller) {
 
         // Create the SashForm with HORIZONTAL
@@ -151,14 +226,12 @@ public class LayoutAnalyze implements ILayout {
         dataInputView.addScrollBarListener(new Listener() {
             @Override
             public void handleEvent(final Event arg0) {
-                final int row = dataInputView.getViewportLayer()
-                                             .getOriginRowPosition();
-                final int col = dataInputView.getViewportLayer()
-                                             .getOriginColumnPosition();
+                PixelCoordinate coordinate = dataInputView.getViewportLayer().getOrigin();
+                final int row = coordinate.getY();
+                final int col = coordinate.getX();
                 if (dataOutputView != null) {
-                    dataOutputView.getViewportLayer().setOriginRowPosition(row);
-                    dataOutputView.getViewportLayer()
-                                  .setOriginColumnPosition(col);
+                    dataOutputView.getViewportLayer().setOriginY(row);
+                    dataOutputView.getViewportLayer().setOriginX(col);
                     synchronize(dataInputView, dataOutputView);
                 }
             }
@@ -166,14 +239,12 @@ public class LayoutAnalyze implements ILayout {
         dataOutputView.addScrollBarListener(new Listener() {
             @Override
             public void handleEvent(final Event arg0) {
-                final int row = dataOutputView.getViewportLayer()
-                                              .getOriginRowPosition();
-                final int col = dataOutputView.getViewportLayer()
-                                              .getOriginColumnPosition();
+                PixelCoordinate coordinate = dataOutputView.getViewportLayer().getOrigin();
+                final int row = coordinate.getY();
+                final int col = coordinate.getX();
                 if (dataInputView != null) {
-                    dataInputView.getViewportLayer().setOriginRowPosition(row);
-                    dataInputView.getViewportLayer()
-                                 .setOriginColumnPosition(col);
+                    dataInputView.getViewportLayer().setOriginY(row);
+                    dataInputView.getViewportLayer().setOriginX(col);
                     synchronize(dataOutputView, dataInputView);
                 }
             }
@@ -205,12 +276,16 @@ public class LayoutAnalyze implements ILayout {
             @Override
             public void widgetSelected(final SelectionEvent arg0) {
                 statisticsOutputLayout.setSelectionIdex(statisticsInputLayout.getSelectionIndex());
+                // Hack to update visualizations
+                controller.update(new ModelEvent(this, ModelPart.VISUALIZATION, null));
             }
         });
         statisticsOutputLayout.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(final SelectionEvent arg0) {
                 statisticsInputLayout.setSelectionIdex(statisticsOutputLayout.getSelectionIndex());
+                // Hack to update visualizations
+                controller.update(new ModelEvent(this, ModelPart.VISUALIZATION, null));
             }
         });
 
@@ -220,8 +295,8 @@ public class LayoutAnalyze implements ILayout {
     }
 
     /**
-     * Synchronizes the tables for another second
-     * 
+     * Synchronizes the tables for another second.
+     *
      * @param in
      * @param out
      */

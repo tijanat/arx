@@ -1,5 +1,5 @@
 /*
- * ARX: Efficient, Stable and Optimal Data Anonymization
+ * ARX: Powerful Data Anonymization
  * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -30,15 +30,37 @@ import org.deidentifier.arx.gui.resources.Resources;
 import org.deidentifier.arx.io.CSVDataOutput;
 import org.eclipse.core.runtime.IProgressMonitor;
 
+/**
+ * This worker exports data to disk.
+ *
+ * @author Fabian Prasser
+ */
 public class WorkerExport extends Worker<DataHandle> {
 
+	/** The stop flag. */
 	private volatile boolean stop = false;
-
+	
+	/** The path. */
 	private final String path;
+	
+	/** The separator. */
 	private final char separator;
+	
+	/** The byte count. */
 	private final long bytes;
+	
+	/** The data. */
 	private final DataHandle handle;
 
+	/**
+     * Creates a new instance.
+     *
+     * @param path
+     * @param separator
+     * @param handle
+     * @param config
+     * @param bytes
+     */
     public WorkerExport(final String path,
                         final char separator,
                         final DataHandle handle,
@@ -51,10 +73,12 @@ public class WorkerExport extends Worker<DataHandle> {
         this.handle = handle;
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.operation.IRunnableWithProgress#run(org.eclipse.core.runtime.IProgressMonitor)
+     */
     @Override
-    public void
-            run(final IProgressMonitor arg0) throws InvocationTargetException,
-                                            InterruptedException {
+    public void run(final IProgressMonitor arg0) throws InvocationTargetException,
+                                            			InterruptedException {
 
         arg0.beginTask(Resources.getMessage("WorkerExport.0"), 100); //$NON-NLS-1$
 
@@ -74,13 +98,15 @@ public class WorkerExport extends Worker<DataHandle> {
         final Thread t = new Thread(new Runnable() {
             @Override
             public void run() {
+                int previous = 0;
                 while ((cout.getByteCount() != bytes) && !stop) {
-                    final int value = (int) (((double) cout.getByteCount() / (double) bytes) * 100d);
-                    arg0.worked(Math.min(value, 99));
-                    try {
-                        Thread.sleep(10);
-                    } catch (final InterruptedException e) {
+                    int progress = (int) ((double) cout.getByteCount() / (double) bytes * 100d);
+                    if (progress != previous) {
+                        arg0.worked(progress - previous);
+                        previous = progress;
                     }
+                    try { Thread.sleep(100); } 
+                    catch (final InterruptedException e) {/* Ignore*/}
                 }
             }
         });
@@ -91,9 +117,9 @@ public class WorkerExport extends Worker<DataHandle> {
         try {
             final CSVDataOutput csvout = new CSVDataOutput(cout, separator);
             csvout.write(handle.getView().iterator());
+            cout.close();
             result = handle;
             stop = true;
-            arg0.worked(100);
             arg0.done();
         } catch (final Exception e) {
             error = e;

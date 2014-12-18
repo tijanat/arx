@@ -1,5 +1,5 @@
 /*
- * ARX: Efficient, Stable and Optimal Data Anonymization
+ * ARX: Powerful Data Anonymization
  * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -37,9 +37,10 @@ import org.deidentifier.arx.metric.Metric;
 
 /**
  * This class implements an simple example for using multiple sensitive attributes and
- * enforcing different privacy criteria
- * 
- * @author Prasser, Kohlmayer
+ * enforcing different privacy criteria.
+ *
+ * @author Fabian Prasser
+ * @author Florian Kohlmayer
  */
 public class Example13 extends Example {
 
@@ -80,7 +81,7 @@ public class Example13 extends Example {
             // Process results
             if (result.getGlobalOptimum() != null){
                 System.out.println(" - Transformed data:");
-                final Iterator<String[]> transformed = result.getHandle()
+                final Iterator<String[]> transformed = result.getOutput(false)
                                                              .iterator();
                 while (transformed.hasNext()) {
                     System.out.print("   ");
@@ -94,6 +95,11 @@ public class Example13 extends Example {
         }
     }
 
+    /**
+     * 
+     *
+     * @return
+     */
     private static Hierarchy getHierarchyDisease() {
         final DefaultHierarchy disease = Hierarchy.create();
         disease.add("flu",
@@ -139,6 +145,11 @@ public class Example13 extends Example {
         return disease;
     }
 
+    /**
+     * 
+     *
+     * @return
+     */
     private static Hierarchy getHierarchyZipcode() {
         final DefaultHierarchy zipcode = Hierarchy.create();
         zipcode.add("47677", "4767*", "476**", "47***", "4****", "*****");
@@ -153,6 +164,11 @@ public class Example13 extends Example {
         return zipcode;
     }
 
+    /**
+     * 
+     *
+     * @return
+     */
     private static Hierarchy getHierarchyAge() {
         final DefaultHierarchy age = Hierarchy.create();
         age.add("29", "<=40", "*");
@@ -167,6 +183,11 @@ public class Example13 extends Example {
         return age;
     }
 
+    /**
+     * 
+     *
+     * @return
+     */
     private static Data getData() {
         DefaultData data = Data.create();
         data.add("zipcode", "disease1", "age", "disease2");

@@ -1,5 +1,5 @@
 /*
- * ARX: Efficient, Stable and Optimal Data Anonymization
+ * ARX: Powerful Data Anonymization
  * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -18,110 +18,136 @@
 
 package org.deidentifier.arx.framework.check;
 
-import org.deidentifier.arx.ARXConfiguration;
+import org.deidentifier.arx.ARXConfiguration.ARXConfigurationInternal;
 import org.deidentifier.arx.framework.check.groupify.IHashGroupify;
 import org.deidentifier.arx.framework.check.history.History;
 import org.deidentifier.arx.framework.data.Data;
 import org.deidentifier.arx.framework.lattice.Node;
+import org.deidentifier.arx.metric.InformationLoss;
 import org.deidentifier.arx.metric.Metric;
 
 /**
- * This class implements a generic interface for node checkers
- * 
- * @author Prasser, Kohlmayer
+ * This interface implements a generic interface for node checkers.
+ *
+ * @author Fabian Prasser
+ * @author Florian Kohlmayer
  */
 public interface INodeChecker {
 
     /**
-     * Returns the information loss for the given state. Negative infinity means
-     * not k-anonymous.
-     * 
-     * @param node
-     *            The node to check
-     * @return Information loss, null if not k-anonymous
+     * The result of a check.
      */
-    public abstract void check(final Node node);
+    public static class Result {
+        
+        /** Overall anonymity. */
+        public final boolean anonymous;
+        
+        /** k-Anonymity sub-criterion. */
+        public final boolean kAnonymous;
+        
+        /** Information loss. */
+        public final InformationLoss<?> informationLoss;
+        
+        /** Lower bound. */
+        public final InformationLoss<?> lowerBound;
+        
+        /**
+         * Creates a new instance.
+         *
+         * @param anonymous
+         * @param kAnonymous
+         * @param infoLoss
+         * @param lowerBound
+         */
+        Result(boolean anonymous, boolean kAnonymous, InformationLoss<?> infoLoss, InformationLoss<?> lowerBound) {
+            this.anonymous = anonymous;
+            this.kAnonymous = kAnonymous;
+            this.informationLoss = infoLoss;
+            this.lowerBound = lowerBound;
+        }
+    }
 
     /**
-     * Returns the buffer as a Data object
-     * 
+     * Checks the given node.
+     *
+     * @param node The node to check
+     * @return Result
+     */
+    public abstract INodeChecker.Result check(final Node node);
+
+    /**
+     * Checks the given node.
+     *
+     * @param node The node to check
+     * @param forceMeasureInfoLoss
+     * @return Result
+     */
+    public INodeChecker.Result check(Node node, boolean forceMeasureInfoLoss);
+
+    /**
+     * Returns the buffer as a Data object.
+     *
      * @return
      */
     public abstract Data getBuffer();
 
     /**
-     * Returns the current config
-     * 
+     * Returns the current config.
+     *
      * @return
      */
-    public abstract ARXConfiguration getConfiguration();
+    public abstract ARXConfigurationInternal getConfiguration();
 
     /**
-     * Returns the data
-     * 
+     * Returns the data.
+     *
      * @return
      */
     public abstract Data getData();
 
     /**
-     * Returns the number of groups from the previous check
-     * 
-     * @return
-     */
-    public abstract int getNumberOfGroups();
-
-    /**
-     * Returns the current hash groupify
-     * 
+     * Returns the current hash groupify.
+     *
      * @return
      */
     public abstract IHashGroupify getGroupify();
 
+
     /**
-     * Returns the number of outlying groups from the previous check
-     * 
+     * Returns the history, if there is any.
+     *
      * @return
      */
-    public abstract int getNumberOfOutlyingGroups();
+    public abstract History getHistory();
 
+    /**
+     * 
+     *
+     * @param node
+     * @return
+     */
     @Deprecated
     public abstract double getInformationLoss(final Node node);
 
     /**
-     * Returns the metric used by this checker
-     * 
+     * Returns the metric used by this checker.
+     *
      * @return
      */
     public abstract Metric<?> getMetric();
 
     /**
-     * Returns the number of outliers from the previous check
-     * 
+     * Returns the number of groups from the previous check.
+     *
      * @return
      */
-    public abstract int getNumberOfOutlyingTuples();
+    public abstract int getNumberOfGroups();
 
     /**
-     * Returns the data for a given state. Only used for NUMA.
-     * 
-     * @param node
-     *            the node
-     * @return the transformed data
-     */
-    @Deprecated
-    public abstract Data transform(final Node node);
-
-    /**
-     * Returns the data for a given state and marks outliers
-     * 
-     * @param node
+     * Applies the given transformation and sets its properties.
+     *
+     * @param transformation
      * @return
      */
-    public Data transformAndMarkOutliers(Node node);
-
-    /**
-     * Returns the history, if there is any
-     * @return
-     */
-    public abstract History getHistory();
+    public TransformedData applyAndSetProperties(Node transformation);
 }

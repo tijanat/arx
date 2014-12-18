@@ -1,5 +1,5 @@
 /*
- * ARX: Efficient, Stable and Optimal Data Anonymization
+ * ARX: Powerful Data Anonymization
  * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -27,26 +27,37 @@ import org.deidentifier.arx.ARXConfiguration;
  * l-diversity: Privacy beyond k-anonymity. 
  * Transactions on Knowledge Discovery from Data (TKDD). 2007;1(1):3. 
  * 
- * @author Prasser, Kohlmayer
+ * @author Fabian Prasser
+ * @author Florian Kohlmayer
  */
 public abstract class LDiversity extends ExplicitPrivacyCriterion {
 
+    /**  TODO */
     private static final long serialVersionUID = 6429149925699964530L;
 
-    /** The parameter l*/
+    /** The parameter l. */
     protected final double    l;
+    
+    /**  TODO */
     protected final int       minSize;
 
-    /** 
-     * Creates a new instance
+    /**
+     * 
+     * Creates a new instance.
+     *
+     * @param attribute
      * @param l
+     * @param monotonic
      */
-    public LDiversity(String attribute, double l) {
-        super(attribute, false);
+    public LDiversity(String attribute, double l, boolean monotonic) {
+        super(attribute, monotonic);
         this.l = l;
         this.minSize = (int) Math.ceil(l);
     }
 
+    /* (non-Javadoc)
+     * @see org.deidentifier.arx.criteria.PrivacyCriterion#getRequirements()
+     */
     @Override
     public int getRequirements() {
 
@@ -55,7 +66,8 @@ public abstract class LDiversity extends ExplicitPrivacyCriterion {
     }
 
     /**
-     * Returns the parameter l
+     * Returns the parameter l.
+     *
      * @return
      */
     public double getL() {
@@ -63,7 +75,8 @@ public abstract class LDiversity extends ExplicitPrivacyCriterion {
     }
     
     /**
-     * Returns the minimal group size required to fulfill this criterion
+     * Returns the minimal group size required to fulfill this criterion.
+     *
      * @return
      */
     public int getMinimalGroupSize(){

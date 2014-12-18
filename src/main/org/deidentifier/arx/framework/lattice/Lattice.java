@@ -1,5 +1,5 @@
 /*
- * ARX: Efficient, Stable and Optimal Data Anonymization
+ * ARX: Powerful Data Anonymization
  * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -19,173 +19,60 @@
 package org.deidentifier.arx.framework.lattice;
 
 import org.deidentifier.arx.ARXListener;
+import org.deidentifier.arx.framework.check.INodeChecker;
+import org.deidentifier.arx.metric.InformationLoss;
 
 /**
  * The class Lattice.
  * 
- * @author Prasser, Kohlmayer
+ * @author Fabian Prasser
+ * @author Florian Kohlmayer
  */
 public class Lattice {
 
     /** The levels. */
-    private Node[][]    levels        = null;
-
-    /** The levelsize. */
-    private int[]       untaggedCount = null;
-
-    /** The max states. */
-    private final int[] maxLevels;
+    private final Node[][] levels;
 
     /** The size. */
-    private int         size          = 0;
+    private final int      size;
 
-    /** A listener */
-    private ARXListener listener      = null;
+    /** A listener. */
+    private ARXListener    listener = null;
 
-    /** A multiplier for the listener*/
-    private int         multiplier    = 1;
+    /** Tag trigger. */
+    private NodeAction     tagTrigger = null;
 
     /**
      * Initializes a lattice.
-     * 
-     * @param levels
-     *            the levels
-     * @param nodesMap
-     *            the nodes map
-     * @param maxLevels
-     *            the max levels
-     * @param numNodes
-     *            the num nodes
+     *
+     * @param levels the levels
+     * @param maxLevels the max levels
      */
-    public Lattice(final Node[][] levels, final int[] maxLevels, final int numNodes) {
+    public Lattice(final Node[][] levels, final int numNodes) {
 
-        this.maxLevels = maxLevels;
         this.levels = levels;
-        size = numNodes;
-
-        untaggedCount = new int[levels.length];
-        for (int i = 0; i < levels.length; i++) {
-            untaggedCount[i] = levels[i].length;
-        }
+        this.size = numNodes;
     }
 
     /**
-     * Clears all tags
+     * Returns the bottom node.
+     *
+     * @return
      */
-    public void clearTags() {
-        for (int i = 0; i < levels.length; i++) {
-            untaggedCount[i] = levels[i].length;
-            for (final Node n : levels[i]) {
-                n.setNotTagged();
+    public Node getBottom() {
+        for (int i = 0; i<levels.length; i++) {
+            if (levels[i].length==1){
+                return levels[i][0];
+            } else if (levels[i].length > 1) { 
+                throw new RuntimeException("Multiple bottom nodes!"); 
             }
         }
+        throw new RuntimeException("Empty lattice!");
     }
 
     /**
-     * Does the tagging.
-     * 
-     * @param node
-     *            the node
-     * @param anonymous
-     *            the anonymous
-     */
-    private void doTagAnonymous(final Node node, final boolean anonymous, final boolean kAnonymous) {
-
-        // Tag
-        node.setTagged();
-        node.setAnonymous(anonymous);
-        node.setKAnonymous(kAnonymous);
-
-
-        // Count
-        untaggedCount[node.getLevel()]--;
-
-        // Call listener
-        if (listener != null) {
-            listener.nodeTagged(size * multiplier);
-        }
-
-        // Traverse
-        if (anonymous) {
-            for (final Node up : node.getSuccessors()) {
-                if (!up.isTagged()) {
-                    doTagAnonymous(up, anonymous, kAnonymous);
-                }
-            }
-        } else {
-            for (final Node down : node.getPredecessors()) {
-                if (!down.isTagged()) {
-                    doTagAnonymous(down, anonymous, kAnonymous);
-                }
-            }
-        }
-    }
-
-    /**
-     * Does the tagging.
-     * 
-     * @param node
-     *            the node
-     * @param anonymous
-     *            the anonymous
-     */
-    private void doTagKAnonymous(final Node node, final boolean kAnonymous) {
-
-        // Tag
-        node.setTagged();
-        node.setKAnonymous(kAnonymous);
-
-        // Count
-        untaggedCount[node.getLevel()]--;
-
-        // Traverse
-        if (kAnonymous) {
-            for (final Node up : node.getSuccessors()) {
-                if (!up.isTagged()) {
-                    doTagKAnonymous(up, kAnonymous);
-                }
-            }
-        } else {
-            for (final Node down : node.getPredecessors()) {
-                if (!down.isTagged()) {
-                    doTagKAnonymous(down, kAnonymous);
-                }
-            }
-        }
-    }
-
-    /**
-     * Tag all successor nodes.
-     * 
-     * @param node
-     *            the node
-     */
-    public void doTagUpwards(final Node node) {
-        // Tag
-        node.setTagged();
-        for (final Node up : node.getSuccessors()) {
-            if (!up.isTagged()) {
-                doTagUpwards(up);
-            }
-        }
-
-    }
-
-    public void doUnTagUpwards(final Node node) {
-        // UnTag
-        node.setNotTagged();
-        untaggedCount[node.getLevel()]++;
-
-        for (final Node up : node.getSuccessors()) {
-            if (up.isTagged()) {
-                doUnTagUpwards(up);
-            }
-        }
-    }
-
-    /**
-     * Returns all levels in the lattice
-     * 
+     * Returns all levels in the lattice.
+     *
      * @return
      */
     public Node[][] getLevels() {
@@ -193,17 +80,8 @@ public class Lattice {
     }
 
     /**
-     * Returns the maximal levels for each quasi identifier
-     * 
-     * @return
-     */
-    public int[] getMaximumGeneralizationLevels() {
-        return maxLevels;
-    }
-
-    /**
-     * Returns the number of nodes in the lattice
-     * 
+     * Returns the number of nodes in the lattice.
+     *
      * @return
      */
     public int getSize() {
@@ -211,27 +89,74 @@ public class Lattice {
     }
 
     /**
-     * Return the number of untagged nodes on the given lattice
-     * 
-     * @param level
+     * Returns the top node.
+     *
      * @return
      */
-    public int getUntaggedCount(final int level) {
-        return untaggedCount[level];
+    public Node getTop() {
+        for (int i = levels.length - 1; i>=0; i--) {
+            if (levels[i].length==1){
+                return levels[i][0];
+            } else if (levels[i].length > 1) { 
+                throw new RuntimeException("Multiple top nodes!"); 
+            }
+        }
+        throw new RuntimeException("Empty lattice!");
+    }
+    
+    /**
+     * Sets the properties to the given node.
+     *
+     * @param node the node
+     * @param result the result
+     */
+    public void setChecked(Node node, INodeChecker.Result result) {
+        
+        // Set checked
+        setProperty(node, Node.PROPERTY_CHECKED);
+        
+        // Anonymous
+        if (result.anonymous){
+            setProperty(node, Node.PROPERTY_ANONYMOUS);
+        } else {
+            setProperty(node, Node.PROPERTY_NOT_ANONYMOUS);
+        }
+
+        // k-Anonymous
+        if (result.kAnonymous){
+            setProperty(node, Node.PROPERTY_K_ANONYMOUS);
+        } else {
+            setProperty(node, Node.PROPERTY_NOT_K_ANONYMOUS);
+        }
+
+        // Infoloss
+        node.setInformationLoss(result.informationLoss);
+        node.setLowerBound(result.lowerBound);
     }
 
     /**
-     * Decrement the counter for the number of untagged nodes on the given level
-     * @param level
-     * @return
+     * Sets the information loss.
+     *
+     * @param node
+     * @param informationLoss
      */
-    public void decUntaggedCount(final int level) {
-        untaggedCount[level]--;
+    public void setInformationLoss(Node node, InformationLoss<?> informationLoss) {
+        node.setInformationLoss(informationLoss);
     }
 
     /**
-     * Attaches a listener
-     * 
+     * Sets the lower bound.
+     *
+     * @param node
+     * @param lowerBound
+     */
+    public void setLowerBound(Node node, InformationLoss<?> lowerBound) {
+        node.setLowerBound(lowerBound);
+    }
+
+    /**
+     * Attaches a listener.
+     *
      * @param listener
      */
     public void setListener(final ARXListener listener) {
@@ -239,47 +164,79 @@ public class Lattice {
     }
 
     /**
-     * Tag nodes.
-     * 
-     * @param node
-     *            the node
-     * @param anonymous
-     *            the anonymous
+     * Sets the property to the given node.
+     *
+     * @param node the node
+     * @param property the property
      */
-    public void tagAnonymous(final Node node, final boolean anonymous) {
-        if (!node.isTagged()) {
-            doTagAnonymous(node, anonymous, node.isKAnonymous());
+    public void setProperty(Node node, int property) {
+        
+        if (!node.hasProperty(property)) {
+            node.setProperty(property);
+            triggerTagged(node);
+        }
+    }
+    
+    /**
+     * Sets the property to all predecessors of the given node.
+     *
+     * @param node the node
+     * @param include should the property also be set for the starting node
+     * @param property the property
+     */
+    public void setPropertyDownwards(Node node, boolean include, int property) {
+        
+        if (include) {
+            setProperty(node, property);
+        }
+
+        for (final Node down : node.getPredecessors()) {
+            if (!down.hasProperty(property)) {
+                setPropertyDownwards(down, true, property);
+            }
         }
     }
 
     /**
-     * Tag nodes.
-     * 
-     * @param node
-     *            the node
-     * @param anonymous
-     *            the anonymous
+     * Sets the property to all successors of the given node.
+     *
+     * @param node the node
+     * @param include should the property also be set for the starting node
+     * @param property the property
      */
-    public void tagKAnonymous(final Node node, final boolean kAnonymous) {
-        if (!node.isTagged()) {
-            doTagKAnonymous(node, kAnonymous);
+    public void setPropertyUpwards(Node node, boolean include, int property) {
+
+        if (include) {
+            setProperty(node, property);
+        }
+        
+        for (final Node up : node.getSuccessors()) {
+            if (!up.hasProperty(property)) {
+                setPropertyUpwards(up, true, property);
+            }
         }
     }
 
     /**
-     * Sets a multiplier, which is used to multiply the number of nodes in the lattice when calling a
-     * listener. Needed to return the correct progress information when anonymizing with multiple
-     * sensitive attributes
-     * @param multiplier
+     * When this trigger executed, a tagged event will be fired.
+     *
+     * @param trigger
      */
-    public void setMultiplier(int multiplier) {
-        this.multiplier = multiplier;
+    public void setTagTrigger(NodeAction trigger){
+        this.tagTrigger = trigger;
     }
 
     /**
-     * Triggers a tagged event at the listener
+     * Triggers a tagged event at the listener.
+     *
+     * @param node
      */
-    public void triggerTagged() {
-        if (this.listener != null) this.listener.nodeTagged(size * multiplier);
+    private void triggerTagged(Node node) {
+        if (this.listener != null && !node.hasProperty(Node.PROPERTY_EVENT_FIRED)){
+            if (tagTrigger == null || tagTrigger.appliesTo(node)) {
+                node.setProperty(Node.PROPERTY_EVENT_FIRED);
+                this.listener.nodeTagged(size);
+            }
+        }
     }
 }

@@ -1,5 +1,5 @@
 /*
- * ARX: Efficient, Stable and Optimal Data Anonymization
+ * ARX: Powerful Data Anonymization
  * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -30,7 +30,8 @@ import java.util.Iterator;
 /**
  * Provides methods for writing CSV encoded data.
  * 
- * @author Prasser, Kohlmayer
+ * @author Fabian Prasser 
+ * @author Florian Kohlmayer
  */
 public class CSVDataOutput {
 
@@ -40,51 +41,51 @@ public class CSVDataOutput {
     /** The separator. */
     private final char         separator;
 
-    /** Size of the buffer */
+    /** Size of the buffer. */
     private static final int   BUFFER_SIZE = 1024 * 1024;
 
-    /** Are we writing to a stream? */
+    /** Are we writing to a stream?. */
     private boolean            stream      = false;
 
     /**
-     * New instance
-     * 
-     * @param output
+     * New instance.
+     *
+     * @param file
      * @param separator
      * @throws FileNotFoundException
      */
     public CSVDataOutput(final File file, final char separator) throws FileNotFoundException {
-        out = new FileOutputStream(file);
+        this.out = new FileOutputStream(file);
         this.separator = separator;
     }
 
     /**
-     * New instance
-     * 
+     * New instance.
+     *
      * @param out
      * @param separator
      */
     public CSVDataOutput(final OutputStream out, final char separator) {
         this.out = out;
         this.separator = separator;
-        stream = true;
+        this.stream = true;
     }
 
     /**
-     * New instance
-     * 
+     * New instance.
+     *
      * @param output
      * @param separator
      * @throws FileNotFoundException
      */
     public CSVDataOutput(final String output, final char separator) throws FileNotFoundException {
-        out = new FileOutputStream(new File(output));
+    	this.out = new FileOutputStream(new File(output));
         this.separator = separator;
     }
 
     /**
-     * Write the results
-     * 
+     * Write the results.
+     *
      * @param iterator
      * @throws IOException
      */
@@ -93,8 +94,8 @@ public class CSVDataOutput {
     }
 
     /**
-     * Write the given number of columns from the results
-     * 
+     * Write the given number of columns from the results.
+     *
      * @param iterator
      * @param numColumns
      * @throws IOException
@@ -123,6 +124,12 @@ public class CSVDataOutput {
         }
     }
 
+    /**
+     * 
+     *
+     * @param hierarchy
+     * @throws IOException
+     */
     public void write(final String[][] hierarchy) throws IOException {
         BufferedWriter os = null;
         try {
@@ -144,6 +151,5 @@ public class CSVDataOutput {
                 os.close();
             }
         }
-
     }
 }

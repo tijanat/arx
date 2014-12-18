@@ -1,5 +1,5 @@
 /*
- * ARX: Efficient, Stable and Optimal Data Anonymization
+ * ARX: Powerful Data Anonymization
  * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -26,18 +26,19 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Reads a CSV encoded generalization hierarchy
- * 
- * @author Prasser, Kohlmayer
+ * Reads a CSV encoded generalization hierarchy.
+ *
+ * @author Fabian Prasser
+ * @author Florian Kohlmayer
  */
 public class CSVHierarchyInput {
 
-    /** The data */
+    /** The data. */
     private String[][] data;
 
     /**
-     * Create from file
-     * 
+     * Create from file.
+     *
      * @param file
      * @param separator
      * @throws IOException
@@ -47,8 +48,8 @@ public class CSVHierarchyInput {
     }
 
     /**
-     * Create from stream
-     * 
+     * Create from stream.
+     *
      * @param stream
      * @param separator
      * @throws IOException
@@ -58,8 +59,8 @@ public class CSVHierarchyInput {
     }
 
     /**
-     * Create from path
-     * 
+     * Create from path.
+     *
      * @param file
      * @param separator
      * @throws IOException
@@ -69,8 +70,8 @@ public class CSVHierarchyInput {
     }
 
     /**
-     * Returns the hierarchy
-     * 
+     * Returns the hierarchy.
+     *
      * @return
      */
     public String[][] getHierarchy() {
@@ -78,8 +79,8 @@ public class CSVHierarchyInput {
     }
 
     /**
-     * Loads the data
-     * 
+     * Loads the data.
+     *
      * @param input
      * @throws IOException
      */

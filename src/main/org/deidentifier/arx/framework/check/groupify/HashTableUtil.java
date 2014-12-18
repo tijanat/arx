@@ -1,5 +1,5 @@
 /*
- * ARX: Efficient, Stable and Optimal Data Anonymization
+ * ARX: Powerful Data Anonymization
  * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -19,10 +19,10 @@
 package org.deidentifier.arx.framework.check.groupify;
 
 /**
- * This class implements several helper methods for hash tables
- * 
- * @author Prasser, Kohlmayer
- * 
+ * This class implements several helper methods for hash tables.
+ *
+ * @author Fabian Prasser
+ * @author Florian Kohlmayer
  */
 public class HashTableUtil {
 
@@ -53,6 +53,10 @@ public class HashTableUtil {
 
     /**
      * Computes the threshold for rehashing.
+     *
+     * @param buckets
+     * @param loadFactor
+     * @return
      */
     public static final int calculateThreshold(final int buckets,
                                                final float loadFactor) {
@@ -62,15 +66,59 @@ public class HashTableUtil {
     /**
      * Equality check for integer arrays.
      * 
-     * @param a
-     *            an array
-     * @param a2
-     *            another array
+     * @param a an array
+     * @param a2 another array
      * @return true, if equal
      */
     public static final boolean equals(final int[] a, final int[] a2) {
-        for (int i = 0; i < a.length; i++) {
-            if (a[i] != a2[i]) { return false; }
+        switch (a.length) {
+        case 20:
+            if (a[19] != a2[19]) return false;
+        case 19:
+            if (a[18] != a2[18]) return false;
+        case 18:
+            if (a[17] != a2[17]) return false;
+        case 17:
+            if (a[16] != a2[16]) return false;
+        case 16:
+            if (a[15] != a2[15]) return false;
+        case 15:
+            if (a[14] != a2[14]) return false;
+        case 14:
+            if (a[13] != a2[13]) return false;
+        case 13:
+            if (a[12] != a2[12]) return false;
+        case 12:
+            if (a[11] != a2[11]) return false;
+        case 11:
+            if (a[10] != a2[10]) return false;
+        case 10:
+            if (a[9] != a2[9]) return false;
+        case 9:
+            if (a[8] != a2[8]) return false;
+        case 8:
+            if (a[7] != a2[7]) return false;
+        case 7:
+            if (a[6] != a2[6]) return false;
+        case 6:
+            if (a[5] != a2[5]) return false;
+        case 5:
+            if (a[4] != a2[4]) return false;
+        case 4:
+            if (a[3] != a2[3]) return false;
+        case 3:
+            if (a[2] != a2[2]) return false;
+        case 2:
+            if (a[1] != a2[1]) return false;
+        case 1:
+            if (a[0] != a2[0]) return false;
+            break;
+        default:
+            for (int i = 0; i < a.length; i++) {
+                if (a[i] != a2[i]) {
+                    return false;
+                }
+            }
         }
         return true;
     }

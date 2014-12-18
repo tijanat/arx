@@ -1,5 +1,5 @@
 /*
- * ARX: Efficient, Stable and Optimal Data Anonymization
+ * ARX: Powerful Data Anonymization
  * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -33,6 +33,9 @@ import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.ShellAdapter;
+import org.eclipse.swt.events.ShellEvent;
+import org.eclipse.swt.events.ShellListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -44,16 +47,41 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 
+/**
+ * A dialog for selecting privacy criteria.
+ *
+ * @author Fabian Prasser
+ */
 public class DialogCriterionSelection extends TitleAreaDialog implements IDialog {
 
+    /**  TODO */
     private Button                       ok         = null;
+    
+    /**  TODO */
     private Button                       cancel     = null;
+    
+    /**  TODO */
     private List<ModelExplicitCriterion> elements   = null;
+    
+    /**  TODO */
     private ModelExplicitCriterion       selection  = null;
+    
+    /**  TODO */
     private Image                        symbolL    = null;
+    
+    /**  TODO */
     private Image                        symbolT    = null;
+    
+    /**  TODO */
     private Controller                   controller = null;
 
+    /**
+     * Constructor.
+     *
+     * @param controller
+     * @param parent
+     * @param elements
+     */
     public DialogCriterionSelection(final Controller controller,
                                     final Shell parent,
                                     List<ModelExplicitCriterion> elements) {
@@ -62,6 +90,9 @@ public class DialogCriterionSelection extends TitleAreaDialog implements IDialog
         this.controller = controller;
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.dialogs.Dialog#close()
+     */
     @Override
     public boolean close() {
         if (symbolL != null) symbolL.dispose();
@@ -69,10 +100,27 @@ public class DialogCriterionSelection extends TitleAreaDialog implements IDialog
         return super.close();
     }
 
+    /**
+     * Returns the selected criterion.
+     *
+     * @return
+     */
     public ModelExplicitCriterion getCriterion() {
         return this.selection;
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.window.Window#configureShell(org.eclipse.swt.widgets.Shell)
+     */
+    @Override
+    protected void configureShell(Shell newShell) {
+        super.configureShell(newShell);
+        newShell.setImages(Resources.getIconSet(newShell.getDisplay()));
+    }
+
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.dialogs.Dialog#createButtonsForButtonBar(org.eclipse.swt.widgets.Composite)
+     */
     @Override
     protected void createButtonsForButtonBar(final Composite parent) {
 
@@ -100,6 +148,9 @@ public class DialogCriterionSelection extends TitleAreaDialog implements IDialog
         });
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.dialogs.TitleAreaDialog#createContents(org.eclipse.swt.widgets.Composite)
+     */
     @Override
     protected Control createContents(Composite parent) {
         Control contents = super.createContents(parent);
@@ -107,7 +158,10 @@ public class DialogCriterionSelection extends TitleAreaDialog implements IDialog
         setMessage(Resources.getMessage("CriterionSelectionDialog.0"), IMessageProvider.NONE); //$NON-NLS-1$
         return contents;
     }
-
+    
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.dialogs.TitleAreaDialog#createDialogArea(org.eclipse.swt.widgets.Composite)
+     */
     @Override
     protected Control createDialogArea(final Composite parent) {
 
@@ -159,7 +213,23 @@ public class DialogCriterionSelection extends TitleAreaDialog implements IDialog
 
         return parent;
     }
+    
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.window.Window#getShellListener()
+     */
+    @Override
+    protected ShellListener getShellListener() {
+        return new ShellAdapter() {
+            @Override
+            public void shellClosed(final ShellEvent event) {
+                setReturnCode(Window.CANCEL);
+            }
+        };
+    }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.dialogs.Dialog#isResizable()
+     */
     @Override
     protected boolean isResizable() {
         return false;

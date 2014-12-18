@@ -1,5 +1,5 @@
 /*
- * ARX: Efficient, Stable and Optimal Data Anonymization
+ * ARX: Powerful Data Anonymization
  * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -26,10 +26,22 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 
+/**
+ * This class implements the layout for the data definition perspective.
+ *
+ * @author Fabian Prasser
+ */
 public class LayoutDefinition implements ILayout {
 
+    /**  TODO */
     private final Composite center;
     
+    /**
+     * Creates a new instance.
+     *
+     * @param parent
+     * @param controller
+     */
     public LayoutDefinition(final Composite parent, final Controller controller) {
 
 		// Define
@@ -69,6 +81,6 @@ public class LayoutDefinition implements ILayout {
         new ViewDataInput(compositeLeft, controller); 
         new ViewSubsetDefinition(compositeLeft, controller);
         new ViewDataDefinition(compositeTopRight, controller);
-        new ViewCriterionDefinition(compositeBottomRight, controller);
+        new ViewGeneralSettings(compositeBottomRight, controller);
     }
 }

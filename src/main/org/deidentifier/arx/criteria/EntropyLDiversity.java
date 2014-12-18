@@ -1,5 +1,5 @@
 /*
- * ARX: Efficient, Stable and Optimal Data Anonymization
+ * ARX: Powerful Data Anonymization
  * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -22,34 +22,43 @@ import org.deidentifier.arx.framework.check.distribution.Distribution;
 import org.deidentifier.arx.framework.check.groupify.HashGroupifyEntry;
 
 /**
- * The entropy l-diversity criterion
- * @author Prasser, Kohlmayer
+ * The entropy l-diversity criterion.
+ *
+ * @author Fabian Prasser
+ * @author Florian Kohlmayer
  */
 public class EntropyLDiversity extends LDiversity {
 
+    /**  TODO */
     private static final long   serialVersionUID = -354688551915634000L;
 
-    /** Helper*/
+    /** Helper. */
     private final double        logL;
-    /** Helper*/
+    
+    /** Helper. */
     private static final double log2             = Math.log(2);
 
     /**
      * Creates a new instance of the entropy l-diversity criterion as proposed in:
-     * Machanavajjhala A, Kifer D, Gehrke J. 
-     * l-diversity: Privacy beyond k-anonymity. 
+     * Machanavajjhala A, Kifer D, Gehrke J.
+     * l-diversity: Privacy beyond k-anonymity.
      * Transactions on Knowledge Discovery from Data (TKDD). 2007;1(1):3.
+     *
+     * @param attribute
      * @param l
      */
     public EntropyLDiversity(String attribute, double l){
-        super(attribute, l);
+        super(attribute, l, false);
         logL = Math.log(l) / Math.log(2d);
     }
 
+    /* (non-Javadoc)
+     * @see org.deidentifier.arx.criteria.PrivacyCriterion#isAnonymous(org.deidentifier.arx.framework.check.groupify.HashGroupifyEntry)
+     */
     @Override
     public boolean isAnonymous(HashGroupifyEntry entry) {
 
-        Distribution d = entry.distribution;
+        Distribution d = entry.distributions[index];
 
         // If less than l values are present skip
         if (d.size() < minSize) { return false; }
@@ -74,8 +83,8 @@ public class EntropyLDiversity extends LDiversity {
     }
 
     /**
-     * Computes log 2
-     * 
+     * Computes log 2.
+     *
      * @param num
      * @return
      */
@@ -83,6 +92,9 @@ public class EntropyLDiversity extends LDiversity {
         return Math.log(num) / log2;
     }
     
+	/* (non-Javadoc)
+	 * @see org.deidentifier.arx.criteria.PrivacyCriterion#toString()
+	 */
 	@Override
 	public String toString() {
 		return "entropy-"+l+"-diversity for attribute '"+attribute+"'";

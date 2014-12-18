@@ -1,5 +1,5 @@
 /*
- * ARX: Efficient, Stable and Optimal Data Anonymization
+ * ARX: Powerful Data Anonymization
  * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
  * 
  * This program is free software: you can redistribute it and/or modify
@@ -17,6 +17,10 @@
  */
 
 package org.deidentifier.arx.gui.view.impl.menu;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
 import org.deidentifier.arx.gui.model.Model;
 import org.deidentifier.arx.gui.resources.Resources;
@@ -36,23 +40,50 @@ import org.eclipse.swt.events.ShellListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
+/**
+ * This class implements a dialog for creating a project.
+ *
+ * @author Fabian Prasser
+ */
 public class DialogProject extends TitleAreaDialog implements IDialog {
 
+    /** Widget. */
     private Text   name        = null;
+    
+    /** Widget. */
     private Text   description = null;
+    
+    /** Widget. */
     private Button ok          = null;
+    
+    /** Model. */
     private Model  model       = null;
-
+    
+    /** Widget. */
+    private Combo  locale      = null;
+    
+    /** Locale. */
+    private Locale selectedLocale    = Locale.getDefault();
+    
+    /**
+     * Creates a new instance.
+     *
+     * @param parent
+     */
     public DialogProject(final Shell parent) {
         super(parent);
     }
 
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.dialogs.Dialog#create()
+     */
     @Override
     public void create() {
         super.create();
@@ -62,7 +93,7 @@ public class DialogProject extends TitleAreaDialog implements IDialog {
         name.addModifyListener(new ModifyListener() {
             @Override
             public void modifyText(final ModifyEvent arg0) {
-                model = new Model(name.getText(), description.getText());
+                model = new Model(name.getText(), description.getText(), selectedLocale);
                 if (name.getText().equals("")) { //$NON-NLS-1$
                     ok.setEnabled(false);
                 } else {
@@ -74,11 +105,44 @@ public class DialogProject extends TitleAreaDialog implements IDialog {
         description.addModifyListener(new ModifyListener() {
             @Override
             public void modifyText(final ModifyEvent arg0) {
-                model = new Model(name.getText(), description.getText());
+                model = new Model(name.getText(), description.getText(), selectedLocale);
+            }
+        });
+        
+        locale.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(final SelectionEvent arg0) {
+                if (locale.getSelectionIndex() >= 0) {
+                    selectedLocale = new Locale(locale.getItem(locale.getSelectionIndex()).toLowerCase());
+                } else {
+                    selectedLocale = Locale.getDefault();
+                }
+                model = new Model(name.getText(), description.getText(), selectedLocale);
             }
         });
     }
 
+    /**
+     * Returns the resulting project.
+     *
+     * @return
+     */
+    public Model getProject() {
+        return model;
+    }
+
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.window.Window#configureShell(org.eclipse.swt.widgets.Shell)
+     */
+    @Override
+    protected void configureShell(Shell newShell) {
+        super.configureShell(newShell);
+        newShell.setImages(Resources.getIconSet(newShell.getDisplay()));
+    }
+    
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.dialogs.Dialog#createButtonsForButtonBar(org.eclipse.swt.widgets.Composite)
+     */
     @Override
     protected void createButtonsForButtonBar(final Composite parent) {
 
@@ -118,7 +182,10 @@ public class DialogProject extends TitleAreaDialog implements IDialog {
             }
         });
     }
-
+    
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.dialogs.TitleAreaDialog#createDialogArea(org.eclipse.swt.widgets.Composite)
+     */
     @Override
     protected Control createDialogArea(final Composite parent) {
         final GridLayout l = new GridLayout();
@@ -141,19 +208,34 @@ public class DialogProject extends TitleAreaDialog implements IDialog {
                                        SWT.V_SCROLL);
         description.setLayoutData(SWTUtil.createFillGridData());
         description.setText(""); //$NON-NLS-1$
+        
+        final Label label3 = new Label(parent, SWT.LEFT | SWT.WRAP);
+        label3.setText(Resources.getMessage("ProjectDialog.8")); //$NON-NLS-1$
+        label3.setLayoutData(SWTUtil.createNoFillGridData());
+
+        // Create list of locales
+        List<String> languages = new ArrayList<String>();
+        for (String lang : Locale.getISOLanguages()) {
+            languages.add(lang.toUpperCase());
+        }
+        
+        locale = new Combo(parent, SWT.READ_ONLY);
+        locale.setItems(languages.toArray(new String[]{}));
+        locale.select(languages.indexOf(Locale.getDefault().getLanguage().toUpperCase()));
+        locale.setLayoutData(SWTUtil.createFillHorizontallyGridData());
+        
         return parent;
     }
 
-    public Model getProject() {
-        return model;
-    }
-
+    /* (non-Javadoc)
+     * @see org.eclipse.jface.window.Window#getShellListener()
+     */
     @Override
     protected ShellListener getShellListener() {
         return new ShellAdapter() {
             @Override
             public void shellClosed(final ShellEvent event) {
-                event.doit = false;
+                setReturnCode(Window.CANCEL);
             }
         };
     }
