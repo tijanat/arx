@@ -142,103 +142,17 @@ class AlgorithmNewtonPitman extends AlgorithmNewtonRaphson {
         return new double[] { v, x, z };
     }
 
-    private double[] computeVXZ2(double numberOfEquivalenceClasses, double a, double t) {
-
-        // this is verified twice, with Matlab/Mupad and mathematica!
-
-        double n = numberOfEquivalenceClasses - 1d;
-        double val0 = Util4.trigamma((t / a) + 1);
-        double val1 = Util4.digamma(n + (t / a) + 1);
-        double val2 = Util4.trigamma((a + t + (a * n)) / a);
-        double val3 = Util4.trigamma((a + t) / a);
-        double val4 = Util4.digamma((a + t) / a);
-        double val5 = Util4.digamma((t / a) + 1);
-        double val6 = a * a;
-
-        double v = (val3 - val2) / (val6);
-        double z = (((a * val1) + (t * val2)) - (a * val4) - (t * val3)) / (val6 * a);
-        double x = (((((val6 * n) - (t * t * val2)) + (t * t * val0)) - (2 * a * t * val1)) + (2 * a * t * val5)) / (val6 * val6);
-        return new double[] { v, x, z };
-    }
-
-    private double[] computeVXZ2_ALT(double numberOfEquivalenceClasses, double a, double t) {
-
-        double n = numberOfEquivalenceClasses - 1d;
-        double val0 = Util4.trigamma((t / a) + 1);
-        double val1 = Util4.trigamma(n + (t / a));
-        double val2 = Util4.digamma((t / a) + 1);
-        double val3 = Util4.digamma(n + (t / a));
-        double val4 = a * a;
-        double val5 = t * t;
-        double v = (Util4.trigamma((a + t) / a) - val1) / (val4);
-        double z = (((a * val3) + (t * val1)) - (a * val2) - (t * val0)) / (val4 * a);
-        double x = (((val4 * n) - val4 - (val5 * val1) - (2 * a * t * val3)) + (val5 * val0) + (2 * a * t * val2)) / (val4 * val4);
-        return new double[] { v, x, z };
-
-    }
-
-    private double[] computeVXZ3(double numberOfEquivalenceClasses, double a, double t) {
-
-        double n = numberOfEquivalenceClasses - 1d;
-        double val0 = Util.trigamma((t / a) + 1);
-        double val1 = Util.trigamma(n + (t / a));
-        double val2 = Util4.digamma((t / a) + 1);
-        double val3 = Util4.digamma(n + (t / a));
-        double val4 = a * a;
-        double val5 = t * t;
-        double v = (Util.trigamma((a + t) / a) - val1) / (val4);
-        double z = (((a * val3) + (t * val1)) - (a * val2) - (t * val0)) / (val4 * a);
-        double x = (((val4 * n) - val4 - (val5 * val1) - (2 * a * t * val3)) + (val5 * val0) + (2 * a * t * val2)) / (val4 * val4);
-        return new double[] { v, x, z };
-
-    }
-
-    private double[] computeVXZ5(double numberOfEquivalenceClasses, double a, double t) {
-
-        double n = numberOfEquivalenceClasses - 1d;
-        double val0 = Util5.trigamma((t / a) + 1);
-        double val1 = Util5.trigamma(n + (t / a));
-        double val2 = Util4.digamma((t / a) + 1);
-        double val3 = Util4.digamma(n + (t / a));
-        double val4 = a * a;
-        double val5 = t * t;
-        double v = (Util5.trigamma((a + t) / a) - val1) / (val4);
-        double z = (((a * val3) + (t * val1)) - (a * val2) - (t * val0)) / (val4 * a);
-        double x = (((val4 * n) - val4 - (val5 * val1) - (2 * a * t * val3)) + (val5 * val0) + (2 * a * t * val2)) / (val4 * val4);
-        return new double[] { v, x, z };
-
-    }
-
-    private double[] computeVXZ6(double numberOfEquivalenceClasses, double a, double t) {
-
-        // this is verified twice, with Matlab/Mupad and mathematica!
-
-        double n = numberOfEquivalenceClasses - 1d;
-        double val0 = Util6.trigamma((t / a) + 1);
-        double val1 = Util6.digamma(n + (t / a) + 1);
-        double val2 = Util6.trigamma((a + t + (a * n)) / a);
-        double val3 = Util6.trigamma((a + t) / a);
-        double val4 = Util6.digamma((a + t) / a);
-        double val5 = Util6.digamma((t / a) + 1);
-        double val6 = a * a;
-
-        double v = (val3 - val2) / (val6);
-        double z = (((a * val1) + (t * val2)) - (a * val4) - (t * val3)) / (val6 * a);
-        double x = (((((val6 * n) - (t * t * val2)) + (t * t * val0)) - (2 * a * t * val1)) + (2 * a * t * val5)) / (val6 * val6);
-        return new double[] { v, x, z };
-    }
-
     private double[] computeVXZ7(double numberOfEquivalenceClasses, double a, double t) {
 
         // this is verified twice, with Matlab/Mupad and mathematica!
 
         double n = numberOfEquivalenceClasses - 1d;
-        double val0 = Util6.trigamma((t / a) + 1);
-        double val1 = Util4.digamma(n + (t / a) + 1);
-        double val2 = Util6.trigamma((a + t + (a * n)) / a);
-        double val3 = Util6.trigamma((a + t) / a);
-        double val4 = Util4.digamma((a + t) / a);
-        double val5 = Util4.digamma((t / a) + 1);
+        double val0 = Gamma.trigamma((t / a) + 1);
+        double val1 = Gamma.digamma(n + (t / a) + 1);
+        double val2 = Gamma.trigamma((a + t + (a * n)) / a);
+        double val3 = Gamma.trigamma((a + t) / a);
+        double val4 = Gamma.digamma((a + t) / a);
+        double val5 = Gamma.digamma((t / a) + 1);
         double val6 = a * a;
 
         double v = (val3 - val2) / (val6);
@@ -259,37 +173,10 @@ class AlgorithmNewtonPitman extends AlgorithmNewtonRaphson {
         return new double[] { w, y };
     }
 
-    private double[] computeWY2(double numberOfEquivalenceClasses, double a, double t) {
-        double n = numberOfEquivalenceClasses - 1d;
-        double dVal0 = Util.digamma(n + (t / a) + 1d);
-        double dVal1 = Util.digamma((a + t) / a);
-        double w = (dVal0 - dVal1) / a;
-        double y = ((-t * dVal0) + (a * n) + (t * dVal1)) / (a * a);
-        return new double[] { w, y };
-    }
-
-    private double[] computeWY3(double numberOfEquivalenceClasses, double a, double t) {
-        double n = numberOfEquivalenceClasses - 1d;
-        double dVal0 = Util2.digamma(n + (t / a) + 1d);
-        double dVal1 = Util2.digamma((a + t) / a);
-        double w = (dVal0 - dVal1) / a;
-        double y = ((-t * dVal0) + (a * n) + (t * dVal1)) / (a * a);
-        return new double[] { w, y };
-    }
-
     private double[] computeWY4(double numberOfEquivalenceClasses, double a, double t) {
         double n = numberOfEquivalenceClasses - 1d;
-        double dVal0 = Util4.digamma(n + (t / a) + 1d);
-        double dVal1 = Util4.digamma((a + t) / a);
-        double w = (dVal0 - dVal1) / a;
-        double y = ((-t * dVal0) + (a * n) + (t * dVal1)) / (a * a);
-        return new double[] { w, y };
-    }
-
-    private double[] computeWY6(double numberOfEquivalenceClasses, double a, double t) {
-        double n = numberOfEquivalenceClasses - 1d;
-        double dVal0 = Util6.digamma(n + (t / a) + 1d);
-        double dVal1 = Util6.digamma((a + t) / a);
+        double dVal0 = Gamma.digamma(n + (t / a) + 1d);
+        double dVal1 = Gamma.digamma((a + t) / a);
         double w = (dVal0 - dVal1) / a;
         double y = ((-t * dVal0) + (a * n) + (t * dVal1)) / (a * a);
         return new double[] { w, y };
@@ -303,24 +190,9 @@ class AlgorithmNewtonPitman extends AlgorithmNewtonRaphson {
         return x;
     }
 
-    private double computeX2(double numberOfEntries, double t) {
-        double n = numberOfEntries - 1d;
-        return Util.digamma(n + t + 1d) - Util.digamma(t + 1d);
-    }
-
-    private double computeX3(double numberOfEntries, double t) {
-        double n = numberOfEntries - 1d;
-        return Util2.digamma(n + t + 1d) - Util2.digamma(t + 1d);
-    }
-
     private double computeX4(double numberOfEntries, double t) {
         double n = numberOfEntries - 1d;
-        return Util4.digamma(n + t + 1d) - Util4.digamma(t + 1d);
-    }
-
-    private double computeX6(double numberOfEntries, double t) {
-        double n = numberOfEntries - 1d;
-        return Util6.digamma(n + t + 1d) - Util6.digamma(t + 1d);
+        return Gamma.digamma(n + t + 1d) - Gamma.digamma(t + 1d);
     }
 
     private double computeYStar1(double n, double a) {
@@ -332,31 +204,9 @@ class AlgorithmNewtonPitman extends AlgorithmNewtonRaphson {
         return yStar;
     }
 
-    private double computeYStar2(double n, double a) {
-        n = n - 1;
-        return Util4.trigamma(1 - a) - Util4.trigamma((n + 1) - a); // TODO: First is a constant
-    }
-
-    private double computeYStar2_ALT(double n, double a) {
-        return Util4.trigamma(1 - a) - Util4.trigamma(n - a); // TODO: First is a constant
-    }
-
-    private double computeYStar3(double n, double a) {
-        return Util.trigamma(1 - a) - Util.trigamma(n - a); // TODO: First is a constant
-    }
-
-    private double computeYStar5(double n, double a) {
-        return Util5.trigamma(1 - a) - Util5.trigamma(n - a); // TODO: First is a constant
-    }
-
-    private double computeYStar6(double n, double a) {
-        n = n - 1;
-        return Util6.trigamma(1 - a) - Util6.trigamma((n + 1) - a); // TODO: First is a constant
-    }
-
     private double computeYStar7(double n, double a) {
         n = n - 1;
-        return Util6.trigamma(1 - a) - Util6.trigamma((n + 1) - a); // TODO: First is a constant
+        return Gamma.trigamma(1 - a) - Gamma.trigamma((n + 1) - a); // TODO: First is a constant
     }
 
     private double computeZStar1(double n, double a) {
@@ -367,24 +217,9 @@ class AlgorithmNewtonPitman extends AlgorithmNewtonRaphson {
         return val0;
     }
 
-    private double computeZStar2(double n, double a) {
-        n = n - 1d;
-        return Util.digamma((n - a) + 1d) - Util.digamma(1d - a); // TODO: This is a constant
-    }
-
-    private double computeZStar3(double n, double a) {
-        n = n - 1d;
-        return Util2.digamma((n - a) + 1d) - Util2.digamma(1d - a); // TODO: This is a constant
-    }
-
     private double computeZStar4(double n, double a) {
         n = n - 1d;
-        return Util4.digamma((n - a) + 1d) - Util4.digamma(1d - a); // TODO: This is a constant
-    }
-
-    private double computeZStar6(double n, double a) {
-        n = n - 1d;
-        return Util6.digamma((n - a) + 1d) - Util6.digamma(1d - a); // TODO: This is a constant
+        return Gamma.digamma((n - a) + 1d) - Gamma.digamma(1d - a); // TODO: This is a constant
     }
 
     /**
