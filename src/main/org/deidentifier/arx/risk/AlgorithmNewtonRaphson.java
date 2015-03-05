@@ -53,7 +53,7 @@ abstract class AlgorithmNewtonRaphson {
 
     /** Stop flag */
     private WrappedBoolean stop;
-    
+
     /**
      * Creates a new instance
      * @param accuracy
@@ -93,22 +93,22 @@ abstract class AlgorithmNewtonRaphson {
         solutionVector = new Matrix(initialValue, initialValue.length);
         differenceVector = new Matrix(initialValue.length, 1, 100);
         firstDerivativeMatrix = new Matrix(initialValue.length, initialValue.length);
-        
+
         // Solve
         int iterations = 0;
         while (true) {
-            
+
             // Check
             checkInterrupt();
-            
+
             // Iterate
             firstDerivativeMatrix = new Matrix(firstDerivativeMatrix(solutionVector.getColumnPackedCopy()));
             double det = firstDerivativeMatrix.det();
             if (!Double.isNaN(det) && det != 0d) {
-                differenceVector = firstDerivativeMatrix.inverse().times(new Matrix(objectFunctionVector(solutionVector.getColumnPackedCopy()), 
-                                                                                                         initialValue.length));
+                differenceVector = firstDerivativeMatrix.inverse().times(new Matrix(objectFunctionVector(solutionVector.getColumnPackedCopy()),
+                                                                                    initialValue.length));
                 solutionVector = solutionVector.minus(differenceVector);
-            
+
                 // Error
             } else {
                 return new double[] { Double.NaN, Double.NaN };
@@ -125,8 +125,6 @@ abstract class AlgorithmNewtonRaphson {
             }
         }
 
-        System.out.println(this.getClass().getSimpleName()+ " - Iterations: "+iterations);
-        System.out.println(AlgorithmNewtonPitman.match + "/" + AlgorithmNewtonPitman.total);
         return solutionVector.getColumnPackedCopy();
     }
 
@@ -140,7 +138,7 @@ abstract class AlgorithmNewtonRaphson {
 
     protected abstract double[] objectFunctionVector(double[] iteratedSolution);
 
-    /** Checks for interrupts*/
+    /** Checks for interrupts */
     void checkInterrupt() {
         if (stop.value) {
             throw new ComputationInterruptedException();

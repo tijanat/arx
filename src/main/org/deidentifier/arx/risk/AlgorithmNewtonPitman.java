@@ -67,161 +67,6 @@ class AlgorithmNewtonPitman extends AlgorithmNewtonRaphson {
         total = 0;
     }
 
-    private void compare(double d1, double d2, String context) {
-        total++;
-        double min = Math.min(d1, d2);
-        double max = Math.max(d1, d2);
-        if ((1.0d - (min / max)) > 0.01d) { // Difference by more than 1%
-            System.out.println(context + ": " + d1 + "!=" + d2);
-        } else {
-            match++;
-        }
-    }
-
-    private void compare(double[] d1, double[] d2, String context) {
-        compare(d1[0], d2[0], context + "[0]");
-        compare(d1[1], d2[1], context + "[1]");
-        if (d1.length == 3) {
-            compare(d1[2], d2[2], context + "[2]");
-        }
-    }
-
-    private double[] computeWY(double numberOfEquivalenceClasses, double a, double t) {
-        // double[] w1 = computeWY1(numberOfEquivalenceClasses, a, t);
-        double[] w4 = computeWY4(numberOfEquivalenceClasses, a, t);
-        // compare(w1, w4, "WY");
-        return w4;
-    }
-
-    private double computeX(double numberOfEntries, double t) {
-        // double x1 = computeX1(numberOfEntries, t);
-        double x4 = computeX4(numberOfEntries, t);
-        // compare(x1, x4, "X");
-        return x4;
-    }
-
-    private double computeZStar(double n, double a) {
-        // double z1 = computeZStar1(n, a);
-        double z4 = computeZStar4(n, a);
-        // compare(z1, z4, "Z*");
-        return z4;
-    }
-
-    private double[] computeVXZ(double numberOfEquivalenceClasses, double a, double t) {
-        // double[] v1 = computeVXZ1(numberOfEquivalenceClasses, a, t);
-        double[] v7 = computeVXZ7(numberOfEquivalenceClasses, a, t);
-        // compare(v1, v7, "VXZ: " + numberOfEquivalenceClasses + " " + a + " " + t);
-        return v7;
-    }
-
-    private double computeYStar(double n, double a) {
-        // double ystar1 = computeYStar1(n, a);
-        double ystar7 = computeYStar7(n, a);
-        // compare(ystar1, ystar7, "Y*");
-        return ystar7;
-    }
-
-    private double[] computeVXZ1(double numberOfEquivalenceClasses, double a, double t) {
-
-        double v = 0;
-        double x = 0;
-        double z = 0;
-
-        // For each...
-        // TODO: Find closed form
-        for (int i = 1; i < numberOfEquivalenceClasses; i++) {
-            double val0 = (t + (i * a));
-            double val1 = 1d / (val0 * val0);
-            double val2 = i * val1;
-            double val3 = i * val2;
-            v += val1; // Compute d^2L/(dtheta)^2
-            z += val2; // Compute d^2L/(d theta d alpha)
-            x += val3; // Compute d^2L/(d alpha)^2
-
-        }
-        return new double[] { v, x, z };
-    }
-
-    private double[] computeVXZ7(double numberOfEquivalenceClasses, double a, double t) {
-
-        // this is verified twice, with Matlab/Mupad and mathematica!
-
-        double n = numberOfEquivalenceClasses - 1d;
-        double val0 = Gamma.trigamma((t / a) + 1);
-        double val1 = Gamma.digamma(n + (t / a) + 1);
-        double val2 = Gamma.trigamma((a + t + (a * n)) / a);
-        double val3 = Gamma.trigamma((a + t) / a);
-        double val4 = Gamma.digamma((a + t) / a);
-        double val5 = Gamma.digamma((t / a) + 1);
-        double val6 = a * a;
-
-        double v = (val3 - val2) / (val6);
-        double z = (((a * val1) + (t * val2)) - (a * val4) - (t * val3)) / (val6 * a);
-        double x = (((((val6 * n) - (t * t * val2)) + (t * t * val0)) - (2 * a * t * val1)) + (2 * a * t * val5)) / (val6 * val6);
-        return new double[] { v, x, z };
-    }
-
-    private double[] computeWY1(double numberOfEquivalenceClasses, double a, double t) {
-        double w = 0;
-        double y = 0;
-        for (int i = 1; i < numberOfEquivalenceClasses; i++) {
-            double val0 = 1d / (t + (i * a));
-            double val1 = i * val0;
-            w += val0;
-            y += val1;
-        }
-        return new double[] { w, y };
-    }
-
-    private double[] computeWY4(double numberOfEquivalenceClasses, double a, double t) {
-        double n = numberOfEquivalenceClasses - 1d;
-        double dVal0 = Gamma.digamma(n + (t / a) + 1d);
-        double dVal1 = Gamma.digamma((a + t) / a);
-        double w = (dVal0 - dVal1) / a;
-        double y = ((-t * dVal0) + (a * n) + (t * dVal1)) / (a * a);
-        return new double[] { w, y };
-    }
-
-    private double computeX1(double numberOfEntries, double t) {
-        double x = 0;
-        for (int i = 1; i < numberOfEntries; i++) {
-            x += 1d / (t + i);
-        }
-        return x;
-    }
-
-    private double computeX4(double numberOfEntries, double t) {
-        double n = numberOfEntries - 1d;
-        return Gamma.digamma(n + t + 1d) - Gamma.digamma(t + 1d);
-    }
-
-    private double computeYStar1(double n, double a) {
-        double yStar = 0;
-        for (int j = 1; j < n; j++) {
-            double val2 = j - a;
-            yStar += 1d / (val2 * val2);
-        }
-        return yStar;
-    }
-
-    private double computeYStar7(double n, double a) {
-        n = n - 1;
-        return Gamma.trigamma(1 - a) - Gamma.trigamma((n + 1) - a); // TODO: First is a constant
-    }
-
-    private double computeZStar1(double n, double a) {
-        double val0 = 0;
-        for (int j = 1; j < n; j++) {
-            val0 += 1d / (j - a);
-        }
-        return val0;
-    }
-
-    private double computeZStar4(double n, double a) {
-        n = n - 1d;
-        return Gamma.digamma((n - a) + 1d) - Gamma.digamma(1d - a); // TODO: This is a constant
-    }
-
     /**
      * The method for computing the first derivatives of the object functions
      * evaluated at the iterated solutions.
@@ -236,22 +81,31 @@ class AlgorithmNewtonPitman extends AlgorithmNewtonRaphson {
         double t = iteratedSolution[0]; // Theta
         double a = iteratedSolution[1]; // Alpha
 
-        double[] vxz = computeVXZ(numberOfEquivalenceClasses, a, t);
-        double v = vxz[0];
-        double x = vxz[1];
-        double z = vxz[2];
+        // these closed forms have been verified with Matlab/Mupad and Mathematica!
+        double n = numberOfEquivalenceClasses - 1d;
+        double val0 = Gamma.trigamma((t / a) + 1d);
+        double val1 = Gamma.digamma(n + (t / a) + 1d);
+        double val2 = Gamma.trigamma((a + t + (a * n)) / a);
+        double val3 = Gamma.trigamma((a + t) / a);
+        double val4 = Gamma.digamma((a + t) / a);
+        double val5 = Gamma.digamma((t / a) + 1);
+        double val6 = a * a;
 
+        double v = (val3 - val2) / (val6);
+        double z = (((a * val1) + (t * val2)) - (a * val4) - (t * val3)) / (val6 * a);
+        double x = (((((val6 * n) - (t * t * val2)) + (t * t * val0)) - (2 * a * t * val1)) + (2 * a * t * val5)) / (val6 * val6);
         checkInterrupt();
 
         // For each class...
         double w = 0;
         double y = 0;
+        double val7 = Gamma.trigamma(1d - a);
         for (int i = 0; i < classes.length; i += 2) {
             int key = classes[i];
             int value = classes[i + 1];
-            double val0 = t + key;
-            w += 1d / (val0 * val0);
-            y += key != 1 ? value * computeYStar(key, a) : 0;
+            double val8 = t + key;
+            w += 1d / (val8 * val8);
+            y += key != 1 ? value * (val7 - Gamma.trigamma(key - a)) : 0;
             checkInterrupt();
         }
 
@@ -263,6 +117,59 @@ class AlgorithmNewtonPitman extends AlgorithmNewtonRaphson {
         result[1][1] = 0 - x - y;
 
         // Return
+        return result;
+    }
+
+    /**
+     * Iterated version of the firstDerivativeMatrix function
+     */
+    protected double[][] firstDerivativeMatrixIterated(final double[] iteratedSolution) {
+
+        double t = iteratedSolution[0]; // Theta
+        double a = iteratedSolution[1]; // Alpha
+        double v = 0;
+        double w = 0;
+        double x = 0;
+        double y = 0;
+        double z = 0;
+
+        // For each...
+        for (int i = 1; i < numberOfEquivalenceClasses; i++) {
+            double val0 = (t + (i * a));
+            double val1 = 1d / (val0 * val0);
+            double val2 = i * val1;
+            double val3 = i * val2;
+            v += val1; // Compute d^2L/(dtheta)^2
+            z += val2; // Compute d^2L/(d theta d alpha)
+            x += val3; // Compute d^2L/(d alpha)^2
+
+        }
+        checkInterrupt();
+
+        // For each class...
+        for (int i = 0; i < classes.length; i += 2) {
+            int key = classes[i];
+            int value = classes[i + 1];
+            double val0 = t + key;
+            w += 1d / (val0 * val0);
+
+            if (key != 1) {
+                double val1 = 0;
+                for (int j = 1; j < key; j++) {
+                    double val2 = j - a;
+                    val1 += 1d / (val2 * val2);
+                }
+                y += value * val1;
+            }
+            checkInterrupt();
+        }
+
+        // Pack
+        double[][] result = new double[2][2];
+        result[0][0] = w - v;
+        result[0][1] = 0 - z;
+        result[1][0] = 0 - z;
+        result[1][1] = 0 - x - y;
         return result;
     }
 
@@ -281,20 +188,25 @@ class AlgorithmNewtonPitman extends AlgorithmNewtonRaphson {
 
         // Compute z
         double z = 0;
+        double val0 = Gamma.digamma(1d - a);
         for (int i = 0; i < classes.length; i += 2) {
             int key = classes[i];
             int value = classes[i + 1];
             if (key != 1) {
-                z += value * computeZStar(key, a);
+                z += value * (Gamma.digamma(key - a) - val0);
             }
             checkInterrupt();
         }
 
-        // Compute w,y,x
-        double[] wy = computeWY(numberOfEquivalenceClasses, a, t);
-        double w = wy[0];
-        double y = wy[1];
-        double x = computeX(numberOfEntries, t);
+        // Compute w,y
+        double n = numberOfEquivalenceClasses - 1d;
+        double dVal0 = Gamma.digamma(n + (t / a) + 1d);
+        double dVal1 = Gamma.digamma((a + t) / a);
+        double w = (dVal0 - dVal1) / a;
+        double y = ((-t * dVal0) + (a * n) + (t * dVal1)) / (a * a);
+
+        // Compute x
+        double x = Gamma.digamma(numberOfEntries + t) - Gamma.digamma(t + 1d);
 
         // Return
         double[] result = new double[2];
@@ -303,4 +215,52 @@ class AlgorithmNewtonPitman extends AlgorithmNewtonRaphson {
         return result;
     }
 
+    /**
+     * Iterated version of the object function
+     */
+    protected double[] objectFunctionVectorIterated(final double[] iteratedSolution) {
+
+        double t = iteratedSolution[0]; // Theta
+        double a = iteratedSolution[1]; // Alpha
+
+        double w = 0;
+        double x = 0;
+        double y = 0;
+        double z = 0;
+
+        for (int i = 1; i < numberOfEquivalenceClasses; i++) {
+            double val0 = 1d / (t + (i * a));
+            double val1 = i * val0;
+            w += val0;
+            y += val1;
+        }
+        checkInterrupt();
+
+        for (int i = 1; i < numberOfEntries; i++) {
+            x += 1d / (t + i);
+        }
+        checkInterrupt();
+
+        // For each class..
+        for (int i = 0; i < classes.length; i += 2) {
+            int key = classes[i];
+            int value = classes[i + 1];
+
+            if (key != 1) {
+                double val0 = 0;
+                for (int j = 1; j < key; j++) {
+                    val0 += 1d / (j - a);
+                }
+                z += value * val0;
+            }
+            checkInterrupt();
+
+        }
+
+        // Return
+        double[] result = new double[2];
+        result[0] = w - x;
+        result[1] = y - z;
+        return result;
+    }
 }
