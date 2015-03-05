@@ -41,10 +41,6 @@ class AlgorithmNewtonPitman extends AlgorithmNewtonRaphson {
     /** The total number of equivalence classes in the sample data set */
     private final double numberOfEquivalenceClasses;
 
-    public static int    match = 0;
-
-    public static int    total = 0;
-
     /**
      * Creates an instance of the Newton-Raphson Algorithm to determine the
      * Maximum Likelihood Estimator for the Pitman Model
@@ -60,70 +56,18 @@ class AlgorithmNewtonPitman extends AlgorithmNewtonRaphson {
                           final double accuracy,
                           final WrappedBoolean stop) {
         super(accuracy, maxIterations, stop);
-        numberOfEquivalenceClasses = u;
-        numberOfEntries = n;
+        this.numberOfEquivalenceClasses = u;
+        this.numberOfEntries = n;
         this.classes = classes;
-        match = 0;
-        total = 0;
-    }
-
-    /**
-     * The method for computing the first derivatives of the object functions
-     * evaluated at the iterated solutions.
-     * 
-     * @param iteratedSolution
-     *            the iterated vector of solutions.
-     * @return the first derivatives of the object functions evaluated at the
-     *         iterated solutions.
-     */
-    @Override
-    protected double[][] firstDerivativeMatrix(final double[] iteratedSolution) {
-        double t = iteratedSolution[0]; // Theta
-        double a = iteratedSolution[1]; // Alpha
-
-        // these closed forms have been verified with Matlab/Mupad and Mathematica!
-        double n = numberOfEquivalenceClasses - 1d;
-        double val0 = Gamma.trigamma((t / a) + 1d);
-        double val1 = Gamma.digamma(n + (t / a) + 1d);
-        double val2 = Gamma.trigamma((a + t + (a * n)) / a);
-        double val3 = Gamma.trigamma((a + t) / a);
-        double val4 = Gamma.digamma((a + t) / a);
-        double val5 = Gamma.digamma((t / a) + 1);
-        double val6 = a * a;
-
-        double v = (val3 - val2) / (val6);
-        double z = (((a * val1) + (t * val2)) - (a * val4) - (t * val3)) / (val6 * a);
-        double x = (((((val6 * n) - (t * t * val2)) + (t * t * val0)) - (2 * a * t * val1)) + (2 * a * t * val5)) / (val6 * val6);
-        checkInterrupt();
-
-        // For each class...
-        double w = 0;
-        double y = 0;
-        double val7 = Gamma.trigamma(1d - a);
-        for (int i = 0; i < classes.length; i += 2) {
-            int key = classes[i];
-            int value = classes[i + 1];
-            double val8 = t + key;
-            w += 1d / (val8 * val8);
-            y += key != 1 ? value * (val7 - Gamma.trigamma(key - a)) : 0;
-            checkInterrupt();
-        }
-
-        // Pack
-        double[][] result = new double[2][2];
-        result[0][0] = w - v;
-        result[0][1] = 0 - z;
-        result[1][0] = 0 - z;
-        result[1][1] = 0 - x - y;
-
-        // Return
-        return result;
     }
 
     /**
      * Iterated version of the firstDerivativeMatrix function
+     * @param iteratedSolution
+     * @return
      */
-    protected double[][] firstDerivativeMatrixIterated(final double[] iteratedSolution) {
+    @SuppressWarnings("unused")
+    private double[][] firstDerivativeMatrixIterative(final double[] iteratedSolution) {
 
         double t = iteratedSolution[0]; // Theta
         double a = iteratedSolution[1]; // Alpha
@@ -174,51 +118,12 @@ class AlgorithmNewtonPitman extends AlgorithmNewtonRaphson {
     }
 
     /**
-     * The method for computing the object functions evaluated at the iterated
-     * solutions.
-     * 
+     * Iterative version of the object function
      * @param iteratedSolution
-     *            the iterated vector of solutions.
-     * @return the object functions evaluated at the iterated solutions.
+     * @return
      */
-    @Override
-    protected double[] objectFunctionVector(final double[] iteratedSolution) {
-        double t = iteratedSolution[0]; // Theta
-        double a = iteratedSolution[1]; // Alpha
-
-        // Compute z
-        double z = 0;
-        double val0 = Gamma.digamma(1d - a);
-        for (int i = 0; i < classes.length; i += 2) {
-            int key = classes[i];
-            int value = classes[i + 1];
-            if (key != 1) {
-                z += value * (Gamma.digamma(key - a) - val0);
-            }
-            checkInterrupt();
-        }
-
-        // Compute w,y
-        double n = numberOfEquivalenceClasses - 1d;
-        double dVal0 = Gamma.digamma(n + (t / a) + 1d);
-        double dVal1 = Gamma.digamma((a + t) / a);
-        double w = (dVal0 - dVal1) / a;
-        double y = ((-t * dVal0) + (a * n) + (t * dVal1)) / (a * a);
-
-        // Compute x
-        double x = Gamma.digamma(numberOfEntries + t) - Gamma.digamma(t + 1d);
-
-        // Return
-        double[] result = new double[2];
-        result[0] = w - x;
-        result[1] = y - z;
-        return result;
-    }
-
-    /**
-     * Iterated version of the object function
-     */
-    protected double[] objectFunctionVectorIterated(final double[] iteratedSolution) {
+    @SuppressWarnings("unused")
+    private double[] objectFunctionVectorIterative(final double[] iteratedSolution) {
 
         double t = iteratedSolution[0]; // Theta
         double a = iteratedSolution[1]; // Alpha
@@ -256,6 +161,102 @@ class AlgorithmNewtonPitman extends AlgorithmNewtonRaphson {
             checkInterrupt();
 
         }
+
+        // Return
+        double[] result = new double[2];
+        result[0] = w - x;
+        result[1] = y - z;
+        return result;
+    }
+
+    /**
+     * The method for computing the first derivatives of the object functions
+     * evaluated at the iterated solutions.
+     * 
+     * @param iteratedSolution
+     *            the iterated vector of solutions.
+     * @return the first derivatives of the object functions evaluated at the
+     *         iterated solutions.
+     */
+    @Override
+    protected double[][] firstDerivativeMatrix(final double[] iteratedSolution) {
+        
+        double t = iteratedSolution[0]; // Theta
+        double a = iteratedSolution[1]; // Alpha
+
+        // These closed forms have been verified with Matlab/Mupad and Mathematica!
+        double n = numberOfEquivalenceClasses - 1d;
+        double val0 = Gamma.trigamma((t / a) + 1d);
+        double val1 = Gamma.digamma(n + (t / a) + 1d);
+        double val2 = Gamma.trigamma((a + t + (a * n)) / a);
+        double val3 = Gamma.trigamma((a + t) / a);
+        double val4 = Gamma.digamma((a + t) / a);
+        double val5 = Gamma.digamma((t / a) + 1);
+        double val6 = a * a;
+
+        double v = (val3 - val2) / (val6);
+        double z = (((a * val1) + (t * val2)) - (a * val4) - (t * val3)) / (val6 * a);
+        double x = (((((val6 * n) - (t * t * val2)) + (t * t * val0)) - (2 * a * t * val1)) + (2 * a * t * val5)) / (val6 * val6);
+        checkInterrupt();
+
+        // For each class...
+        double w = 0;
+        double y = 0;
+        double val7 = Gamma.trigamma(1d - a);
+        for (int i = 0; i < classes.length; i += 2) {
+            int key = classes[i];
+            int value = classes[i + 1];
+            double val8 = t + key;
+            w += 1d / (val8 * val8);
+            y += key != 1 ? value * (val7 - Gamma.trigamma(key - a)) : 0;
+            checkInterrupt();
+        }
+
+        // Pack
+        double[][] result = new double[2][2];
+        result[0][0] = w - v;
+        result[0][1] = 0 - z;
+        result[1][0] = 0 - z;
+        result[1][1] = 0 - x - y;
+
+        // Return
+        return result;
+    }
+
+    /**
+     * The method for computing the object functions evaluated at the iterated
+     * solutions.
+     * 
+     * @param iteratedSolution
+     *            the iterated vector of solutions.
+     * @return the object functions evaluated at the iterated solutions.
+     */
+    @Override
+    protected double[] objectFunctionVector(final double[] iteratedSolution) {
+        double t = iteratedSolution[0]; // Theta
+        double a = iteratedSolution[1]; // Alpha
+
+        // Compute z
+        double z = 0;
+        double val0 = Gamma.digamma(1d - a);
+        for (int i = 0; i < classes.length; i += 2) {
+            int key = classes[i];
+            int value = classes[i + 1];
+            if (key != 1) {
+                z += value * (Gamma.digamma(key - a) - val0);
+            }
+            checkInterrupt();
+        }
+
+        // Compute w,y
+        double n = numberOfEquivalenceClasses - 1d;
+        double dVal0 = Gamma.digamma(n + (t / a) + 1d);
+        double dVal1 = Gamma.digamma((a + t) / a);
+        double w = (dVal0 - dVal1) / a;
+        double y = ((-t * dVal0) + (a * n) + (t * dVal1)) / (a * a);
+
+        // Compute x
+        double x = Gamma.digamma(numberOfEntries + t) - Gamma.digamma(t + 1d);
 
         // Return
         double[] result = new double[2];
