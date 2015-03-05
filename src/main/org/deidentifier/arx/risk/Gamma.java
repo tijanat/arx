@@ -18,9 +18,53 @@ package org.deidentifier.arx.risk;
 
 /**
  * Helper class containing approximations for the digamma and trigamma functions.
+ * 
+ * @author Florian Kohlmayer
+ * @author Fabian Prasser
  */
 public class Gamma {
 
+    /** The Constant LARGE. */
+    private final static double LARGE = 9.5;
+
+    /** The Constant D1. */
+    private final static double D1    = -0.5772156649015328606065121; // digamma(1)
+
+    /** The Constant D2. */
+    private final static double D2    = Math.pow(Math.PI, 2.0) / 6.0;
+
+    /** The Constant SMALL. */
+    private final static double SMALL = 1e-6;
+
+    /** The Constant S3. */
+    private final static double S3    = 1.0 / 12.0;
+
+    /** The Constant S4. */
+    private final static double S4    = 1.0 / 120.0;
+
+    /** The Constant S5. */
+    private final static double S5    = 1.0 / 252.0;
+
+    /** The Constant S6. */
+    private final static double S6    = 1.0 / 240.0;
+
+    /** The Constant S7. */
+    private final static double S7    = 1.0 / 132.0;
+
+    /** The Constant S8. */
+    private final static double S8    = 1.0 / 30.0;
+
+    /** The Constant S9. */
+    private final static double S9    = 1.0 / 6.0;
+
+    /** The Constant S10. */
+    private final static double S10   = 1.0 / 42.0;
+
+    /** The Constant S11. */
+    private final static double S11   = 1.0 / 13.2;
+
+    /** The Constant S12. */
+    private final static double S12   = 1.0 / 2.0;
     /**
      * Approximates the digamma function.
      * Adapted from: https://github.com/georgg/georg/blob/master/src/old%20code/SpecialMathFn/Digamma.java
@@ -42,6 +86,7 @@ public class Gamma {
      * @return approximation of digamma for x
      */
     public static double digamma(double x) {
+        
         double y = 0.0d;
         double r = 0.0d;
 
@@ -117,53 +162,6 @@ public class Gamma {
             p = (1.0d / (x * x)) + p;
         }
 
-        if (Double.isNaN(p)) {
-            throw new ArithmeticException("invalid input at trigamma function: " + x);
-        }
-
         return p;
     }
-
-    /** The Constant LARGE. */
-    private final static double LARGE = 9.5;
-
-    /** The Constant D1. */
-    private final static double D1    = -0.5772156649015328606065121; // digamma(1)
-
-    /** The Constant D2. */
-    private final static double D2    = Math.pow(Math.PI, 2.0) / 6.0;
-
-    /** The Constant SMALL. */
-    private final static double SMALL = 1e-6;
-
-    /** The Constant S3. */
-    private final static double S3    = 1.0 / 12.0;
-
-    /** The Constant S4. */
-    private final static double S4    = 1.0 / 120.0;
-
-    /** The Constant S5. */
-    private final static double S5    = 1.0 / 252.0;
-
-    /** The Constant S6. */
-    private final static double S6    = 1.0 / 240.0;
-
-    /** The Constant S7. */
-    private final static double S7    = 1.0 / 132.0;
-
-    /** The Constant S8. */
-    private final static double S8    = 1.0 / 30.0;
-
-    /** The Constant S9. */
-    private final static double S9    = 1.0 / 6.0;
-
-    /** The Constant S10. */
-    private final static double S10   = 1.0 / 42.0;
-
-    /** The Constant S11. */
-    private final static double S11   = 1.0 / 13.2;
-
-    /** The Constant S12. */
-    private final static double S12   = 1.0 / 2.0;
-
 }
