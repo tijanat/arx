@@ -124,6 +124,9 @@ abstract class AlgorithmNewtonRaphson {
                 return new double[] { Double.NaN, Double.NaN };
             }
         }
+
+        System.out.println(this.getClass().getSimpleName()+ " - Iterations: "+iterations);
+        System.out.println(AlgorithmNewtonPitman.match + "/" + AlgorithmNewtonPitman.total);
         return solutionVector.getColumnPackedCopy();
     }
 

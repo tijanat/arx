@@ -57,6 +57,8 @@ class ModelPitman extends RiskModelPopulationBased {
         int numClasses = (int) super.getNumClasses();
         double populationSize = super.getPopulationSize();
 
+        long time = System.nanoTime();
+
         // Initial guess
         final double c = (c1 * (c1 - 1)) / c2;
         final double thetaGuess = ((sampleSize * numClasses * c) - (c1 * (sampleSize - 1) * ((2 * numClasses) + c))) /
@@ -68,6 +70,7 @@ class ModelPitman extends RiskModelPopulationBased {
         final double[] initialGuess = { thetaGuess, alphaGuess };
         final double[] output = pitmanNewton.getSolution(initialGuess);
 
+        System.out.println("NewtonRapson: " + (System.nanoTime() - time) / 1000000000d);
         final double theta = output[0];
         final double alpha = output[1];
         double result;
