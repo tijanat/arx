@@ -30,16 +30,16 @@ import org.deidentifier.arx.risk.RiskEstimateBuilder.WrappedInteger;
  * @version 1.0
  */
 public class ModelPitman extends RiskModelPopulationBased {
-
+    
     public static enum PitmanNumericMode {
         OPTIMIZED,
         DEFAULT,
         OPTIMIZED_WITH_FALLBACK
     }
-
+    
     /** The result */
-    private final double      numUniques;
-
+    private final double numUniques;
+    
     /**
      * Creates a new instance. Public constructor for testing purposes
      * @param model
@@ -50,19 +50,20 @@ public class ModelPitman extends RiskModelPopulationBased {
      * @param optimized
      */
     public ModelPitman(final ARXPopulationModel model,
-                final RiskModelEquivalenceClasses classes,
-                final int sampleSize,
-                final double accuracy,
-                final int maxIterations,
-                final PitmanNumericMode mode) {
-        this(model, 
-             classes, 
-             sampleSize, 
-             accuracy, 
-             maxIterations, 
+                       final RiskModelEquivalenceClasses classes,
+                       final int sampleSize,
+                       final double accuracy,
+                       final int maxIterations,
+                       final PitmanNumericMode mode) {
+        this(model,
+             classes,
+             sampleSize,
+             accuracy,
+             maxIterations,
              new WrappedBoolean(),
              mode);
     }
+    
     /**
      * Creates a new instance
      * @param model
@@ -78,14 +79,15 @@ public class ModelPitman extends RiskModelPopulationBased {
                 final double accuracy,
                 final int maxIterations,
                 final WrappedBoolean stop) {
-        this(model, 
-             classes, 
-             sampleSize, 
-             accuracy, 
-             maxIterations, 
+        this(model,
+             classes,
+             sampleSize,
+             accuracy,
+             maxIterations,
              stop,
-             PitmanNumericMode.DEFAULT);
+             PitmanNumericMode.OPTIMIZED);
     }
+    
     /**
      * Creates a new instance
      * @param model
@@ -103,19 +105,19 @@ public class ModelPitman extends RiskModelPopulationBased {
                 final WrappedBoolean stop,
                 final PitmanNumericMode mode) {
         super(classes, model, sampleSize, stop, new WrappedInteger());
-
+        
         int c1 = (int) super.getNumClassesOfSize(1);
         int c2 = (int) super.getNumClassesOfSize(2);
         if (c2 == 0) c2 = 1; // Overestimate
         int numClasses = (int) super.getNumClasses();
         double populationSize = super.getPopulationSize();
-
+        
         // Initial guess
         double c = (c1 * (c1 - 1)) / c2;
         double thetaGuess = ((sampleSize * numClasses * c) - (c1 * (sampleSize - 1) * ((2 * numClasses) + c))) /
                             (((2 * c1 * numClasses) + (c1 * c)) - (sampleSize * c));
         double alphaGuess = ((thetaGuess * (c1 - sampleSize)) + ((sampleSize - 1) * c1)) / (sampleSize * numClasses);
-
+        
         // Apply Newton-Rhapson algorithm to solve the Maximum Likelihood Estimates
         AlgorithmNewtonPitman pitmanNewton = new AlgorithmNewtonPitman(numClasses, sampleSize, classes.getEquivalenceClasses(), maxIterations, accuracy, stop, mode != PitmanNumericMode.DEFAULT);
         double[] initialGuess = { thetaGuess, alphaGuess };
@@ -144,12 +146,18 @@ public class ModelPitman extends RiskModelPopulationBased {
         double theta = output[0];
         double alpha = output[1];
         if (!Double.isNaN(alpha) && !Double.isNaN(theta) && alpha != 0) {
-            return Math.exp(Gamma.logGamma(theta + 1) - Gamma.logGamma(theta + alpha)) * Math.pow(populationSize, alpha);
+            double val1 = Math.exp(Gamma.logGamma(theta + 1) - Gamma.logGamma(theta + alpha)) * Math.pow(populationSize, alpha); // original student
+            val1 = val1 >= 0d && val1 <= populationSize ? val1 : Double.NaN;
+            if (Double.isNaN(val1)) {
+                val1 = (Gamma.gamma(theta + 1) / Gamma.gamma(theta + alpha)) * Math.pow(populationSize, alpha); //paper version
+                val1 = val1 >= 0d && val1 <= populationSize ? val1 : Double.NaN;
+            }
+            return val1;
         } else {
             return Double.NaN;
         }
     }
-
+    
     /**
      * Returns the number of uniques
      * @return
