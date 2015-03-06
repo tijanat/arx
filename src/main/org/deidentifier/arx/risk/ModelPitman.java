@@ -85,7 +85,7 @@ public class ModelPitman extends RiskModelPopulationBased {
              accuracy,
              maxIterations,
              stop,
-             PitmanNumericMode.OPTIMIZED);
+             PitmanNumericMode.DEFAULT);
     }
     
     /**
@@ -106,6 +106,22 @@ public class ModelPitman extends RiskModelPopulationBased {
                 final PitmanNumericMode mode) {
         super(classes, model, sampleSize, stop, new WrappedInteger());
         
+        int count = 0;
+        double result = Double.NaN;
+        while (Double.isNaN(result) && count < 100) {
+            result = getNumUniquesInternal(model, classes, sampleSize, accuracy, maxIterations, stop, mode, count != 0);
+            count++;
+        }
+        this.numUniques = result;
+    }
+
+    private double getNumUniquesInternal(final ARXPopulationModel model, 
+                                         final RiskModelEquivalenceClasses classes, 
+                                         final int sampleSize, final double accuracy, 
+                                         final int maxIterations, 
+                                         final WrappedBoolean stop, 
+                                         final PitmanNumericMode mode,
+                                         final boolean randomize) {
         int c1 = (int) super.getNumClassesOfSize(1);
         int c2 = (int) super.getNumClassesOfSize(2);
         if (c2 == 0) c2 = 1; // Overestimate
@@ -113,14 +129,17 @@ public class ModelPitman extends RiskModelPopulationBased {
         double populationSize = super.getPopulationSize();
         
         // Initial guess
-        double c = (c1 * (c1 - 1)) / c2;
-        double thetaGuess = ((sampleSize * numClasses * c) - (c1 * (sampleSize - 1) * ((2 * numClasses) + c))) /
-                            (((2 * c1 * numClasses) + (c1 * c)) - (sampleSize * c));
-        double alphaGuess = ((thetaGuess * (c1 - sampleSize)) + ((sampleSize - 1) * c1)) / (sampleSize * numClasses);
+        double[] initialGuess = new double[]{Math.random(), Math.random()};
+        if (!randomize) {
+            double c = (c1 * (c1 - 1)) / c2;
+            double thetaGuess = ((sampleSize * numClasses * c) - (c1 * (sampleSize - 1) * ((2 * numClasses) + c))) /
+                                (((2 * c1 * numClasses) + (c1 * c)) - (sampleSize * c));
+            double alphaGuess = ((thetaGuess * (c1 - sampleSize)) + ((sampleSize - 1) * c1)) / (sampleSize * numClasses);
+            initialGuess = new double[]{ thetaGuess, alphaGuess };
+        }
         
         // Apply Newton-Rhapson algorithm to solve the Maximum Likelihood Estimates
         AlgorithmNewtonPitman pitmanNewton = new AlgorithmNewtonPitman(numClasses, sampleSize, classes.getEquivalenceClasses(), maxIterations, accuracy, stop, mode != PitmanNumericMode.DEFAULT);
-        double[] initialGuess = { thetaGuess, alphaGuess };
         double[] output = pitmanNewton.getSolution(initialGuess);
         double result = getResult(output, populationSize);
         
@@ -133,8 +152,7 @@ public class ModelPitman extends RiskModelPopulationBased {
                 result = getResult(output, populationSize);
             }
         }
-        
-        this.numUniques = result;
+        return result;
     }
     
     /**
@@ -143,18 +161,27 @@ public class ModelPitman extends RiskModelPopulationBased {
      * @return
      */
     private double getResult(double[] output, double populationSize) {
+        
         double theta = output[0];
         double alpha = output[1];
-        if (!Double.isNaN(alpha) && !Double.isNaN(theta) && alpha != 0) {
-            double val1 = Math.exp(Gamma.logGamma(theta + 1) - Gamma.logGamma(theta + alpha)) * Math.pow(populationSize, alpha); // original student
-            val1 = val1 >= 0d && val1 <= populationSize ? val1 : Double.NaN;
-            if (Double.isNaN(val1)) {
-                val1 = (Gamma.gamma(theta + 1) / Gamma.gamma(theta + alpha)) * Math.pow(populationSize, alpha); //paper version
-                val1 = val1 >= 0d && val1 <= populationSize ? val1 : Double.NaN;
-            }
-            return val1;
-        } else {
+        
+        if (Double.isNaN(alpha) && Double.isNaN(theta) && alpha == 0) {
             return Double.NaN;
+        }
+        
+        double val1 = Math.exp(Gamma.logGamma(theta + 1) - Gamma.logGamma(theta + alpha)) * Math.pow(populationSize, alpha);
+        val1 = val1 >= 0d && val1 <= populationSize ? val1 : Double.NaN;
+        double val2 = (Gamma.gamma(theta + 1) / Gamma.gamma(theta + alpha)) * Math.pow(populationSize, alpha);
+        val2 = val2 >= 0d && val2 <= populationSize ? val2 : Double.NaN;
+        
+        if (Double.isNaN(val1) && Double.isNaN(val2)) {
+            return Double.NaN;
+        } else if (!Double.isNaN(val1) && !Double.isNaN(val2)) {
+            return Math.max(val1, val2);
+        } else if (Double.isNaN(val1)) {
+            return val2;
+        } else {
+            return val1;
         }
     }
     
