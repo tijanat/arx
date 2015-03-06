@@ -33,13 +33,16 @@ class AlgorithmNewtonPitman extends AlgorithmNewtonRaphson {
     /**
      * The number of equivalence class sizes (keys) and corresponding frequency (values)
      */
-    private final int[]  classes;
+    private final int[]   classes;
 
     /** The total number of entries in our sample data set */
-    private final double numberOfEntries;
+    private final double  numberOfEntries;
 
     /** The total number of equivalence classes in the sample data set */
-    private final double numberOfEquivalenceClasses;
+    private final double  numberOfEquivalenceClasses;
+
+    /** Optimize */
+    private final boolean optimized;
 
     /**
      * Creates an instance of the Newton-Raphson Algorithm to determine the
@@ -54,11 +57,13 @@ class AlgorithmNewtonPitman extends AlgorithmNewtonRaphson {
                           final int[] classes,
                           final int maxIterations,
                           final double accuracy,
-                          final WrappedBoolean stop) {
+                          final WrappedBoolean stop,
+                          final boolean optimized) {
         super(accuracy, maxIterations, stop);
         this.numberOfEquivalenceClasses = u;
         this.numberOfEntries = n;
         this.classes = classes;
+        this.optimized = optimized;
     }
 
     /**
@@ -66,7 +71,6 @@ class AlgorithmNewtonPitman extends AlgorithmNewtonRaphson {
      * @param solution
      * @return
      */
-    @SuppressWarnings("unused")
     private double[][] firstDerivativeMatrixIterative(final double[] solution) {
 
         double t = solution[0]; // Theta
@@ -90,13 +94,15 @@ class AlgorithmNewtonPitman extends AlgorithmNewtonRaphson {
         }
         checkInterrupt();
 
+        for (int i = 1; i < numberOfEntries; i++) {
+            double val0 = (t + i);
+            w += 1d / (val0 * val0);
+        }
+
         // For each class...
         for (int i = 0; i < classes.length; i += 2) {
             int key = classes[i];
             int value = classes[i + 1];
-            double val0 = t + key;
-            w += 1d / (val0 * val0);
-
             if (key != 1) {
                 double val1 = 0;
                 for (int j = 1; j < key; j++) {
@@ -122,7 +128,6 @@ class AlgorithmNewtonPitman extends AlgorithmNewtonRaphson {
      * @param solution
      * @return
      */
-    @SuppressWarnings("unused")
     private double[] objectFunctionVectorIterative(final double[] solution) {
 
         double t = solution[0]; // Theta
@@ -181,7 +186,7 @@ class AlgorithmNewtonPitman extends AlgorithmNewtonRaphson {
     @Override
     protected double[][] firstDerivativeMatrix(final double[] solution) {
         
-        if (true) {
+        if (!optimized) {
             return firstDerivativeMatrixIterative(solution);
         }
         
@@ -238,7 +243,7 @@ class AlgorithmNewtonPitman extends AlgorithmNewtonRaphson {
     @Override
     protected double[] objectFunctionVector(final double[] solution) {
         
-        if (true) {
+        if (!optimized) {
             return objectFunctionVectorIterative(solution);
         }
         
