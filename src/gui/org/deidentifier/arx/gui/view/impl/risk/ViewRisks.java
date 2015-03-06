@@ -17,6 +17,9 @@
 
 package org.deidentifier.arx.gui.view.impl.risk;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 import org.deidentifier.arx.ARXPopulationModel;
@@ -115,9 +118,6 @@ public abstract class ViewRisks<T extends AnalysisContextVisualization> implemen
         this.reset();
     }
 
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.gui.view.def.IView#dispose()
-     */
     @Override
     public void dispose() {
         controller.removeListener(this);
@@ -131,9 +131,6 @@ public abstract class ViewRisks<T extends AnalysisContextVisualization> implemen
         return enabled;
     }
 
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.gui.view.def.IView#reset()
-     */
     @Override
     public void reset() {
         this.doReset();
@@ -152,9 +149,6 @@ public abstract class ViewRisks<T extends AnalysisContextVisualization> implemen
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.gui.view.def.IView#update(org.deidentifier.arx.gui.model.ModelEvent)
-     */
     @Override
     public void update(final ModelEvent event) {
 
@@ -189,7 +183,7 @@ public abstract class ViewRisks<T extends AnalysisContextVisualization> implemen
             return;
         }
     }
-
+    
     /**
      * Redraws the plot.
      */
@@ -225,19 +219,7 @@ public abstract class ViewRisks<T extends AnalysisContextVisualization> implemen
             status.setWorking();
         }
     }
-    
-    /**
-     * Is there still some data to show
-     * @return
-     */
-    protected boolean isValid() {
-        if (this.target == ModelPart.INPUT) {
-            return this.model != null && this.model.getInputConfig() != null && this.model.getInputConfig().getInput() != null;
-        } else {
-            return this.model != null && this.model.getOutput() != null;
-        }
-    }
-    
+
     /**
      * 
      * Implement this to create the widget.
@@ -254,12 +236,12 @@ public abstract class ViewRisks<T extends AnalysisContextVisualization> implemen
      * @return
      */
     protected abstract T createViewConfig(AnalysisContext context);
-
+    
     /**
      * Implement this to reset.
      */
     protected abstract void doReset();
-
+    
     /**
      * Implement this to update.
      *
@@ -267,6 +249,41 @@ public abstract class ViewRisks<T extends AnalysisContextVisualization> implemen
      */
     protected abstract void doUpdate(T context);
 
+    /**
+     * Creates a risk estimate builder
+     * @param context
+     * @return
+     */
+    protected RiskEstimateBuilderInterruptible getBuilder(AnalysisContextRisk context) {
+        
+        AnalysisContext analysisContext = context.context;
+        return context.handle.getRiskEstimator(analysisContext.getModel().getRiskModel().getPopulationModel(),
+                                               analysisContext.getData().definition.getQuasiIdentifyingAttributes(),
+                                               analysisContext.getModel().getRiskModel().getAccuracy(),
+                                               analysisContext.getModel().getRiskModel().getMaxIterations())
+                                               .getInterruptibleInstance();
+    }
+
+    /**
+     * Returns a string containing all quasi-identifiers
+     * @param context
+     * @return
+     */
+    protected String getQuasiIdentifiers(AnalysisContextRisk context) {
+        AnalysisContext analysisContext = context.context;
+        List<String> list = new ArrayList<String>();
+        list.addAll(analysisContext.getData().definition.getQuasiIdentifyingAttributes());
+        Collections.sort(list);
+        StringBuilder builder = new StringBuilder();
+        for (int i=0; i<list.size(); i++) {
+            builder.append(list.get(i));
+            if (i < list.size() - 1){
+                builder.append(", ");
+            }
+        }
+        return builder.toString();
+    }
+    
     /**
      * Creates a risk estimate builder
      * @param context
@@ -281,22 +298,6 @@ public abstract class ViewRisks<T extends AnalysisContextVisualization> implemen
         AnalysisContext analysisContext = context.context;
         return context.handle.getRiskEstimator(model, 
                                                classes, 
-                                               analysisContext.getModel().getRiskModel().getAccuracy(),
-                                               analysisContext.getModel().getRiskModel().getMaxIterations())
-                                               .getInterruptibleInstance();
-    }
-
-    
-    /**
-     * Creates a risk estimate builder
-     * @param context
-     * @return
-     */
-    protected RiskEstimateBuilderInterruptible getBuilder(AnalysisContextRisk context) {
-        
-        AnalysisContext analysisContext = context.context;
-        return context.handle.getRiskEstimator(analysisContext.getModel().getRiskModel().getPopulationModel(),
-                                               analysisContext.getData().definition.getQuasiIdentifyingAttributes(),
                                                analysisContext.getModel().getRiskModel().getAccuracy(),
                                                analysisContext.getModel().getRiskModel().getMaxIterations())
                                                .getInterruptibleInstance();
@@ -319,23 +320,44 @@ public abstract class ViewRisks<T extends AnalysisContextVisualization> implemen
                                                .getInterruptibleInstance();
     }
 
+    
+    /**
+     * Returns the model
+     * @return
+     */
+    protected Model getModel() {
+        return this.model;
+    }
+
     /**
      * May return a progress provider, if any
      * @return
      */
     protected abstract ComponentStatusLabelProgressProvider getProgressProvider();
-    
+
     /**
      * Returns the according type of view
      * @return
      */
     protected abstract ViewRiskType getViewType();
-
+    
     /**
      * Is a job running
      * @return
      */
     protected abstract boolean isRunning();
+
+    /**
+     * Is there still some data to show
+     * @return
+     */
+    protected boolean isValid() {
+        if (this.target == ModelPart.INPUT) {
+            return this.model != null && this.model.getInputConfig() != null && this.model.getInputConfig().getInput() != null;
+        } else {
+            return this.model != null && this.model.getOutput() != null;
+        }
+    }
     
     /**
      * Status update.

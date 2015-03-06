@@ -47,7 +47,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 
-import de.linearbits.tiles.DecoratorString;
+import de.linearbits.swt.tiles.DecoratorString;
 
 /**
  * This class provides an abstract base for views that display parts of the solution space
@@ -251,37 +251,6 @@ public abstract class ViewSolutionSpace implements IView {
     }
     
     /**
-     * Check whether the filtered part of the solution space is too large
-     * @param result
-     * @param filter
-     * @return
-     */
-    private boolean isTooLarge(ARXResult result, ModelNodeFilter filter, int max) {
-
-        if(result == null) {
-            showPrimaryComposite();
-            return false;
-        }
-
-        int count = 0;
-        final ARXLattice l = result.getLattice();
-        for (final ARXNode[] level : l.getLevels()) {
-            for (final ARXNode node : level) {
-                if (filter.isAllowed(result.getLattice(), node)) {
-                    count++;
-                }
-            }
-        }
-        if (count > max) {
-            showSecondaryComposite(count, max);
-            return true;
-        } else {
-            showPrimaryComposite();
-            return false;
-        }
-    }
-
-    /**
      * Creates the context menu.
      */
     private void initializeMenu() {
@@ -311,7 +280,7 @@ public abstract class ViewSolutionSpace implements IView {
             }
         });
     }
-    
+
     private void initializeTooltip() {
         this.tooltipDecorator = new DecoratorString<ARXNode>() {
             @Override
@@ -339,6 +308,37 @@ public abstract class ViewSolutionSpace implements IView {
                 return b.toString();
             }
         };
+    }
+    
+    /**
+     * Check whether the filtered part of the solution space is too large
+     * @param result
+     * @param filter
+     * @return
+     */
+    private boolean isTooLarge(ARXResult result, ModelNodeFilter filter, int max) {
+
+        if(result == null) {
+            showPrimaryComposite();
+            return false;
+        }
+
+        int count = 0;
+        final ARXLattice l = result.getLattice();
+        for (final ARXNode[] level : l.getLevels()) {
+            for (final ARXNode node : level) {
+                if (filter.isAllowed(result.getLattice(), node)) {
+                    count++;
+                }
+            }
+        }
+        if (count > max) {
+            showSecondaryComposite(count, max);
+            return true;
+        } else {
+            showPrimaryComposite();
+            return false;
+        }
     }
     
     /**gray.dispose();

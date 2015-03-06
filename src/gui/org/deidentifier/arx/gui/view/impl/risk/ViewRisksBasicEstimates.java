@@ -33,7 +33,7 @@ import org.deidentifier.arx.gui.view.impl.common.async.AnalysisContext;
 import org.deidentifier.arx.gui.view.impl.common.async.AnalysisManager;
 import org.deidentifier.arx.risk.RiskEstimateBuilderInterruptible;
 import org.deidentifier.arx.risk.RiskModelPopulationBasedUniquenessRisk;
-import org.deidentifier.arx.risk.RiskModelPopulationBasedUniquenessRisk.StatisticalModel;
+import org.deidentifier.arx.risk.RiskModelPopulationBasedUniquenessRisk.StatisticalPopulationModel;
 import org.deidentifier.arx.risk.RiskModelSampleBasedReidentificationRisk;
 import org.deidentifier.arx.risk.RiskModelSampleBasedUniquenessRisk;
 import org.eclipse.swt.SWT;
@@ -42,8 +42,9 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
-import org.mihalis.opal.dynamictablecolumns.DynamicTable;
-import org.mihalis.opal.dynamictablecolumns.DynamicTableColumn;
+
+import de.linearbits.swt.table.DynamicTable;
+import de.linearbits.swt.table.DynamicTableColumn;
 
 /**
  * This view displays basic risk estimates.
@@ -114,10 +115,22 @@ public class ViewRisksBasicEstimates extends ViewRisks<AnalysisContextRisk> {
      * @param label
      * @param value
      */
-    private void createItem(String label, StatisticalModel value) {
+    private void createItem(String label, StatisticalPopulationModel value) {
         TableItem item = new TableItem(table, SWT.NONE);
         item.setText(0, label);
         item.setText(1, value == null ? "N/A" : value.toString());
+        items.add(item);
+    }
+    
+    /**
+     * Creates a table item
+     * @param label
+     * @param value
+     */
+    private void createItem(String label, String value) {
+        TableItem item = new TableItem(table, SWT.NONE);
+        item.setText(0, label);
+        item.setText(1, value);
         items.add(item);
     }
 
@@ -172,7 +185,7 @@ public class ViewRisksBasicEstimates extends ViewRisks<AnalysisContextRisk> {
     }
     
     @Override
-    protected void doUpdate(AnalysisContextRisk context) {
+    protected void doUpdate(final AnalysisContextRisk context) {
 
         // Enable/disable
         if (!this.isEnabled()) {
@@ -188,16 +201,16 @@ public class ViewRisksBasicEstimates extends ViewRisks<AnalysisContextRisk> {
         
         // Create an analysis
         Analysis analysis = new Analysis(){
-            
-            private boolean          stopped = false;
-            private double           lowestRisk;
-            private double           fractionOfTuplesAffectedByLowestRisk;
-            private double           averageRisk;
-            private double           highestRisk;
-            private double           fractionOfTuplesAffectedByHighestRisk;
-            private double           fractionOfUniqueTuples;
-            private double           fractionOfUniqueTuplesDankar;
-            private StatisticalModel dankarModel;
+
+            private boolean                    stopped = false;
+            private double                     lowestRisk;
+            private double                     fractionOfTuplesAffectedByLowestRisk;
+            private double                     averageRisk;
+            private double                     highestRisk;
+            private double                     fractionOfTuplesAffectedByHighestRisk;
+            private double                     fractionOfUniqueTuples;
+            private double                     fractionOfUniqueTuplesDankar;
+            private StatisticalPopulationModel dankarModel;
 
             @Override
             public int getProgress() {
@@ -230,6 +243,7 @@ public class ViewRisksBasicEstimates extends ViewRisks<AnalysisContextRisk> {
                 createItem(Resources.getMessage("RiskAnalysis.11"), fractionOfUniqueTuples);
                 createItem(Resources.getMessage("RiskAnalysis.12"), fractionOfUniqueTuplesDankar);
                 createItem(Resources.getMessage("RiskAnalysis.18"), dankarModel);
+                createItem(Resources.getMessage("RiskAnalysis.25"), getQuasiIdentifiers(context));
 
                 table.setRedraw(true);
                 

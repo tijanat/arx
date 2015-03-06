@@ -24,6 +24,7 @@ import java.util.Locale;
 import org.deidentifier.arx.AttributeType;
 import org.deidentifier.arx.gui.Controller;
 import org.deidentifier.arx.gui.model.Model;
+import org.deidentifier.arx.gui.model.ModelRisk.RiskModelForAttributes;
 import org.deidentifier.arx.gui.resources.Resources;
 import org.deidentifier.arx.gui.view.def.IDialog;
 import org.deidentifier.arx.io.CSVSyntax;
@@ -158,15 +159,42 @@ public class DialogProperties implements IDialog {
             protected String getValue() { return model.getDescription(); }
             protected void setValue(Object t) { model.setDescription((String)t); }});
 
-//        window.addPreference(new PreferenceCharacter(Resources.getMessage("PropertyDialog.9"), ';') { //$NON-NLS-1$
-//            protected String getValue() { return String.valueOf(model.getSeparator()); }
-//            protected void setValue(Object t) { model.setSeparator(((String)t).charAt(0)); }});
-
         window.addPreference(new PreferenceSelection(Resources.getMessage("PropertyDialog.33"), getLocales()) { //$NON-NLS-1$
             protected String getValue() { return model.getLocale().getLanguage().toUpperCase(); }
             protected void setValue(Object t) { model.setLocale(((String)t).equals("Default") ? Locale.getDefault() : new Locale(((String)t).toLowerCase())); }}); //$NON-NLS-1$
     }
 
+    /**
+     * Create a tab
+     * @param window
+     */
+    private void createTabRisk(PreferencesDialog window) {
+
+        window.addCategory(Resources.getMessage("PropertyDialog.40"), //$NON-NLS-1$
+                           controller.getResources().getImage("settings-risk.png")); //$NON-NLS-1$
+        
+        window.addPreference(new PreferenceInteger(Resources.getMessage("PropertyDialog.41"), 1, 100000, 1000) { //$NON-NLS-1$
+            protected Integer getValue() { return model.getRiskModel().getMaxIterations(); }
+            protected void setValue(Object t) { model.getRiskModel().setMaxIterations((Integer)t); }});
+        
+        window.addPreference(new PreferenceDouble(Resources.getMessage("PropertyDialog.42"), 1.0e-10, 1d, 1.0e-6) { //$NON-NLS-1$
+            protected Double getValue() { return model.getRiskModel().getAccuracy(); }
+            protected void setValue(Object t) { model.getRiskModel().setAccuracy((Double)t); }});
+
+        window.addPreference(new PreferenceInteger(Resources.getMessage("PropertyDialog.43"), 1, 10, 10) { //$NON-NLS-1$
+            protected Integer getValue() { return model.getRiskModel().getMaxQiSize(); }
+            protected void setValue(Object t) { model.getRiskModel().setMaxQiSize((Integer)t); }});
+        
+        window.addPreference(new PreferenceSelection(Resources.getMessage("PropertyDialog.45"), getRiskModelsForAnalyses()) {
+            protected String getValue() { return model.getRiskModel().getRiskModelForAttributes().name(); }
+            protected void setValue(Object arg0) { model.getRiskModel().setRiskModelForAttributes(RiskModelForAttributes.valueOf((String)arg0)); }
+        });
+        
+        window.addPreference(new PreferenceBoolean(Resources.getMessage("PropertyDialog.44")) { //$NON-NLS-1$
+            protected Boolean getValue() { return model.getInputConfig().isHeuristicForSampleBasedCriteria(); }
+            protected void setValue(Object t) { model.getInputConfig().setHeuristicForSampleBasedCriteria((Boolean)t); }});
+    }
+    
     /**
      * Create a tab
      * @param window
@@ -196,7 +224,7 @@ public class DialogProperties implements IDialog {
             protected Integer getValue() { return model.getMaxNodesInLattice(); }
             protected void setValue(Object t) { model.setMaxNodesInLattice((Integer)t); }});
     }
-    
+
     /**
      * Create a tab
      * @param window
@@ -215,32 +243,6 @@ public class DialogProperties implements IDialog {
     }
 
     /**
-     * Create a tab
-     * @param window
-     */
-    private void createTabRisk(PreferencesDialog window) {
-
-        window.addCategory(Resources.getMessage("PropertyDialog.40"), //$NON-NLS-1$
-                           controller.getResources().getImage("settings-risk.png")); //$NON-NLS-1$
-        
-        window.addPreference(new PreferenceInteger(Resources.getMessage("PropertyDialog.41"), 1, 100000, 1000) { //$NON-NLS-1$
-            protected Integer getValue() { return model.getRiskModel().getMaxIterations(); }
-            protected void setValue(Object t) { model.getRiskModel().setMaxIterations((Integer)t); }});
-        
-        window.addPreference(new PreferenceDouble(Resources.getMessage("PropertyDialog.42"), 1.0e-10, 1d, 1.0e-6) { //$NON-NLS-1$
-            protected Double getValue() { return model.getRiskModel().getAccuracy(); }
-            protected void setValue(Object t) { model.getRiskModel().setAccuracy((Double)t); }});
-
-        window.addPreference(new PreferenceInteger(Resources.getMessage("PropertyDialog.43"), 1, 10, 10) { //$NON-NLS-1$
-            protected Integer getValue() { return model.getRiskModel().getMaxQiSize(); }
-            protected void setValue(Object t) { model.getRiskModel().setMaxQiSize((Integer)t); }});
-        
-        window.addPreference(new PreferenceBoolean(Resources.getMessage("PropertyDialog.44")) { //$NON-NLS-1$
-            protected Boolean getValue() { return model.getInputConfig().isHeuristicForSampleBasedCriteria(); }
-            protected void setValue(Object t) { model.getInputConfig().setHeuristicForSampleBasedCriteria((Boolean)t); }});
-    }
-
-    /**
      * Returns a list of available locales
      * @return
      */
@@ -251,5 +253,17 @@ public class DialogProperties implements IDialog {
             languages.add(lang.toUpperCase());
         }
         return languages.toArray(new String[]{});
+    }
+
+    /**
+     * Creates a list of models
+     * @return
+     */
+    private String[] getRiskModelsForAnalyses() {
+        List<String> result = new ArrayList<String>();
+        for (RiskModelForAttributes model : RiskModelForAttributes.values()) {
+            result.add(model.name());
+        }
+        return result.toArray(new String[result.size()]);
     }
 }

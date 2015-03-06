@@ -21,7 +21,7 @@ import org.deidentifier.arx.criteria.PrivacyCriterion;
 import org.deidentifier.arx.criteria.RiskBasedThresholdAverageRisk;
 import org.deidentifier.arx.criteria.RiskBasedThresholdPopulationUniques;
 import org.deidentifier.arx.criteria.RiskBasedThresholdSampleUniques;
-import org.deidentifier.arx.risk.RiskModelPopulationBasedUniquenessRisk.StatisticalModel;
+import org.deidentifier.arx.risk.RiskModelPopulationBasedUniquenessRisk.StatisticalPopulationModel;
 
 /**
  * This class implements a model for risk-based criteria
@@ -66,18 +66,27 @@ public class ModelRiskBasedCriterion extends ModelImplicitCriterion{
     }
     
 	@Override
+    public ModelRiskBasedCriterion clone() {
+        ModelRiskBasedCriterion result = new ModelRiskBasedCriterion(this.variant);
+        result.threshold = this.threshold;
+        result.variant = this.variant;
+        result.setEnabled(this.isEnabled());
+        return result;
+    }
+	
+	@Override
 	public PrivacyCriterion getCriterion(Model model) {
         switch (variant) {
         case VARIANT_AVERAGE_RISK:
             return new RiskBasedThresholdAverageRisk(threshold);
         case VARIANT_POPULATION_UNIQUES_DANKAR:
-            return new RiskBasedThresholdPopulationUniques(threshold, StatisticalModel.DANKAR, model.getRiskModel().getPopulationModel().clone());
+            return getPopulationBasedCriterion(StatisticalPopulationModel.DANKAR, model);
         case VARIANT_POPULATION_UNIQUES_PITMAN:
-            return new RiskBasedThresholdPopulationUniques(threshold, StatisticalModel.PITMAN, model.getRiskModel().getPopulationModel().clone());
+            return getPopulationBasedCriterion(StatisticalPopulationModel.PITMAN, model);
         case VARIANT_POPULATION_UNIQUES_SNB:
-            return new RiskBasedThresholdPopulationUniques(threshold, StatisticalModel.SNB, model.getRiskModel().getPopulationModel().clone());
+            return getPopulationBasedCriterion(StatisticalPopulationModel.SNB, model);
         case VARIANT_POPULATION_UNIQUES_ZAYATZ:
-            return new RiskBasedThresholdPopulationUniques(threshold, StatisticalModel.ZAYATZ, model.getRiskModel().getPopulationModel().clone());
+            return getPopulationBasedCriterion(StatisticalPopulationModel.ZAYATZ, model);
         case VARIANT_SAMPLE_UNIQUES:
             return new RiskBasedThresholdSampleUniques(threshold);
         default:
@@ -85,6 +94,26 @@ public class ModelRiskBasedCriterion extends ModelImplicitCriterion{
         }
 	}
 
+	@Override
+    public String getLabel() {
+        switch (variant) {
+        case VARIANT_AVERAGE_RISK:
+            return "Average-Reidentification-Risk";
+        case VARIANT_POPULATION_UNIQUES_DANKAR:
+            return "Population-Uniqueness (Dankar)";
+        case VARIANT_POPULATION_UNIQUES_PITMAN:
+            return "Population-Uniqueness (Pitman)";
+        case VARIANT_POPULATION_UNIQUES_SNB:
+            return "Population-Uniqueness (SNB)";
+        case VARIANT_POPULATION_UNIQUES_ZAYATZ:
+            return "Population-Uniqueness (Zayatz)";
+        case VARIANT_SAMPLE_UNIQUES:
+            return "Sample-Uniqueness";
+        default:
+            throw new RuntimeException("Internal error: invalid variant of risk-based criterion");
+        }
+    }
+	
 	/**
      * Returns the threshold.
      *
@@ -93,8 +122,19 @@ public class ModelRiskBasedCriterion extends ModelImplicitCriterion{
 	public double getThreshold() {
 		return threshold;
 	}
-	
-	/**
+
+    @Override
+    public void parse(ModelCriterion criterion) {
+        if (!(criterion instanceof ModelRiskBasedCriterion)) {
+            return;
+        }
+        ModelRiskBasedCriterion other = (ModelRiskBasedCriterion)criterion;
+        this.threshold = other.threshold;
+        this.variant = other.variant;
+        this.setEnabled(other.isEnabled());
+    }
+
+    /**
      * Sets the threshold.
      *
      * @param k
@@ -123,44 +163,19 @@ public class ModelRiskBasedCriterion extends ModelImplicitCriterion{
             throw new RuntimeException("Internal error: invalid variant of risk-based criterion");
         }
     }
-
-    @Override
-    public String getLabel() {
-        switch (variant) {
-        case VARIANT_AVERAGE_RISK:
-            return "Average-Reidentification-Risk";
-        case VARIANT_POPULATION_UNIQUES_DANKAR:
-            return "Population-Uniqueness (Dankar)";
-        case VARIANT_POPULATION_UNIQUES_PITMAN:
-            return "Population-Uniqueness (Pitman)";
-        case VARIANT_POPULATION_UNIQUES_SNB:
-            return "Population-Uniqueness (SNB)";
-        case VARIANT_POPULATION_UNIQUES_ZAYATZ:
-            return "Population-Uniqueness (Zayatz)";
-        case VARIANT_SAMPLE_UNIQUES:
-            return "Sample-Uniqueness";
-        default:
-            throw new RuntimeException("Internal error: invalid variant of risk-based criterion");
-        }
-    }
-
-    @Override
-    public ModelRiskBasedCriterion clone() {
-        ModelRiskBasedCriterion result = new ModelRiskBasedCriterion(this.variant);
-        result.threshold = this.threshold;
-        result.variant = this.variant;
-        result.setEnabled(this.isEnabled());
-        return result;
-    }
     
-    @Override
-    public void parse(ModelCriterion criterion) {
-        if (!(criterion instanceof ModelRiskBasedCriterion)) {
-            return;
-        }
-        ModelRiskBasedCriterion other = (ModelRiskBasedCriterion)criterion;
-        this.threshold = other.threshold;
-        this.variant = other.variant;
-        this.setEnabled(other.isEnabled());
-    }
+    /**
+	 * Returns a population-based criterion for the given models
+	 * @param statisticalModel
+	 * @param model
+	 * @return
+	 */
+	private PrivacyCriterion getPopulationBasedCriterion(StatisticalPopulationModel statisticalModel, Model model) {
+	    ModelRisk riskModel = model.getRiskModel();
+	    return new RiskBasedThresholdPopulationUniques(threshold, 
+	                                                   statisticalModel, 
+	                                                   riskModel.getPopulationModel().clone(),
+	                                                   riskModel.getAccuracy(),
+	                                                   riskModel.getMaxIterations());
+	}
 }

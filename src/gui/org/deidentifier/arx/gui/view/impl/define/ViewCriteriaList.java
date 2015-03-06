@@ -42,8 +42,9 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.TableItem;
-import org.mihalis.opal.dynamictablecolumns.DynamicTable;
-import org.mihalis.opal.dynamictablecolumns.DynamicTableColumn;
+
+import de.linearbits.swt.table.DynamicTable;
+import de.linearbits.swt.table.DynamicTableColumn;
 
 /**
  * This class displays a list of all defined privacy criteria.
@@ -145,6 +146,16 @@ public class ViewCriteriaList implements IView {
     }
     
     /**
+     * Configure
+     */
+    public void actionConfigure() {
+        ModelCriterion criterion = this.getSelectedCriterion();
+        if (criterion != null) {
+            controller.actionCriterionConfigure(criterion);
+        }
+    }
+    
+    /**
      * Pull
      */
     public void actionPull() {
@@ -163,7 +174,7 @@ public class ViewCriteriaList implements IView {
             controller.actionCriterionPush(criterion);
         }
     }
-    
+
     /**
      * Remove
      */
@@ -171,16 +182,6 @@ public class ViewCriteriaList implements IView {
         ModelCriterion criterion = this.getSelectedCriterion();
         if (criterion != null) {
             controller.actionCriterionEnable(criterion);
-        }
-    }
-
-    /**
-     * Configure
-     */
-    public void actionConfigure() {
-        ModelCriterion criterion = this.getSelectedCriterion();
-        if (criterion != null) {
-            controller.actionCriterionConfigure(criterion);
         }
     }
     

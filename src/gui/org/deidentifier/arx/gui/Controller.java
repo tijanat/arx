@@ -87,12 +87,10 @@ import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
-import org.mihalis.opal.opalDialog.ChoiceItem;
-import org.mihalis.opal.opalDialog.Dialog;
-import org.mihalis.opal.opalDialog.Dialog.CenterOption;
-import org.mihalis.opal.opalDialog.Dialog.OpalDialogType;
 
 import cern.colt.Swapper;
+import de.linearbits.swt.choicesdialog.ChoiceItem;
+import de.linearbits.swt.choicesdialog.ChoicesDialog;
 
 /**
  * The main controller for the whole tool.
@@ -509,7 +507,7 @@ public class Controller implements IView {
             return;
         }
 
-        actionResetOutput();
+        actionMenuEditReset();
 
         // Run the worker
         final WorkerAnonymize worker = new WorkerAnonymize(model);
@@ -649,6 +647,27 @@ public class Controller implements IView {
     }
 
     /**
+     * Resets the current output
+     */
+    public void actionMenuEditReset() {
+        
+        // Reset output
+        model.getViewConfig().setMode(Mode.UNSORTED);
+        model.getViewConfig().setSubset(false);
+        model.setGroups(null);
+        model.setResult(null);
+        model.setOutputConfig(null);
+        model.setOutput(null, null);
+        model.setSelectedNode(null);
+
+        update(new ModelEvent(this, ModelPart.SELECTED_VIEW_CONFIG, null));
+        update(new ModelEvent(this, ModelPart.RESULT, null));
+        update(new ModelEvent(this, ModelPart.OUTPUT, null));
+        update(new ModelEvent(this, ModelPart.SELECTED_NODE, null));
+
+    }
+
+    /**
      * Starts the "edit settings" dialog.
      */
     public void actionMenuEditSettings() {
@@ -700,16 +719,13 @@ public class Controller implements IView {
                                                Resources.getMessage("Controller.117")); //$NON-NLS-1$
         
         // Show dialog
-        final Dialog dialog = new Dialog(main.getShell());
+        ChoicesDialog dialog = new ChoicesDialog(main.getShell(), SWT.APPLICATION_MODAL);
         dialog.setTitle(Resources.getMessage("Controller.26")); //$NON-NLS-1$
-        dialog.getMessageArea().setTitle(""); //$NON-NLS-1$ 
-        dialog.getMessageArea().setText(Resources.getMessage("Controller.27"));//$NON-NLS-1$
-        dialog.getMessageArea().setIcon(Display.getCurrent().getSystemImage(SWT.ICON_QUESTION));
-        dialog.getMessageArea().addChoice(items.length - 1, items);
-        dialog.setCenterPolicy(CenterOption.CENTER_ON_DIALOG);
-        dialog.setButtonType(OpalDialogType.NONE);
-        dialog.show();
-        int choice = dialog.getMessageArea().getChoice();
+        dialog.setMessage(Resources.getMessage("Controller.27"));//$NON-NLS-1$
+        dialog.setImage(Display.getCurrent().getSystemImage(SWT.ICON_QUESTION));
+        dialog.setChoices(items);
+        dialog.setDefaultChoice(items[items.length-1]);
+        int choice = dialog.open();
         
         // Cancel
         if (choice == -1 || choice == items.length-1) {
@@ -1464,7 +1480,7 @@ public class Controller implements IView {
             }
         }
     }
-
+    
     /**
      * Returns debug data.
      *
@@ -1473,7 +1489,7 @@ public class Controller implements IView {
     public String getDebugData() {
         return this.debug.getData(model);
     }
-    
+
     /**
      * Returns the current model
      * @return
@@ -1560,7 +1576,7 @@ public class Controller implements IView {
 
         final Data data = worker.getResult();
         if (model.getOutput() != null) {
-            this.actionResetOutput();
+            this.actionMenuEditReset();
         }
         model.reset();
 
@@ -1647,26 +1663,6 @@ public class Controller implements IView {
             }
         }
         return null;
-    }
-
-    /**
-     * Resets the output.
-     */
-    private void actionResetOutput() {
-
-        // Reset output
-        model.getViewConfig().setMode(Mode.UNSORTED);
-        model.getViewConfig().setSubset(false);
-        model.setGroups(null);
-        model.setResult(null);
-        model.setOutputConfig(null);
-        model.setOutput(null, null);
-        model.setSelectedNode(null);
-
-        update(new ModelEvent(this, ModelPart.SELECTED_VIEW_CONFIG, null));
-        update(new ModelEvent(this, ModelPart.RESULT, null));
-        update(new ModelEvent(this, ModelPart.OUTPUT, null));
-        update(new ModelEvent(this, ModelPart.SELECTED_NODE, null));
     }
 
     /**

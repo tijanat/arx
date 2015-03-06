@@ -35,14 +35,16 @@ import org.deidentifier.arx.gui.view.impl.common.async.AnalysisManager;
 import org.deidentifier.arx.risk.RiskEstimateBuilderInterruptible;
 import org.deidentifier.arx.risk.RiskModelAttributes;
 import org.deidentifier.arx.risk.RiskModelAttributes.QuasiIdentifierRisks;
+import org.deidentifier.arx.risk.RiskModelPopulationBasedUniquenessRisk.StatisticalPopulationModel;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
-import org.mihalis.opal.dynamictablecolumns.DynamicTable;
-import org.mihalis.opal.dynamictablecolumns.DynamicTableColumn;
+
+import de.linearbits.swt.table.DynamicTable;
+import de.linearbits.swt.table.DynamicTableColumn;
 
 /**
  * This view displays basic risk estimates.
@@ -116,6 +118,10 @@ public class ViewRisksAttributesTable extends ViewRisks<AnalysisContextRisk> {
         item.setText(1, format.format(risks.getFractionOfUniqueTuples() * 100d));
         item.setText(2, format.format(risks.getHighestReidentificationRisk() * 100d));
         item.setText(3, format.format(risks.getAverageReidentificationRisk() * 100d));
+        
+        // Color background = list.size() % 2 == 0 ? item.getDisplay().getSystemColor(SWT.COLOR_WIDGET_LIGHT_SHADOW) 
+        //                                         : item.getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW);
+        // item.setBackground(background);
 
         items.add(item);
     }
@@ -259,7 +265,25 @@ public class ViewRisksAttributesTable extends ViewRisks<AnalysisContextRisk> {
                 long time = System.currentTimeMillis();
 
                 // Perform work
-                risks = builder.getPopulationBasedAttributeRisks();
+                switch (getModel().getRiskModel().getRiskModelForAttributes()) {
+                case SAMPLE_UNIQUENESS:
+                    risks = builder.getSampleBasedAttributeRisks();
+                    break;
+                case POPULATION_UNIQUENESS_PITMAN:
+                    risks = builder.getPopulationBasedAttributeRisks(StatisticalPopulationModel.PITMAN);
+                    break;
+                case POPULATION_UNIQUENESS_ZAYATZ:
+                    risks = builder.getPopulationBasedAttributeRisks(StatisticalPopulationModel.ZAYATZ);
+                    break;
+                case POPULATION_UNIQUENESS_SNB:
+                    risks = builder.getPopulationBasedAttributeRisks(StatisticalPopulationModel.SNB);
+                    break;
+                case POPULATION_UNIQUENESS_DANKAR:
+                    risks = builder.getPopulationBasedAttributeRisks(StatisticalPopulationModel.DANKAR);
+                    break;
+                default:
+                    throw new RuntimeException("Invalid risk model");
+                }
 
                 // Our users are patient
                 while (System.currentTimeMillis() - time < MINIMAL_WORKING_TIME && !stopped) {

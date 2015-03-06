@@ -38,8 +38,9 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.TableItem;
-import org.mihalis.opal.dynamictablecolumns.DynamicTable;
-import org.mihalis.opal.dynamictablecolumns.DynamicTableColumn;
+
+import de.linearbits.swt.table.DynamicTable;
+import de.linearbits.swt.table.DynamicTableColumn;
 
 /**
  * This view displays basic risk estimates.
