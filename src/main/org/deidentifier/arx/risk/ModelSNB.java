@@ -68,9 +68,16 @@ class ModelSNB extends RiskModelPopulationBased {
 
         // Use Newton Raphson Algorithm to compute solution for the nonlinear multivariate equations
         // Start values are initialized randomly
-        double[] initialGuess = { Math.random(), Math.random() };
-        double[] output = snbModel.getSolution(initialGuess);
-        this.uniques = numNonEmptyClasses * Math.pow(output[1], output[0]);
+        int count = 0;
+        double result = Double.NaN;
+        while (Double.isNaN(result) && count < 100) {
+            double[] initialGuess = { Math.random(), Math.random() };
+            double[] output = snbModel.getSolution(initialGuess);
+            result = numNonEmptyClasses * Math.pow(output[1], output[0]);
+            result = result >= 0d && result <= super.getPopulationSize() ? result : Double.NaN;
+            count++;
+        }
+        this.uniques = result;
     }
 
     /**
