@@ -1,19 +1,18 @@
 /*
  * ARX: Powerful Data Anonymization
- * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
+ * Copyright 2012 - 2015 Florian Kohlmayer, Fabian Prasser
  * 
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.deidentifier.arx;
@@ -102,6 +101,16 @@ public class ARXLattice implements Serializable {
         /**
          * 
          *
+         * @param config
+         */
+        public void setMonotonicity(ARXConfiguration config) {
+            lattice.monotonicNonAnonymous = lattice.metric.isMonotonic() || !config.isSuppressionAlwaysEnabled();
+            lattice.monotonicAnonymous = lattice.metric.isMonotonic() || config.getAbsoluteMaxOutliers() == 0;
+        }
+
+        /**
+         * 
+         *
          * @param node
          */
         public void setOptimum(final ARXNode node) {
@@ -125,7 +134,7 @@ public class ARXLattice implements Serializable {
         public void setTop(final ARXNode top) {
             lattice.top = top;
         }
-
+        
         /**
          * 
          *
@@ -133,16 +142,6 @@ public class ARXLattice implements Serializable {
          */
         public void setUncertainty(final boolean uncertainty) {
             lattice.uncertainty = uncertainty;
-        }
-        
-        /**
-         * 
-         *
-         * @param config
-         */
-        public void setMonotonicity(ARXConfiguration config) {
-            lattice.monotonicNonAnonymous = lattice.metric.isMonotonic() || !config.isSuppressionAlwaysEnabled();
-            lattice.monotonicAnonymous = lattice.metric.isMonotonic() || config.getAbsoluteMaxOutliers() == 0;
         }
     }
 
@@ -581,6 +580,20 @@ public class ARXLattice implements Serializable {
     }
 
     /**
+     * Context for deserialization.
+     *
+     * @author kohlmayer
+     */
+    public static class LatticeDeserializationContext {
+        
+        /**  TODO */
+        public int minLevel = 0;
+        
+        /**  TODO */
+        public int maxLevel = 0;
+    }
+    
+    /**
      * 
      */
     class IntArrayWrapper {
@@ -601,9 +614,6 @@ public class ARXLattice implements Serializable {
             this.hashCode = Arrays.hashCode(array);
         }
 
-        /* (non-Javadoc)
-         * @see java.lang.Object#equals(java.lang.Object)
-         */
         @Override
         public final boolean equals(final Object obj) {
             if (this == obj) { return true; }
@@ -620,17 +630,11 @@ public class ARXLattice implements Serializable {
             return array;
         }
 
-        /* (non-Javadoc)
-         * @see java.lang.Object#hashCode()
-         */
         @Override
         public final int hashCode() {
             return hashCode;
         }
 
-        /* (non-Javadoc)
-         * @see java.lang.Object#toString()
-         */
         @Override
         public final String toString() {
             return Arrays.toString(array);
@@ -638,22 +642,11 @@ public class ARXLattice implements Serializable {
 
     }
     
-    /**
-     * Context for deserialization.
-     *
-     * @author kohlmayer
-     */
-    public static class LatticeDeserializationContext {
-        
-        /**  TODO */
-        public int minLevel = 0;
-        
-        /**  TODO */
-        public int maxLevel = 0;
-    }
-    
     /** Deserialization context. */
     private static LatticeDeserializationContext deserializationContext = new LatticeDeserializationContext();
+
+    /**  TODO */
+    private static final long     serialVersionUID                  = -8790104959905019184L;
 
     /**
      * Returns the deserialization context.
@@ -663,9 +656,6 @@ public class ARXLattice implements Serializable {
     public static LatticeDeserializationContext getDeserializationContext() {
         return deserializationContext;
     }
-
-    /**  TODO */
-    private static final long     serialVersionUID                  = -8790104959905019184L;
 
     /** The accessor. */
     private final Access          access                            = new Access(this);

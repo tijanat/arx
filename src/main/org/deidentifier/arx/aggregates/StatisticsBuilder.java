@@ -1,25 +1,25 @@
 /*
  * ARX: Powerful Data Anonymization
- * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
+ * Copyright 2012 - 2015 Florian Kohlmayer, Fabian Prasser
  * 
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.deidentifier.arx.aggregates;
 
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -27,13 +27,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.deidentifier.arx.AttributeType;
 import org.deidentifier.arx.AttributeType.Hierarchy;
 import org.deidentifier.arx.DataHandleStatistics;
 import org.deidentifier.arx.DataHandleStatistics.InterruptHandler;
 import org.deidentifier.arx.DataType;
+import org.deidentifier.arx.DataType.ARXOrderedString;
 import org.deidentifier.arx.DataType.ARXString;
 import org.deidentifier.arx.aggregates.StatisticsContingencyTable.Entry;
+import org.deidentifier.arx.aggregates.StatisticsSummary.ScaleOfMeasure;
+import org.deidentifier.arx.aggregates.StatisticsSummary.StatisticsSummaryOrdinal;
 
 import cern.colt.GenericSorting;
 import cern.colt.Swapper;
@@ -75,11 +79,11 @@ public class StatisticsBuilder {
         }
     }
     
-    /** The handle. */
-    private DataHandleStatistics handle;
-    
     /** The equivalence class statistics. */
     private StatisticsEquivalenceClasses ecStatistics;
+    
+    /** The handle. */
+    private DataHandleStatistics handle;
     
     /** The stop flag. */
     private volatile boolean interrupt;
@@ -169,8 +173,8 @@ public class StatisticsBuilder {
         final Iterator<Entry> internal = entries.keySet().iterator();
         final Iterator<Entry> iterator = new Iterator<Entry>(){
 
-            private Iterator<Entry> _internal = internal;
             private Map<Entry, Integer> _entries = entries;
+            private Iterator<Entry> _internal = internal;
             
             @Override
             public boolean hasNext() {
@@ -326,8 +330,8 @@ public class StatisticsBuilder {
         final Iterator<Entry> internal = entries.keySet().iterator();
         final Iterator<Entry> iterator = new Iterator<Entry>(){
 
-            private Iterator<Entry> _internal = internal;
             private Map<Entry, Double> _entries = entries;
+            private Iterator<Entry> _internal = internal;
             
             @Override
             public boolean hasNext() {
@@ -578,6 +582,146 @@ public class StatisticsBuilder {
     }
     
     /**
+     * Returns summary statistics for all attributes. 
+     * 
+     * @param listwiseDeletion A flag enabling list-wise deletion
+     * @return
+     */
+    public Map<String, StatisticsSummary> getSummaryStatistics(boolean listwiseDeletion) {
+
+        Map<String, DescriptiveStatistics> statistics = new HashMap<String, DescriptiveStatistics>();
+        Map<String, StatisticsSummaryOrdinal> ordinal = new HashMap<String, StatisticsSummaryOrdinal>();
+        Map<String, ScaleOfMeasure> scales = new HashMap<String, ScaleOfMeasure>();
+        
+        // Detect scales
+        for (int col = 0; col < handle.getNumColumns(); col++) {
+            
+            // Meta
+            String attribute = handle.getAttributeName(col);
+            DataType<?> type = handle.getDataType(attribute);
+            Class<?> clazz = type.getDescription().getWrappedClass();
+            
+            // Scale
+            ScaleOfMeasure scale = ScaleOfMeasure.NOMINAL;
+            if (clazz == Long.class || clazz == Double.class) {
+                scale = ScaleOfMeasure.RATIO;
+            } else if (clazz == Date.class) {
+                scale = ScaleOfMeasure.INTERVAL;
+            } else if (type instanceof ARXOrderedString) {
+                scale = ScaleOfMeasure.ORDINAL;
+            }
+            
+            // Store
+            scales.put(attribute, scale);
+            statistics.put(attribute, new DescriptiveStatistics());
+            ordinal.put(attribute, new StatisticsSummaryOrdinal(type));
+        }
+        
+        // Compute summary statistics
+        for (int row = 0; row < handle.getNumRows(); row++) {
+            
+            // Check, if we should include this row
+            boolean include = true;
+            if (listwiseDeletion) {
+                for (int col = 0; col < handle.getNumColumns(); col++) {
+                    if (DataType.isNull(handle.getValue(row, col))) {
+                        include = false;
+                        break;
+                    }
+                }
+            }
+            
+            // Check
+            checkInterrupt();
+            
+            // If yes, add
+            if (include) {
+                // Detect scales
+                for (int col = 0; col < handle.getNumColumns(); col++) {
+                    
+                    // Meta
+                    String value = handle.getValue(row, col);
+                    String attribute = handle.getAttributeName(col);
+                    DataType<?> type = handle.getDataType(attribute);
+                    Class<?> clazz = type.getDescription().getWrappedClass();
+                    
+                    // Analyze
+                    if (value != null && !DataType.isNull(value)) {
+                        if (clazz == Long.class || clazz == Double.class) {
+                            statistics.get(attribute).addValue(((Number)type.parse(value)).doubleValue());
+                            ordinal.get(attribute).addValue(value);
+                        } else if (clazz == Date.class) {
+                            statistics.get(attribute).addValue(((Date)type.parse(value)).getTime());
+                            ordinal.get(attribute).addValue(value);
+                        } else {
+                            ordinal.get(attribute).addValue(value);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Convert
+        Map<String, StatisticsSummary> result = new HashMap<String, StatisticsSummary>();
+        for (int col = 0; col < handle.getNumColumns(); col++) {
+            
+            // Check
+            checkInterrupt();
+            
+            // Depending on scale
+            String attribute = handle.getAttributeName(col);
+            ScaleOfMeasure scale = scales.get(attribute);
+            DataType<?> type = handle.getDataType(attribute);
+            ordinal.get(attribute).analyze();
+            if (scale == ScaleOfMeasure.NOMINAL) {
+                StatisticsSummaryOrdinal stats = ordinal.get(attribute);
+                result.put(attribute, new StatisticsSummary(ScaleOfMeasure.NOMINAL, 
+                                                            stats.getNumberOfMeasures(), 
+                                                            stats.getMode()));
+            } else if (scale == ScaleOfMeasure.ORDINAL) {
+                StatisticsSummaryOrdinal stats = ordinal.get(attribute);
+                result.put(attribute, new StatisticsSummary(ScaleOfMeasure.ORDINAL, 
+                                                            stats.getNumberOfMeasures(), 
+                                                            stats.getMode(),
+                                                            stats.getMedian(),
+                                                            stats.getMin(),
+                                                            stats.getMax()));
+            } else if (scale == ScaleOfMeasure.INTERVAL) {
+                StatisticsSummaryOrdinal stats = ordinal.get(attribute);
+                DescriptiveStatistics stats2 = statistics.get(attribute);
+                result.put(attribute, new StatisticsSummary(ScaleOfMeasure.INTERVAL, 
+                                                            stats.getNumberOfMeasures(), 
+                                                            stats.getMode(),
+                                                            stats.getMedian(),
+                                                            stats.getMin(),
+                                                            stats.getMax(),
+                                                            toString(type, stats2.getMean()),
+                                                            toString(type, stats2.getVariance()),
+                                                            toString(type, stats2.getPopulationVariance()),
+                                                            toString(type, stats2.getMax() - stats2.getMin()),
+                                                            toString(type, stats2.getKurtosis())));
+            } else if (scale == ScaleOfMeasure.RATIO) {
+                StatisticsSummaryOrdinal stats = ordinal.get(attribute);
+                DescriptiveStatistics stats2 = statistics.get(attribute);
+                result.put(attribute, new StatisticsSummary(ScaleOfMeasure.RATIO, 
+                                                            stats.getNumberOfMeasures(), 
+                                                            stats.getMode(),
+                                                            stats.getMedian(),
+                                                            stats.getMin(),
+                                                            stats.getMax(),
+                                                            toString(type, stats2.getMean()),
+                                                            toString(type, stats2.getVariance()),
+                                                            toString(type, stats2.getPopulationVariance()),
+                                                            toString(type, stats2.getMax() - stats2.getMin()),
+                                                            toString(type, stats2.getKurtosis()),
+                                                            toString(type, stats2.getGeometricMean())));
+            }
+        }
+        
+        return result;
+    }
+    
+    /**
      * Checks whether an interruption happened.
      */
     private void checkInterrupt(){
@@ -610,7 +754,6 @@ public class StatisticsBuilder {
         
         return hierarchy;
     }
-    
 
     /**
      * Scales the given string array.
@@ -648,6 +791,7 @@ public class StatisticsBuilder {
         return result;
     }
     
+
     /**
      * Orders the given array by data type.
      *
@@ -709,6 +853,24 @@ public class StatisticsBuilder {
                 array[arg1] = temp;
             }
         });
+    }
+    
+    /**
+     * Used for building summary statistics 
+     * @param type
+     * @param value
+     * @return
+     */
+    @SuppressWarnings("unchecked")
+    private String toString(DataType<?> type, double value) {
+        Class<?> clazz = type.getDescription().getWrappedClass();
+        if (clazz == Long.class || clazz == Double.class) {
+            return String.valueOf(value);
+        } else if (clazz == Date.class) {
+            return ((DataType<Date>) type).format(new Date((long) value));
+        } else {
+            return String.valueOf(value);
+        }
     }
     
     /**

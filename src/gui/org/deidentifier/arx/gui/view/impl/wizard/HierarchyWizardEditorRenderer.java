@@ -1,19 +1,18 @@
 /*
  * ARX: Powerful Data Anonymization
- * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
+ * Copyright 2012 - 2015 Florian Kohlmayer, Fabian Prasser
  * 
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.deidentifier.arx.gui.view.impl.wizard;
@@ -84,9 +83,6 @@ public class HierarchyWizardEditorRenderer<T> {
         /** Var. */
         public HierarchyWizardGroupingGroup<T> group;
 
-        /* (non-Javadoc)
-         * @see java.lang.Object#equals(java.lang.Object)
-         */
         @Override
         public boolean equals(Object obj) {
             if (this == obj) return true;
@@ -100,9 +96,6 @@ public class HierarchyWizardEditorRenderer<T> {
             return true;
         }
  
-        /* (non-Javadoc)
-         * @see java.lang.Object#hashCode()
-         */
         @Override
         public int hashCode() {
             final int prime = 31;
@@ -126,9 +119,6 @@ public class HierarchyWizardEditorRenderer<T> {
         /** Var. */
         public T                                  offset;
 
-        /* (non-Javadoc)
-         * @see java.lang.Object#equals(java.lang.Object)
-         */
         @Override
         public boolean equals(Object obj) {
             if (this == obj) return true;
@@ -142,9 +132,6 @@ public class HierarchyWizardEditorRenderer<T> {
             return true;
         }
  
-        /* (non-Javadoc)
-         * @see java.lang.Object#hashCode()
-         */
         @Override
         public int hashCode() {
             final int prime = 31;
@@ -154,18 +141,6 @@ public class HierarchyWizardEditorRenderer<T> {
         }
     }
 
-    /**
-     * Returns the font.
-     *
-     * @return
-     */
-    private static Font getFont(){
-
-        FontData fontdata = GUIHelper.DEFAULT_FONT.getFontData()[0];
-        fontdata.setHeight(9);
-        return GUIHelper.getFont(fontdata);
-    }
-    
     /** Constants. */
     public static final Font  FONT                   = getFont();
     
@@ -192,9 +167,21 @@ public class HierarchyWizardEditorRenderer<T> {
     
     /** Constants. */
     public static final Color NORMAL_BACKGROUND      = GUIHelper.getColor(230, 230, 230);
-
+    
     /** Constants. */
     public static final Color SELECTED_BACKGROUND    = GUIHelper.COLOR_YELLOW;
+
+    /**
+     * Returns the font.
+     *
+     * @return
+     */
+    private static Font getFont(){
+
+        FontData fontdata = GUIHelper.DEFAULT_FONT.getFontData()[0];
+        fontdata.setHeight(9);
+        return GUIHelper.getFont(fontdata);
+    }
 
     /** Var. */
     private final List<RenderedInterval<T>>        intervals         = new ArrayList<RenderedInterval<T>>();
@@ -474,7 +461,7 @@ public class HierarchyWizardEditorRenderer<T> {
                         max = dtype.add(scale2, max); 
                     }
                     
-                    element.bounds = "["+dtype.format(min)+", "+dtype.format(max)+"[";
+                    element.bounds = "["+dtype.format(min)+", "+dtype.format(max)+"["; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                     String[] values = {dtype.format(min), dtype.format(max)};
                     element.label = group.function.aggregate(values);
                     element.min = min;
@@ -529,7 +516,7 @@ public class HierarchyWizardEditorRenderer<T> {
                     min = dtype.add(element.offset, min);
                     max = dtype.add(element.offset, max);
                 } 
-                element.bounds = "["+dtype.format(min)+", "+dtype.format(max)+"[";
+                element.bounds = "["+dtype.format(min)+", "+dtype.format(max)+"["; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                 String[] values = {dtype.format(min), dtype.format(max)};
                 element.label = interval.function.aggregate(values);
                 element.interval = interval;

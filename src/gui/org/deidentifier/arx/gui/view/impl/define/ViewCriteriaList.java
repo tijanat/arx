@@ -1,41 +1,50 @@
 /*
  * ARX: Powerful Data Anonymization
- * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
+ * Copyright 2012 - 2015 Florian Kohlmayer, Fabian Prasser
  * 
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.deidentifier.arx.gui.view.impl.define;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
 import org.deidentifier.arx.gui.Controller;
 import org.deidentifier.arx.gui.model.Model;
+import org.deidentifier.arx.gui.model.ModelCriterion;
 import org.deidentifier.arx.gui.model.ModelEvent;
 import org.deidentifier.arx.gui.model.ModelEvent.ModelPart;
+import org.deidentifier.arx.gui.model.ModelExplicitCriterion;
 import org.deidentifier.arx.gui.model.ModelLDiversityCriterion;
+import org.deidentifier.arx.gui.model.ModelRiskBasedCriterion;
 import org.deidentifier.arx.gui.model.ModelTClosenessCriterion;
 import org.deidentifier.arx.gui.resources.Resources;
 import org.deidentifier.arx.gui.view.SWTUtil;
 import org.deidentifier.arx.gui.view.def.IView;
 import org.deidentifier.arx.gui.view.impl.common.ClipboardHandlerTable;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Table;
-import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
+
+import de.linearbits.swt.table.DynamicTable;
+import de.linearbits.swt.table.DynamicTableColumn;
 
 /**
  * This class displays a list of all defined privacy criteria.
@@ -44,107 +53,178 @@ import org.eclipse.swt.widgets.TableItem;
  */
 public class ViewCriteriaList implements IView {
 
-    /**  TODO */
-    private Controller  controller;
-    
-    /**  TODO */
-    private Model       model = null;
-    
-    /**  TODO */
-    private Table       table;
-    
-    /**  TODO */
-    private TableColumn column1;
-    
-    /**  TODO */
-    private TableColumn column2;
-    
-    /**  TODO */
-    private TableColumn column3;
-    
-    /**  TODO */
-    private Composite   root;
-    
-    /**  TODO */
-    private Image       symbolL;
-    
-    /**  TODO */
-    private Image       symbolT;
-    
-    /**  TODO */
-    private Image       symbolK;
-    
-    /**  TODO */
-    private Image       symbolD;
+    /** Controller */
+    private Controller         controller;
+
+    /** Model */
+    private Model              model = null;
+
+    /** View */
+    private final DynamicTable       table;
+    /** View */
+    private final DynamicTableColumn column1;
+    /** View */
+    private final DynamicTableColumn column2;
+    /** View */
+    private final DynamicTableColumn column3;
+    /** View */
+    private final Composite          root;
+    /** View */
+    private final Image              symbolL;
+    /** View */
+    private final Image              symbolT;
+    /** View */
+    private final Image              symbolK;
+    /** View */
+    private final Image              symbolD;
+    /** View */
+    private final Image              symbolR;
+    /** View */
+    private final LayoutCriteria     layout;
 
     /**
      * Creates a new instance.
      *
      * @param parent
      * @param controller
+     * @param layoutCriteria 
      */
-    public ViewCriteriaList(final Composite parent, final Controller controller) {
+    public ViewCriteriaList(final Composite parent, final Controller controller, LayoutCriteria layoutCriteria) {
 
         // Register
         this.controller = controller;
         this.controller.addListener(ModelPart.CRITERION_DEFINITION, this);
         this.controller.addListener(ModelPart.MODEL, this);
+        this.controller.addListener(ModelPart.ATTRIBUTE_TYPE, this);
+        this.layout = layoutCriteria;
+        
         this.symbolL = controller.getResources().getImage("symbol_l.png"); //$NON-NLS-1$
         this.symbolT = controller.getResources().getImage("symbol_t.png"); //$NON-NLS-1$
         this.symbolK = controller.getResources().getImage("symbol_k.png"); //$NON-NLS-1$
         this.symbolD = controller.getResources().getImage("symbol_d.png"); //$NON-NLS-1$
+        this.symbolR = controller.getResources().getImage("symbol_r.png"); //$NON-NLS-1$
+        
+        this.root = parent;
+        this.table = SWTUtil.createTableDynamic(root, SWT.SINGLE | SWT.V_SCROLL | SWT.FULL_SELECTION);
+        this.table.setHeaderVisible(true);
+        this.table.setLinesVisible(true);
+        GridData gd = SWTUtil.createFillHorizontallyGridData();
+        gd.heightHint = 100;
+        this.table.setLayoutData(gd);
+        SWTUtil.createGenericTooltip(table);
+        
+        this.table.setMenu(new ClipboardHandlerTable(table).getMenu());
+        this.table.addSelectionListener(new SelectionAdapter(){
+            public void widgetSelected(SelectionEvent arg0) {
+                layout.updateButtons();
+            }
+        });
 
-        root = new Composite(parent, SWT.NONE);
-        GridLayout l = new GridLayout();
-        l.numColumns = 1;
-        root.setLayout(l);
-
-        table = new Table(root, SWT.BORDER | SWT.SINGLE | SWT.V_SCROLL);
-        table.setHeaderVisible(true);
-        final GridData d = SWTUtil.createFillGridData();
-        table.setLayoutData(d);
-        table.setMenu(new ClipboardHandlerTable(table).getMenu());
-
-        column1 = new TableColumn(table, SWT.NONE);
-        column1.setText("");
-        column2 = new TableColumn(table, SWT.NONE);
-        column2.setText(Resources.getMessage("CriterionSelectionDialog.2")); //$NON-NLS-1$
-        column3 = new TableColumn(table, SWT.NONE);
-        column3.setText(Resources.getMessage("CriterionSelectionDialog.3")); //$NON-NLS-1$
-
-        column1.pack();
-        column2.pack();
-        column3.pack();
+        this.column1 = new DynamicTableColumn(table, SWT.NONE);
+        this.column1.setText(Resources.getMessage("ViewCriteriaList.0")); //$NON-NLS-1$
+        this.column1.setWidth("10%", "30px"); //$NON-NLS-1$ //$NON-NLS-2$
+        this.column2 = new DynamicTableColumn(table, SWT.NONE);
+        this.column2.setText(Resources.getMessage("CriterionSelectionDialog.2")); //$NON-NLS-1$
+        this.column2.setWidth("45%", "100px"); //$NON-NLS-1$ //$NON-NLS-2$
+        this.column3 = new DynamicTableColumn(table, SWT.NONE);
+        this.column3.setText(Resources.getMessage("CriterionSelectionDialog.3")); //$NON-NLS-1$
+        this.column3.setWidth("45%", "100px"); //$NON-NLS-1$ //$NON-NLS-2$
+        
+        this.column1.pack();
+        this.column2.pack();
+        this.column3.pack();
+        
+        this.layout.updateButtons();
+        reset();
+    }
+    
+    /**
+     * Add
+     */
+    public void actionAdd() {
+        controller.actionCriterionAdd();
+    }
+    
+    /**
+     * Configure
+     */
+    public void actionConfigure() {
+        ModelCriterion criterion = this.getSelectedCriterion();
+        if (criterion != null) {
+            controller.actionCriterionConfigure(criterion);
+        }
+    }
+    
+    /**
+     * Pull
+     */
+    public void actionPull() {
+        ModelCriterion criterion = this.getSelectedCriterion();
+        if (criterion != null && criterion instanceof ModelExplicitCriterion) {
+            controller.actionCriterionPull(criterion);
+        }
+    }
+    
+    /**
+     * Push
+     */
+    public void actionPush() {
+        ModelCriterion criterion = this.getSelectedCriterion();
+        if (criterion != null && criterion instanceof ModelExplicitCriterion) {
+            controller.actionCriterionPush(criterion);
+        }
     }
 
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.gui.view.def.IView#dispose()
+    /**
+     * Remove
      */
+    public void actionRemove() {
+        ModelCriterion criterion = this.getSelectedCriterion();
+        if (criterion != null) {
+            controller.actionCriterionEnable(criterion);
+        }
+    }
+    
     @Override
     public void dispose() {
-        controller.removeListener(this);
+        this.controller.removeListener(this);
         this.symbolL.dispose();
         this.symbolT.dispose();
         this.symbolK.dispose();
         this.symbolD.dispose();
+        this.symbolR.dispose();
     }
 
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.gui.view.def.IView#reset()
+    /**
+     * Returns the currently selected criterion, if any
+     * @return
      */
+    public ModelCriterion getSelectedCriterion() {
+        if (table.getSelection() == null || table.getSelection().length == 0) {
+            return null;
+        }
+        return (ModelCriterion)table.getSelection()[0].getData();
+    }
+
+    /**
+     * May criteria be added
+     * @return
+     */
+    public boolean isAddEnabled() {
+        return model != null && model.getInputDefinition() != null &&
+               model.getInputDefinition().getQuasiIdentifyingAttributes() != null;
+    }
+
     @Override
     public void reset() {
         root.setRedraw(false);
-        if (table != null) table.removeAll();
-        if (column1 != null) column1.pack();
-        if (column2 != null) column2.pack();
-        if (column3 != null) column3.pack();
+        if (table != null) {
+            table.removeAll();
+        }
         root.setRedraw(true);
+        SWTUtil.disable(root);
     }
-
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.gui.view.def.IView#update(org.deidentifier.arx.gui.model.ModelEvent)
-     */
+    
     @Override
     public void update(ModelEvent event) {
         if (event.part == ModelPart.MODEL) {
@@ -152,42 +232,84 @@ public class ViewCriteriaList implements IView {
         } 
         
         if (event.part == ModelPart.CRITERION_DEFINITION ||
+            event.part == ModelPart.ATTRIBUTE_TYPE ||
             event.part == ModelPart.MODEL) {
             if (model!=null) {
-                root.setRedraw(false);
-                table.removeAll();
-                if (model.getKAnonymityModel().isActive() && model.getKAnonymityModel().isEnabled()) {
-                    TableItem item = new TableItem(table, SWT.NONE);
-                    item.setText(new String[] { "", model.getKAnonymityModel().toString(), "" });
-                    item.setImage(0, symbolK);
-                }
-    
-                if (model.getDPresenceModel().isActive() && model.getDPresenceModel().isEnabled()) {
-                    TableItem item = new TableItem(table, SWT.NONE);
-                    item.setText(new String[] { "", model.getDPresenceModel().toString(), "" });
-                    item.setImage(0, symbolD);
-                }
-    
-                for (ModelLDiversityCriterion c : model.getLDiversityModel().values()) {
-                    if (c.isActive() && c.isEnabled()) {
-                        TableItem item = new TableItem(table, SWT.NONE);
-                        item.setText(new String[] { "", c.toString(), c.getAttribute() });
-                        item.setImage(0, symbolL);
-                    }
-                }
-    
-                for (ModelTClosenessCriterion c : model.getTClosenessModel().values()) {
-                    if (c.isActive() && c.isEnabled()) {
-                        TableItem item = new TableItem(table, SWT.NONE);
-                        item.setText(new String[] { "", c.toString(), c.getAttribute() });
-                        item.setImage(0, symbolT);
-                    }
-                }
-                column1.pack();
-                column2.pack();
-                column3.pack();
-                root.setRedraw(true);
+                updateTable();
             }
         }
+    }
+
+    private void updateTable() {
+        
+        root.setRedraw(false);
+        
+        table.removeAll();
+        
+        if (model.getKAnonymityModel().isEnabled()) {
+            TableItem item = new TableItem(table, SWT.NONE);
+            item.setText(new String[] { "", model.getKAnonymityModel().toString(), "" }); //$NON-NLS-1$ //$NON-NLS-2$
+            item.setImage(0, symbolK);
+            item.setData(model.getKAnonymityModel());
+        }
+
+        if (model.getDPresenceModel().isEnabled()) {
+            TableItem item = new TableItem(table, SWT.NONE);
+            item.setText(new String[] { "", model.getDPresenceModel().toString(), "" }); //$NON-NLS-1$ //$NON-NLS-2$
+            item.setImage(0, symbolD);
+            item.setData(model.getDPresenceModel());
+        }
+
+
+        List<ModelExplicitCriterion> explicit = new ArrayList<ModelExplicitCriterion>();
+        for (ModelLDiversityCriterion other : model.getLDiversityModel().values()) {
+            if (other.isEnabled()) {
+                explicit.add(other);
+            }
+        }
+        for (ModelTClosenessCriterion other : model.getTClosenessModel().values()) {
+            if (other.isEnabled()) {
+                explicit.add(other);
+            }
+        }
+        Collections.sort(explicit, new Comparator<ModelExplicitCriterion>(){
+            public int compare(ModelExplicitCriterion o1, ModelExplicitCriterion o2) {
+                return o1.getAttribute().compareTo(o2.getAttribute());
+            }
+        });
+        
+        for (ModelExplicitCriterion c :explicit) {
+            TableItem item = new TableItem(table, SWT.NONE);
+            item.setText(new String[] { "", c.toString(), c.getAttribute() }); //$NON-NLS-1$
+            if (c instanceof ModelLDiversityCriterion) {
+                item.setImage(0, symbolL);
+            } else {
+                item.setImage(0, symbolT);
+            }
+            item.setData(c);
+        }
+
+        List<ModelRiskBasedCriterion> riskBased = new ArrayList<ModelRiskBasedCriterion>();
+        for (ModelRiskBasedCriterion other : model.getRiskBasedModel()) {
+            if (other.isEnabled()) {
+                riskBased.add(other);
+            }
+        }
+        Collections.sort(riskBased, new Comparator<ModelRiskBasedCriterion>(){
+            public int compare(ModelRiskBasedCriterion o1, ModelRiskBasedCriterion o2) {
+                return o1.getLabel().compareTo(o2.getLabel());
+            }
+        });
+        
+        for (ModelRiskBasedCriterion c : riskBased) {
+            TableItem item = new TableItem(table, SWT.NONE);
+            item.setText(new String[] { "", c.toString(), "" }); //$NON-NLS-1$ //$NON-NLS-2$
+            item.setImage(0, symbolR);
+            item.setData(c);
+        }
+
+        layout.updateButtons();
+        root.setRedraw(true);
+        SWTUtil.enable(root);
     }
 }

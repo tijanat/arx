@@ -1,19 +1,18 @@
 /*
  * ARX: Powerful Data Anonymization
- * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
+ * Copyright 2012 - 2015 Florian Kohlmayer, Fabian Prasser
  * 
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.deidentifier.arx.gui.model;
@@ -21,6 +20,7 @@ package org.deidentifier.arx.gui.model;
 import org.deidentifier.arx.DataSubset;
 import org.deidentifier.arx.criteria.DPresence;
 import org.deidentifier.arx.criteria.PrivacyCriterion;
+import org.deidentifier.arx.gui.resources.Resources;
 
 /**
  * This class implements a model for the d-presence criterion.
@@ -38,9 +38,15 @@ public class ModelDPresenceCriterion extends ModelImplicitCriterion{
 	/** Dmax. */
 	private double dmax = 0.0d;
 	
-	/* (non-Javadoc)
-	 * @see org.deidentifier.arx.gui.model.ModelCriterion#getCriterion(org.deidentifier.arx.gui.model.Model)
-	 */
+	@Override
+    public ModelDPresenceCriterion clone() {
+        ModelDPresenceCriterion result = new ModelDPresenceCriterion();
+        result.dmax = this.dmax;
+        result.dmin = this.dmin;
+        result.setEnabled(this.isEnabled());
+        return result;
+    }
+	
 	@Override
 	public PrivacyCriterion getCriterion(Model model) {
 	    DataSubset subset = DataSubset.create(model.getInputConfig().getInput(), model.getInputConfig().getResearchSubset());
@@ -65,7 +71,24 @@ public class ModelDPresenceCriterion extends ModelImplicitCriterion{
 		return dmin;
 	}
 	
-	/**
+	@Override
+    public String getLabel() {
+        // TODO: Move to messages.properties
+        return Resources.getMessage("Model.0") + '\u03B4' + Resources.getMessage("Model.1"); //$NON-NLS-1$ //$NON-NLS-2$
+    }
+
+    @Override
+    public void parse(ModelCriterion criterion) {
+        if (!(criterion instanceof ModelDPresenceCriterion)) {
+            return;
+        }
+        ModelDPresenceCriterion other = (ModelDPresenceCriterion)criterion;
+        this.dmax = other.dmax;
+        this.dmin = other.dmin;
+        this.setEnabled(other.isEnabled());
+    }
+
+    /**
      * Sets dmax.
      *
      * @param dmax
@@ -73,8 +96,8 @@ public class ModelDPresenceCriterion extends ModelImplicitCriterion{
 	public void setDmax(double dmax) {
 		this.dmax = dmax;
 	}
-	
-	/**
+
+    /**
      * Sets dmin.
      *
      * @param dmin
@@ -82,13 +105,10 @@ public class ModelDPresenceCriterion extends ModelImplicitCriterion{
 	public void setDmin(double dmin) {
 		this.dmin = dmin;
 	}
-
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.gui.model.ModelCriterion#toString()
-     */
+    
     @Override
     public String toString() {
         // TODO: Move to messages.properties
-        return "("+String.valueOf(dmin)+","+String.valueOf(dmax)+")-Presence";
+        return Resources.getMessage("Model.2")+String.valueOf(dmin)+Resources.getMessage("Model.3")+String.valueOf(dmax)+Resources.getMessage("Model.4"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
 }

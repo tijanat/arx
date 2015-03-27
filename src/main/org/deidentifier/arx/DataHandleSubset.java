@@ -1,3 +1,19 @@
+/*
+ * ARX: Powerful Data Anonymization
+ * Copyright 2012 - 2015 Florian Kohlmayer, Fabian Prasser
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.deidentifier.arx;
 
 import java.util.HashSet;
@@ -48,44 +64,29 @@ public class DataHandleSubset extends DataHandle {
         this(source, subset, null);
     }
 
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.DataHandle#getAttributeName(int)
-     */
     @Override
     public String getAttributeName(int col) {
         checkRegistry();
         return source.getAttributeName(col);
     }
     
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.DataHandle#getDataType(java.lang.String)
-     */
     @Override
     public DataType<?> getDataType(String attribute) {
         return source.getDataType(attribute);
     }
 
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.DataHandle#getGeneralization(java.lang.String)
-     */
     @Override
     public int getGeneralization(String attribute) {
         checkRegistry();
         return source.getGeneralization(attribute);
     }
 
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.DataHandle#getNumColumns()
-     */
     @Override
     public int getNumColumns() {
         checkRegistry();
         return source.getNumColumns();
     }
 
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.DataHandle#getNumRows()
-     */
     @Override
     public int getNumRows() {
         checkRegistry();
@@ -102,27 +103,18 @@ public class DataHandleSubset extends DataHandle {
         return this.subset.getArray();
     }
 
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.DataHandle#getValue(int, int)
-     */
     @Override
     public String getValue(int row, int col) {
         checkRegistry();
         return source.getValue(this.subset.getArray()[row], col);
     }
 
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.DataHandle#getView()
-     */
     @Override
     public DataHandle getView(){
         checkRegistry();
         return this;
     }
 
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.DataHandle#iterator()
-     */
     @Override
     public Iterator<String[]> iterator() {
         checkRegistry();
@@ -157,25 +149,21 @@ public class DataHandleSubset extends DataHandle {
         };
     }
 
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.DataHandle#doRelease()
-     */
+    @Override
+    public boolean replace(int column, String original, String replacement) {
+        throw new UnsupportedOperationException("This operation is not supported by handles for data subsets");
+    }
+
     @Override
     protected void doRelease() {
         // Nothing to do
     }
 
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.DataHandle#getDataTypeArray()
-     */
     @Override
     protected DataType<?>[][] getDataTypeArray() {
         return source.dataTypes;
     }
 
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.DataHandle#getDistinctValues(int, org.deidentifier.arx.DataHandleStatistics.InterruptHandler)
-     */
     @Override
     protected String[] getDistinctValues(int column, InterruptHandler handler) {
 
@@ -201,30 +189,21 @@ public class DataHandleSubset extends DataHandle {
         return source;
     }
 
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.DataHandle#getSuppressionString()
-     */
     @Override
     protected String getSuppressionString(){
         return source.getSuppressionString();
     }
 
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.DataHandle#internalCompare(int, int, int[], boolean)
-     */
     @Override
     protected int internalCompare(int row1, int row2, int[] columns, boolean ascending) {
         return source.internalCompare(this.subset.getArray()[row1], this.subset.getArray()[row2], columns, ascending);
     }
-
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.DataHandle#internalGetValue(int, int)
-     */
+    
     @Override
     protected String internalGetValue(int row, int col) {
         return source.internalGetValue(this.subset.getArray()[row], col);
     }
-    
+
     /**
      * Rebuild array representation of subset.
      */
@@ -236,7 +215,14 @@ public class DataHandleSubset extends DataHandle {
             }
         }
     }
-    
+
+    @Override
+    protected boolean internalReplace(int column,
+                                      String original,
+                                      String replacement) {
+        return source.internalReplace(column, original, replacement);
+    }
+
     /**
      * Swaps the bits in the set representation.
      *

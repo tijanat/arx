@@ -1,19 +1,18 @@
 /*
  * ARX: Powerful Data Anonymization
- * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
+ * Copyright 2012 - 2015 Florian Kohlmayer, Fabian Prasser
  * 
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.deidentifier.arx.gui.view.impl.common;
@@ -26,8 +25,8 @@ import org.deidentifier.arx.gui.view.def.IComponent;
 import org.deidentifier.arx.gui.view.impl.common.table.CTConfiguration;
 import org.deidentifier.arx.gui.view.impl.common.table.CTContext;
 import org.deidentifier.arx.gui.view.impl.common.table.CTDataProvider;
-import org.deidentifier.arx.gui.view.impl.common.table.FillLayerResetCommand;
 import org.deidentifier.arx.gui.view.impl.common.table.DataProviderWrapped;
+import org.deidentifier.arx.gui.view.impl.common.table.FillLayerResetCommand;
 import org.deidentifier.arx.gui.view.impl.common.table.LayerBody;
 import org.deidentifier.arx.gui.view.impl.common.table.LayerColumnHeader;
 import org.deidentifier.arx.gui.view.impl.common.table.LayerRowHeader;
@@ -136,10 +135,10 @@ public class ComponentTable implements IComponent {
         
         // Check and store
         if (config == null) {
-            throw new IllegalArgumentException("Config must not be null");
+            throw new IllegalArgumentException("Config must not be null"); //$NON-NLS-1$
         }
         if (parent == null) {
-            throw new IllegalArgumentException("Parent must not be null");
+            throw new IllegalArgumentException("Parent must not be null"); //$NON-NLS-1$
         }
         this.root = new Composite(parent, checkStyle(style));
         this.root.setLayout(new FillLayout());
@@ -429,6 +428,20 @@ public class ComponentTable implements IComponent {
     }
 
     /**
+     * Updates the selection.
+     *
+     * @param row
+     * @param column
+     */
+    public void setSelection(int row, int column) {
+        this.table.doCommand(new SelectCellCommand(bodyLayer.getSelectionLayer(), 
+                                                   column, 
+                                                   row, 
+                                                   false,
+                                                   false));
+    }
+
+    /**
      * To display coordinates.
      *
      * @param x
@@ -536,7 +549,7 @@ public class ComponentTable implements IComponent {
         });
 
     }
-
+    
     /**
      * 
      *
@@ -563,7 +576,7 @@ public class ComponentTable implements IComponent {
             }
         });
     }
-    
+
     /**
      * 
      *
@@ -659,7 +672,7 @@ public class ComponentTable implements IComponent {
             }
         };
     }
-
+    
     /**
      * 
      *
@@ -691,7 +704,7 @@ public class ComponentTable implements IComponent {
             }
         };
     }
-    
+
     /**
      * Fires a new event.
      */
@@ -704,19 +717,5 @@ public class ComponentTable implements IComponent {
         for (SelectionListener listener : selectionListeners) {
             listener.widgetSelected(sEvent);
         }
-    }
-
-    /**
-     * Updates the selection.
-     *
-     * @param row
-     * @param column
-     */
-    public void setSelection(int row, int column) {
-        this.table.doCommand(new SelectCellCommand(bodyLayer.getSelectionLayer(), 
-                                                   column, 
-                                                   row, 
-                                                   false,
-                                                   false));
     }
 }

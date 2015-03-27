@@ -1,19 +1,18 @@
 /*
  * ARX: Powerful Data Anonymization
- * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
+ * Copyright 2012 - 2015 Florian Kohlmayer, Fabian Prasser
  * 
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.deidentifier.arx.framework.data;
@@ -37,21 +36,6 @@ public class GeneralizationHierarchy {
 
     /** Name. */
     protected final String  attribute;
-
-    /**
-     * Can be used to create a copy of the generalization hierarchy.
-     *
-     * @param name
-     * @param map
-     * @param distinctValues
-     */
-    protected GeneralizationHierarchy(final String name,
-                                      final int[][] map,
-                                      final int[] distinctValues) {
-        this.attribute = name;
-        this.map = map;
-        this.distinctValues = distinctValues;
-    }
 
     /**
      * Creates a new generalization hierarchy.
@@ -106,11 +90,73 @@ public class GeneralizationHierarchy {
         }
 
         // Sanity check
-        if (distinctValues[0] < uniqueIn) { throw new IllegalArgumentException("Not all data elements are contained in the hierarch for attribute '" +
-                                                                               name +
-                                                                               "'!"); }
+        if (distinctValues[0] < uniqueIn) {
+            throw new IllegalArgumentException("Attribute '" + name + "': hierarchy misses some values or contains duplicates"); 
+        }
+    }
+
+    /**
+     * Can be used to create a copy of the generalization hierarchy.
+     *
+     * @param name
+     * @param map
+     * @param distinctValues
+     */
+    protected GeneralizationHierarchy(final String name,
+                                      final int[][] map,
+                                      final int[] distinctValues) {
+        this.attribute = name;
+        this.map = map;
+        this.distinctValues = distinctValues;
     }
     
+    /**
+     * Throws an exception, if the hierarchy is not monotonic.
+     * 
+     * TODO: This is a potentially expensive check that should be done when loading the hierarchy
+     *
+     * @param manager
+     */
+    public void checkMonotonicity(DataManager manager) {
+        
+        // Obtain dictionary
+        String[] dictionary = null;
+        String[] header = manager.getDataQI().getHeader();
+        for (int i=0; i<header.length; i++) {
+            if (header[i].equals(attribute)) {
+                dictionary = manager.getDataQI().getDictionary().getMapping()[i];
+            }
+        }
+        
+        // Check
+        if (dictionary==null) {
+            throw new IllegalStateException("Cannot obtain dictionary for attribute ("+attribute+")");
+        }
+        
+        // Level value -> level+1 value
+        final IntIntOpenHashMap hMap = new IntIntOpenHashMap();
+        
+        // Input->level->output.
+        for (int level = 0; level < (map[0].length - 1); level++) {
+            hMap.clear();
+            for (int i = 0; i < map.length; i++) {
+                final int outputCurrentLevel = map[i][level];
+                final int outputNextLevel = map[i][level + 1];
+                if (hMap.containsKey(outputCurrentLevel)) {
+                    final int compare = hMap.get(outputCurrentLevel);
+                    if (compare != outputNextLevel) { 
+                        String in = dictionary[outputCurrentLevel];
+                        String out1 = dictionary[compare];
+                        String out2 = dictionary[outputNextLevel];
+                        throw new IllegalArgumentException("The transformation rule for the attribute '" + attribute + "' is not a hierarchy. ("+in+") can either be transformed to ("+out1+") or to ("+out2+")");
+                    }
+                } else {
+                    hMap.put(outputCurrentLevel, outputNextLevel);
+                }
+            }
+        }
+    }
+
     /**
      * Returns the array.
      *
@@ -170,52 +216,5 @@ public class GeneralizationHierarchy {
      */
     public String getName() {
         return attribute;
-    }
-
-    /**
-     * Throws an exception, if the hierarchy is not monotonic.
-     * 
-     * TODO: This is a potentially expensive check that should be done when loading the hierarchy
-     *
-     * @param manager
-     */
-    public void checkMonotonicity(DataManager manager) {
-        
-        // Obtain dictionary
-        String[] dictionary = null;
-        String[] header = manager.getDataQI().getHeader();
-        for (int i=0; i<header.length; i++) {
-            if (header[i].equals(attribute)) {
-                dictionary = manager.getDataQI().getDictionary().getMapping()[i];
-            }
-        }
-        
-        // Check
-        if (dictionary==null) {
-            throw new IllegalStateException("Cannot obtain dictionary for attribute ("+attribute+")");
-        }
-        
-        // Level value -> level+1 value
-        final IntIntOpenHashMap hMap = new IntIntOpenHashMap();
-        
-        // Input->level->output.
-        for (int level = 0; level < (map[0].length - 1); level++) {
-            hMap.clear();
-            for (int i = 0; i < map.length; i++) {
-                final int outputCurrentLevel = map[i][level];
-                final int outputNextLevel = map[i][level + 1];
-                if (hMap.containsKey(outputCurrentLevel)) {
-                    final int compare = hMap.get(outputCurrentLevel);
-                    if (compare != outputNextLevel) { 
-                        String in = dictionary[outputCurrentLevel];
-                        String out1 = dictionary[compare];
-                        String out2 = dictionary[outputNextLevel];
-                        throw new IllegalArgumentException("The transformation rule for the attribute '" + attribute + "' is not a hierarchy. ("+in+") can either be transformed to ("+out1+") or to ("+out2+")");
-                    }
-                } else {
-                    hMap.put(outputCurrentLevel, outputNextLevel);
-                }
-            }
-        }
     }
 }

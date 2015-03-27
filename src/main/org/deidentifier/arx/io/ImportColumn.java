@@ -1,19 +1,18 @@
 /*
  * ARX: Powerful Data Anonymization
- * Copyright (C) 2014 Karol Babioch <karol@babioch.de>
+ * Copyright 2014 Karol Babioch <karol@babioch.de>
  * 
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.deidentifier.arx.io;
@@ -28,6 +27,8 @@ import org.deidentifier.arx.DataType;
  * 
  * @author Karol Babioch
  * @author Fabian Prasser
+ * @author Florian Kohlmayer
+ * 
  */
 abstract public class ImportColumn {
 
@@ -37,10 +38,13 @@ abstract public class ImportColumn {
      * @note Note that this is alias name of the column. The original names
      *       might be different in case of {@link IImportColumnNamed}.
      */
-    private String      aliasName;
+    private String        aliasName;
 
     /** Datatype of column. */
-    private DataType<?> dataType;
+    private DataType<?>   dataType;
+
+    /** Indicates if non-matching values should be replaced with NULL values. */
+    private boolean cleansing;
 
     /**
      * Creates a new instance of this object with the given parameters.
@@ -52,9 +56,26 @@ abstract public class ImportColumn {
 
         setAliasName(aliasName);
         setDataType(dataType);
+        cleansing = false;
     }
 
     /**
+     * Creates a new instance of this object with the given parameters.
+     *
+     * @param aliasName {@link #aliasName}
+     * @param dataType {@link #dataType}
+     * @param cleansing the cleansing
+     */
+    public ImportColumn(String aliasName, DataType<?> dataType, boolean cleansing) {
+
+        setAliasName(aliasName);
+        setDataType(dataType);
+        this.cleansing = cleansing;
+    }
+
+    /**
+     * Gets the alias name.
+     *
      * @return {@link #aliasName}
      */
     public String getAliasName() {
@@ -62,6 +83,8 @@ abstract public class ImportColumn {
     }
 
     /**
+     * Gets the data type.
+     *
      * @return {@link #dataType}
      */
     public DataType<?> getDataType() {
@@ -69,16 +92,35 @@ abstract public class ImportColumn {
     }
 
     /**
-     * @param aliasName
-     *            {@link #aliasName}
+     * Should non-matching values be replaced with NULL values.
+     *
+     * @return true, if cleansing is enabled
+     */
+    public boolean isCleansing() {
+        return cleansing;
+    }
+
+    /**
+     * Sets the alias name.
+     *
+     * @param aliasName {@link #aliasName}
      */
     public void setAliasName(String aliasName) {
         this.aliasName = aliasName;
     }
 
     /**
-     * @param dataType
-     *            {@link #dataType}
+     * Should we perform cleansing
+     * @param cleansing
+     */
+    public void setCleansing(boolean cleansing) {
+        this.cleansing = cleansing;
+    }
+
+    /**
+     * Sets the data type.
+     *
+     * @param dataType {@link #dataType}
      */
     public void setDataType(DataType<?> dataType) {
         this.dataType = dataType;

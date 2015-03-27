@@ -1,19 +1,18 @@
 /*
  * ARX: Powerful Data Anonymization
- * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
+ * Copyright 2012 - 2015 Florian Kohlmayer, Fabian Prasser
  * 
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.deidentifier.arx.test;
@@ -46,9 +45,6 @@ public abstract class TestUtilityEstimationAbstract extends TestUtilityMetricsAb
         super(testcase);
     }
 
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.test.TestUtilityMetricsAbstract#test()
-     */
     @Test
     public void test() throws IOException {
 
@@ -65,6 +61,19 @@ public abstract class TestUtilityEstimationAbstract extends TestUtilityMetricsAb
         testcase.config.setSuppressionAlwaysEnabled(false);
         result = anonymizer.anonymize(data, testcase.config);
         checkResult(testcase, result);
+    }
+
+    /**
+     * Tests all estimates within a lattice.
+     *
+     * @param lattice
+     */
+    private void checkLattice(ARXLattice lattice) {
+        for (ARXNode[] level : lattice.getLevels()) {
+            for (ARXNode node : level) {
+                assertTrue("Min > max", compareWithTolerance(node.getMinimumInformationLoss(), node.getMaximumInformationLoss())<=0);
+            }
+        }
     }
 
     /**
@@ -114,18 +123,28 @@ public abstract class TestUtilityEstimationAbstract extends TestUtilityMetricsAb
     }
 
     /**
-     * Tests all estimates within a lattice.
+     * Compares double for "equality" with a tolerance of 1 ulp.
      *
-     * @param lattice
+     * @param d1
+     * @param d2
+     * @return
      */
-    private void checkLattice(ARXLattice lattice) {
-        for (ARXNode[] level : lattice.getLevels()) {
-            for (ARXNode node : level) {
-                assertTrue("Min > max", compareWithTolerance(node.getMinimumInformationLoss(), node.getMaximumInformationLoss())<=0);
-            }
-        }
+    private boolean closeEnough(double d1, double d2) {
+        return Math.abs(d2 - d1) <= Math.max(Math.ulp(d1), Math.ulp(d2));
     }
-
+    
+    /**
+     * Compares two doubles with tolerance.
+     *
+     * @param d1
+     * @param d2
+     * @return
+     */
+    private int compareWithTolerance(double d1, double d2) {
+        if (closeEnough(d1, d2)) return 0;
+        else return Double.compare(d1, d2);
+    }
+    
     /**
      * Compares two losses with tolerance.
      *
@@ -153,28 +172,5 @@ public abstract class TestUtilityEstimationAbstract extends TestUtilityMetricsAb
      */
     private boolean isNumeric(String str) {
       return str.matches("-?\\d+(\\.\\d+)?");
-    }
-    
-    /**
-     * Compares two doubles with tolerance.
-     *
-     * @param d1
-     * @param d2
-     * @return
-     */
-    private int compareWithTolerance(double d1, double d2) {
-        if (closeEnough(d1, d2)) return 0;
-        else return Double.compare(d1, d2);
-    }
-    
-    /**
-     * Compares double for "equality" with a tolerance of 1 ulp.
-     *
-     * @param d1
-     * @param d2
-     * @return
-     */
-    private boolean closeEnough(double d1, double d2) {
-        return Math.abs(d2 - d1) <= Math.max(Math.ulp(d1), Math.ulp(d2));
     }
 }

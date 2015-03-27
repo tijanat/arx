@@ -1,24 +1,23 @@
 /*
  * ARX: Powerful Data Anonymization
- * Copyright (C) 2014 Karol Babioch <karol@babioch.de>
- * Copyright (C) 2014 Fabian Prasser
+ * Copyright 2014 Karol Babioch <karol@babioch.de>
  * 
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.deidentifier.arx.gui.view.impl.wizard;
 
+import org.deidentifier.arx.gui.resources.Resources;
 import org.deidentifier.arx.gui.view.impl.wizard.ImportWizardModel.SourceType;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
@@ -70,9 +69,9 @@ public class ImportWizardPageSource extends WizardPage {
      * @param wizardImport Reference to wizard containing this page
      */
     public ImportWizardPageSource(ImportWizard wizardImport) {
-        super("WizardImportSourcePage");
-        setTitle("Source");
-        setDescription("Select the source you want to import data from");
+        super("WizardImportSourcePage"); //$NON-NLS-1$
+        setTitle(Resources.getMessage("ImportWizardPageSource.1")); //$NON-NLS-1$
+        setDescription(Resources.getMessage("ImportWizardPageSource.2")); //$NON-NLS-1$
         this.wizardImport = wizardImport;
     }
 
@@ -94,7 +93,7 @@ public class ImportWizardPageSource extends WizardPage {
 
         /* Add button for CSV */
         btnCsv = new Button(container, SWT.RADIO);
-        btnCsv.setText("CSV");
+        btnCsv.setText(Resources.getMessage("ImportWizardPageSource.3")); //$NON-NLS-1$
         btnCsv.addSelectionListener(new SelectionAdapter() {
 
             @Override
@@ -106,7 +105,7 @@ public class ImportWizardPageSource extends WizardPage {
 
         /* Add button for Excel */
         btnExcel = new Button(container, SWT.RADIO);
-        btnExcel.setText("Excel (XLS, XLSX)");
+        btnExcel.setText(Resources.getMessage("ImportWizardPageSource.4")); //$NON-NLS-1$
         btnExcel.addSelectionListener(new SelectionAdapter() {
 
             @Override
@@ -118,7 +117,7 @@ public class ImportWizardPageSource extends WizardPage {
 
         /* Add button for JDBC */
         btnJdbc = new Button(container, SWT.RADIO);
-        btnJdbc.setText("Database (JDBC)");
+        btnJdbc.setText(Resources.getMessage("ImportWizardPageSource.5")); //$NON-NLS-1$
         btnJdbc.addSelectionListener(new SelectionAdapter() {
 
             @Override

@@ -1,19 +1,18 @@
 /*
  * ARX: Powerful Data Anonymization
- * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
+ * Copyright 2012 - 2015 Florian Kohlmayer, Fabian Prasser
  * 
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.deidentifier.arx.gui.view.impl.wizard;
@@ -84,31 +83,31 @@ public class HierarchyWizard<T> extends ARXWizard<HierarchyWizardResult<T>> {
          */
         public void update();
     }
-    
+
     /** Var. */
-    private HierarchyWizardModel<T>   model;
-    
+    private HierarchyWizardModel<T>         model;
+
     /** Var. */
     private final Controller                controller;
-    
+
     /** Var. */
     private final ARXWizardButton           buttonLoad;
-    
+
     /** Var. */
     private final ARXWizardButton           buttonSave;
-    
+
     /** Var. */
     private HierarchyWizardPageIntervals<T> pageIntervals;
-    
+
     /** Var. */
     private HierarchyWizardPageOrder<T>     pageOrder;
-    
+
     /** Var. */
     private HierarchyWizardPageRedaction<T> pageRedaction;
-    
+
     /** Var. */
     private HierarchyWizardPageFinal<T>     pageFinal;
-    
+
     /** Var. */
     private HierarchyWizardPageType<T>      pageType;
 
@@ -168,19 +167,19 @@ public class HierarchyWizard<T> extends ARXWizard<HierarchyWizardResult<T>> {
                                                                                 .getImage("hierarchy.png"))); //$NON-NLS-1$
         
         // Initialize buttons
-        this.buttonLoad = new ARXWizardButton("Load...", new SelectionAdapter(){
+        this.buttonLoad = new ARXWizardButton(Resources.getMessage("HierarchyWizard.1"), new SelectionAdapter(){ //$NON-NLS-1$
             @Override public void widgetSelected(SelectionEvent arg0) {
                 load();
             }
         });
 
-        this.buttonSave = new ARXWizardButton("Save...", new SelectionAdapter(){
+        this.buttonSave = new ARXWizardButton(Resources.getMessage("HierarchyWizard.2"), new SelectionAdapter(){ //$NON-NLS-1$
             @Override public void widgetSelected(SelectionEvent arg0) {
                 save();
             }
         });
         
-        ARXWizardButton help = new ARXWizardButton("Help...", new SelectionAdapter(){
+        ARXWizardButton help = new ARXWizardButton(Resources.getMessage("HierarchyWizard.3"), new SelectionAdapter(){ //$NON-NLS-1$
             @Override public void widgetSelected(SelectionEvent arg0) {
                 help();
             }
@@ -200,9 +199,6 @@ public class HierarchyWizard<T> extends ARXWizard<HierarchyWizardResult<T>> {
         pageType = new HierarchyWizardPageType<T>(this, model, pageIntervals, pageOrder, pageRedaction);
     }
     
-    /* (non-Javadoc)
-     * @see org.eclipse.jface.wizard.Wizard#addPages()
-     */
     @Override
     public void addPages() {
         
@@ -215,9 +211,6 @@ public class HierarchyWizard<T> extends ARXWizard<HierarchyWizardResult<T>> {
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.jface.wizard.Wizard#canFinish()
-     */
     @Override
     public boolean canFinish() {
         return getDialog().getCurrentPage() instanceof HierarchyWizardPageFinal;
@@ -240,7 +233,7 @@ public class HierarchyWizard<T> extends ARXWizard<HierarchyWizardResult<T>> {
      * Shows the help dialog.
      */
     private void help() {
-        controller.actionShowHelpDialog("id-51");
+        controller.actionShowHelpDialog("id-51"); //$NON-NLS-1$
     }
     
     /**
@@ -248,14 +241,14 @@ public class HierarchyWizard<T> extends ARXWizard<HierarchyWizardResult<T>> {
      */
     private void load(){
 
-        final String ERROR_HEADER = "Error loading hierarchy specification";
-        final String ERROR_TEXT = "Unknown error: ";
-        final String ERROR_RATIO_TEXT = "Intervals can only be used for data types with ratio scales";
-        final String ERROR_TYPE_TEXT = "Incompatible data types";
-        final String ERROR_APPLY_TEXT = "Cannot apply specification: ";
+        final String ERROR_HEADER = Resources.getMessage("HierarchyWizard.5"); //$NON-NLS-1$
+        final String ERROR_TEXT = Resources.getMessage("HierarchyWizard.6"); //$NON-NLS-1$
+        final String ERROR_RATIO_TEXT = Resources.getMessage("HierarchyWizard.7"); //$NON-NLS-1$
+        final String ERROR_TYPE_TEXT = Resources.getMessage("HierarchyWizard.8"); //$NON-NLS-1$
+        final String ERROR_APPLY_TEXT = Resources.getMessage("HierarchyWizard.9"); //$NON-NLS-1$
         
         // Dialog
-        String file = controller.actionShowOpenFileDialog(getShell(), "*.ahs");
+        String file = controller.actionShowOpenFileDialog(getShell(), "*.ahs"); //$NON-NLS-1$
         if (file == null) return;
 
         // Load
@@ -320,11 +313,11 @@ public class HierarchyWizard<T> extends ARXWizard<HierarchyWizardResult<T>> {
      */
     private void save(){
         
-        final String ERROR_HEADER = "Error saving hierarchy specification";
-        final String ERROR_TEXT = "Unknown error: ";
+        final String ERROR_HEADER = Resources.getMessage("HierarchyWizard.11"); //$NON-NLS-1$
+        final String ERROR_TEXT = Resources.getMessage("HierarchyWizard.12"); //$NON-NLS-1$
         
         // Dialog
-        String file = controller.actionShowSaveFileDialog(getShell(), "*.ahs");
+        String file = controller.actionShowSaveFileDialog(getShell(), "*.ahs"); //$NON-NLS-1$
         if (file == null) return;
 
         // Save

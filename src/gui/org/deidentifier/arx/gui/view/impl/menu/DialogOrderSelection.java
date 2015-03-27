@@ -1,19 +1,18 @@
 /*
  * ARX: Powerful Data Anonymization
- * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
+ * Copyright 2012 - 2015 Florian Kohlmayer, Fabian Prasser
  * 
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.deidentifier.arx.gui.view.impl.menu;
@@ -102,9 +101,6 @@ public class DialogOrderSelection extends TitleAreaDialog implements IDialog {
         this.locale = locale;
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.jface.dialogs.Dialog#close()
-     */
     @Override
     public boolean close() {
         if (image != null)
@@ -147,7 +143,7 @@ public class DialogOrderSelection extends TitleAreaDialog implements IDialog {
                 return desc;
             }
         }
-        throw new RuntimeException("Unknown data type: "+label);
+        throw new RuntimeException(Resources.getMessage("DialogOrderSelection.0")+label); //$NON-NLS-1$
     }
     
     /**
@@ -158,7 +154,7 @@ public class DialogOrderSelection extends TitleAreaDialog implements IDialog {
     private String[] getDataTypes(){
         ArrayList<String> list = new ArrayList<String>();
         for (DataTypeDescription<?> desc : DataType.list()){
-            if (!desc.getLabel().equals("OrderedString")) {
+            if (!desc.getLabel().equals("OrderedString")) { //$NON-NLS-1$
                 list.add(desc.getLabel());
             }
         }
@@ -179,7 +175,7 @@ public class DialogOrderSelection extends TitleAreaDialog implements IDialog {
             }
             idx++;
         }
-        throw new RuntimeException("Unknown data type: "+type.getDescription().getLabel());
+        throw new RuntimeException(Resources.getMessage("DialogOrderSelection.2")+type.getDescription().getLabel()); //$NON-NLS-1$
     }
 
     /**
@@ -213,13 +209,13 @@ public class DialogOrderSelection extends TitleAreaDialog implements IDialog {
                 line = reader.readLine();
             }
         } catch (IOException e) {
-            controller.actionShowInfoDialog(getShell(), "Error", "Error while loading values: "+e.getMessage());
+            controller.actionShowInfoDialog(getShell(), Resources.getMessage("DialogOrderSelection.3"), Resources.getMessage("DialogOrderSelection.4")+e.getMessage()); //$NON-NLS-1$ //$NON-NLS-2$
             return null;
         } finally {
             if (reader != null) try {
                 reader.close();
             } catch (IOException e) {
-                controller.actionShowInfoDialog(getShell(), "Error", "Error while loading values: "+e.getMessage());
+                controller.actionShowInfoDialog(getShell(), Resources.getMessage("DialogOrderSelection.5"), Resources.getMessage("DialogOrderSelection.6")+e.getMessage()); //$NON-NLS-1$ //$NON-NLS-2$
                 return null;
             }
         }
@@ -238,15 +234,15 @@ public class DialogOrderSelection extends TitleAreaDialog implements IDialog {
             writer = new BufferedWriter(new FileWriter(new File(file)));
             for (int i=0; i<elements.length; i++) {
                 writer.write(elements[i]);
-                if (i<elements.length-1) writer.write("\n");
+                if (i<elements.length-1) writer.write("\n"); //$NON-NLS-1$
             }
         } catch (IOException e) {
-            controller.actionShowInfoDialog(getShell(), "Error", "Error while saving values: "+e.getMessage());
+            controller.actionShowInfoDialog(getShell(), Resources.getMessage("DialogOrderSelection.8"), Resources.getMessage("DialogOrderSelection.9")+e.getMessage()); //$NON-NLS-1$ //$NON-NLS-2$
         } finally {
             if (writer != null) try {
                 writer.close();
             } catch (IOException e) {
-                controller.actionShowInfoDialog(getShell(), "Error", "Error while saving values: "+e.getMessage());
+                controller.actionShowInfoDialog(getShell(), Resources.getMessage("DialogOrderSelection.10"), Resources.getMessage("DialogOrderSelection.11")+e.getMessage()); //$NON-NLS-1$ //$NON-NLS-2$
             }
         }
     }
@@ -286,18 +282,12 @@ public class DialogOrderSelection extends TitleAreaDialog implements IDialog {
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.jface.window.Window#configureShell(org.eclipse.swt.widgets.Shell)
-     */
     @Override
     protected void configureShell(Shell newShell) {
         super.configureShell(newShell);
         newShell.setImages(Resources.getIconSet(newShell.getDisplay()));
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.jface.dialogs.Dialog#createButtonsForButtonBar(org.eclipse.swt.widgets.Composite)
-     */
     @Override
     protected void createButtonsForButtonBar(final Composite parent) {
 
@@ -309,14 +299,14 @@ public class DialogOrderSelection extends TitleAreaDialog implements IDialog {
         loadButton.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(final SelectionEvent e) {
-                String file = controller.actionShowOpenFileDialog(getShell(), "*.csv");
+                String file = controller.actionShowOpenFileDialog(getShell(), "*.csv"); //$NON-NLS-1$
                 if (file != null){
                     String[] array = loadArray(file);
                     if (array != null) {
                         
                         // Select string
                         for (int i=0; i<combo.getItems().length; i++){
-                            if (combo.getItem(i).equals("String")) {
+                            if (combo.getItem(i).equals("String")) { //$NON-NLS-1$
                                 combo.select(i);
                             }
                         }
@@ -335,7 +325,7 @@ public class DialogOrderSelection extends TitleAreaDialog implements IDialog {
         saveButton.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(final SelectionEvent e) {
-                String file = controller.actionShowSaveFileDialog(getShell(), "*.csv");
+                String file = controller.actionShowSaveFileDialog(getShell(), "*.csv"); //$NON-NLS-1$
                 if (file != null) {
                     saveArray(file, elements);
                 }
@@ -366,9 +356,6 @@ public class DialogOrderSelection extends TitleAreaDialog implements IDialog {
         });
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.jface.dialogs.TitleAreaDialog#createContents(org.eclipse.swt.widgets.Composite)
-     */
     @Override
     protected Control createContents(Composite parent) {
     	Control contents = super.createContents(parent);
@@ -378,9 +365,6 @@ public class DialogOrderSelection extends TitleAreaDialog implements IDialog {
         return contents;
     }
     
-    /* (non-Javadoc)
-     * @see org.eclipse.jface.dialogs.TitleAreaDialog#createDialogArea(org.eclipse.swt.widgets.Composite)
-     */
     @Override
     protected Control createDialogArea(final Composite parent) {
 
@@ -481,9 +465,6 @@ public class DialogOrderSelection extends TitleAreaDialog implements IDialog {
         return parent;
     }
     
-    /* (non-Javadoc)
-     * @see org.eclipse.jface.dialogs.Dialog#isResizable()
-     */
     @Override
     protected boolean isResizable() {
         return false;

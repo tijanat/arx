@@ -1,19 +1,18 @@
 /*
  * ARX: Powerful Data Anonymization
- * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
+ * Copyright 2012 - 2015 Florian Kohlmayer, Fabian Prasser
  * 
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.deidentifier.arx.test;
@@ -41,84 +40,6 @@ import org.junit.Test;
  * 
  */
 public class TestDataStatistics extends AbstractTest {
-
-    /**
-     * 
-     *
-     * @throws IllegalArgumentException
-     * @throws IOException
-     */
-    @Test
-    public void testDistribution1() throws IllegalArgumentException, IOException {
-
-        provider.createDataDefinition();
-        provider.getData().getDefinition().setDataType("age", DataType.INTEGER);
-
-        final ARXConfiguration config = ARXConfiguration.create();
-        config.addCriterion(new KAnonymity(2));
-        config.setMaxOutliers(0d);
-
-        ARXAnonymizer anonymizer = new ARXAnonymizer();
-        ARXResult result = anonymizer.anonymize(provider.getData(), config);
-        
-        // Define
-        StatisticsFrequencyDistribution distribution;
-        String[] values;
-        double[] frequency;
-        
-        // Check input
-        distribution = provider.getData().getHandle().getStatistics().getFrequencyDistribution(0, true);
-        values = new String[]{"34", "45", "66", "70"};
-        frequency = new double[]{0.2857142857142857, 0.2857142857142857, 0.14285714285714285, 0.2857142857142857};
-        assertTrue(Arrays.equals(values, distribution.values));
-        assertTrue(Arrays.equals(frequency, distribution.frequency));
-
-        // Check output
-        distribution = result.getOutput(false).getStatistics().getFrequencyDistribution(0, true);
-        values = new String[]{"<50", ">=50"};
-        frequency = new double[]{0.5714285714285714, 0.42857142857142855};
-        assertTrue(Arrays.equals(values, distribution.values));
-        assertTrue(Arrays.equals(frequency, distribution.frequency));
-    }
-
-    /**
-     * 
-     *
-     * @throws IllegalArgumentException
-     * @throws IOException
-     */
-    @Test
-    public void testDistribution2() throws IllegalArgumentException, IOException {
-
-        provider.createDataDefinition();
-        provider.getData().getDefinition().setDataType("age", DataType.INTEGER);
-
-        final ARXConfiguration config = ARXConfiguration.create();
-        config.addCriterion(new KAnonymity(2));
-        config.setMaxOutliers(0d);
-
-        ARXAnonymizer anonymizer = new ARXAnonymizer();
-        ARXResult result = anonymizer.anonymize(provider.getData(), config);
-        
-        // Define
-        StatisticsFrequencyDistribution distribution;
-        String[] values;
-        double[] frequency;
-        
-        // Check input
-        distribution = provider.getData().getHandle().getStatistics().getFrequencyDistribution(1, false);
-        values = new String[]{"female", "male"};
-        frequency = new double[]{0.42857142857142855, 0.5714285714285714};
-        assertTrue(Arrays.equals(values, distribution.values));
-        assertTrue(Arrays.equals(frequency, distribution.frequency));
-
-        // Check output
-        distribution = result.getOutput(false).getStatistics().getFrequencyDistribution(1, true);
-        values = new String[]{"*"};
-        frequency = new double[]{1.0};
-        assertTrue(Arrays.equals(values, distribution.values));
-        assertTrue(Arrays.equals(frequency, distribution.frequency));
-    }
 
     /**
      * 
@@ -238,6 +159,84 @@ public class TestDataStatistics extends AbstractTest {
         frequencies = new double[][] {  { 0, 0, 1.0 } };
                 
         assertTrue(Arrays.deepEquals(contingencyToArray(contingency), frequencies));
+    }
+
+    /**
+     * 
+     *
+     * @throws IllegalArgumentException
+     * @throws IOException
+     */
+    @Test
+    public void testDistribution1() throws IllegalArgumentException, IOException {
+
+        provider.createDataDefinition();
+        provider.getData().getDefinition().setDataType("age", DataType.INTEGER);
+
+        final ARXConfiguration config = ARXConfiguration.create();
+        config.addCriterion(new KAnonymity(2));
+        config.setMaxOutliers(0d);
+
+        ARXAnonymizer anonymizer = new ARXAnonymizer();
+        ARXResult result = anonymizer.anonymize(provider.getData(), config);
+        
+        // Define
+        StatisticsFrequencyDistribution distribution;
+        String[] values;
+        double[] frequency;
+        
+        // Check input
+        distribution = provider.getData().getHandle().getStatistics().getFrequencyDistribution(0, true);
+        values = new String[]{"34", "45", "66", "70"};
+        frequency = new double[]{0.2857142857142857, 0.2857142857142857, 0.14285714285714285, 0.2857142857142857};
+        assertTrue(Arrays.equals(values, distribution.values));
+        assertTrue(Arrays.equals(frequency, distribution.frequency));
+
+        // Check output
+        distribution = result.getOutput(false).getStatistics().getFrequencyDistribution(0, true);
+        values = new String[]{"<50", ">=50"};
+        frequency = new double[]{0.5714285714285714, 0.42857142857142855};
+        assertTrue(Arrays.equals(values, distribution.values));
+        assertTrue(Arrays.equals(frequency, distribution.frequency));
+    }
+
+    /**
+     * 
+     *
+     * @throws IllegalArgumentException
+     * @throws IOException
+     */
+    @Test
+    public void testDistribution2() throws IllegalArgumentException, IOException {
+
+        provider.createDataDefinition();
+        provider.getData().getDefinition().setDataType("age", DataType.INTEGER);
+
+        final ARXConfiguration config = ARXConfiguration.create();
+        config.addCriterion(new KAnonymity(2));
+        config.setMaxOutliers(0d);
+
+        ARXAnonymizer anonymizer = new ARXAnonymizer();
+        ARXResult result = anonymizer.anonymize(provider.getData(), config);
+        
+        // Define
+        StatisticsFrequencyDistribution distribution;
+        String[] values;
+        double[] frequency;
+        
+        // Check input
+        distribution = provider.getData().getHandle().getStatistics().getFrequencyDistribution(1, false);
+        values = new String[]{"female", "male"};
+        frequency = new double[]{0.42857142857142855, 0.5714285714285714};
+        assertTrue(Arrays.equals(values, distribution.values));
+        assertTrue(Arrays.equals(frequency, distribution.frequency));
+
+        // Check output
+        distribution = result.getOutput(false).getStatistics().getFrequencyDistribution(1, true);
+        values = new String[]{"*"};
+        frequency = new double[]{1.0};
+        assertTrue(Arrays.equals(values, distribution.values));
+        assertTrue(Arrays.equals(frequency, distribution.frequency));
     }
 
     /**

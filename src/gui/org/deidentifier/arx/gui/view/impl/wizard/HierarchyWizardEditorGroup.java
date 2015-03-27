@@ -1,24 +1,24 @@
 /*
  * ARX: Powerful Data Anonymization
- * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
+ * Copyright 2012 - 2015 Florian Kohlmayer, Fabian Prasser
  * 
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.deidentifier.arx.gui.view.impl.wizard;
 
 import org.deidentifier.arx.aggregates.AggregateFunction;
+import org.deidentifier.arx.gui.resources.Resources;
 import org.deidentifier.arx.gui.view.SWTUtil;
 import org.deidentifier.arx.gui.view.impl.menu.EditorString;
 import org.deidentifier.arx.gui.view.impl.wizard.HierarchyWizard.HierarchyWizardView;
@@ -65,7 +65,7 @@ public class HierarchyWizardEditorGroup<T> implements HierarchyWizardView, IHier
         composite.setLayoutData(SWTUtil.createFillHorizontallyGridData());
         this.editorFunction = new HierarchyWizardEditorFunction<T>(this, model, composite, false);
 
-        createLabel(composite, "Size:");
+        createLabel(composite, Resources.getMessage("HierarchyWizardEditorGroup.0")); //$NON-NLS-1$
         this.editorSize = new EditorString(composite) {
             @Override
             public boolean accepts(final String s) {
@@ -80,7 +80,7 @@ public class HierarchyWizardEditorGroup<T> implements HierarchyWizardView, IHier
 
             @Override
             public String getValue() {
-                if (group==null) return "";
+                if (group==null) return ""; //$NON-NLS-1$
                 else return String.valueOf(group.size);
             }
 
@@ -96,9 +96,6 @@ public class HierarchyWizardEditorGroup<T> implements HierarchyWizardView, IHier
         };
     }
 
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.gui.view.impl.wizard.HierarchyWizardEditorFunction.IHierarchyFunctionEditorParent#setFunction(org.deidentifier.arx.aggregates.AggregateFunction)
-     */
     @Override
     public void setFunction(AggregateFunction<T> function) {
         if (this.group == null) return;
@@ -110,9 +107,6 @@ public class HierarchyWizardEditorGroup<T> implements HierarchyWizardView, IHier
         model.update(this);
     }
     
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.gui.view.impl.wizard.HierarchyWizard.HierarchyWizardView#update()
-     */
     @SuppressWarnings("unchecked")
     @Override
     public void update() {

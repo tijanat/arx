@@ -1,19 +1,18 @@
 /*
  * ARX: Powerful Data Anonymization
- * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
+ * Copyright 2012 - 2015 Florian Kohlmayer, Fabian Prasser
  * 
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.deidentifier.arx;
@@ -50,21 +49,11 @@ public class DataHandleOutput extends DataHandle {
         /** The current row. */
         private int row = -1;
 
-        /*
-         * (non-Javadoc)
-         * 
-         * @see java.util.Iterator#hasNext()
-         */
         @Override
         public boolean hasNext() {
             return row < dataQI.getArray().length;
         }
 
-        /*
-         * (non-Javadoc)
-         * 
-         * @see java.util.Iterator#next()
-         */
         @Override
         public String[] next() {
 
@@ -88,11 +77,6 @@ public class DataHandleOutput extends DataHandle {
             return result;
         }
 
-        /*
-         * (non-Javadoc)
-         * 
-         * @see java.util.Iterator#remove()
-         */
         @Override
         public void remove() {
             throw new UnsupportedOperationException();
@@ -230,9 +214,6 @@ public class DataHandleOutput extends DataHandle {
         return header[col];
     }
 
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.DataHandle#getDataType(java.lang.String)
-     */
     @Override
     public DataType<?> getDataType(String attribute) {
         
@@ -250,9 +231,6 @@ public class DataHandleOutput extends DataHandle {
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.DataHandle#getGeneralization(java.lang.String)
-     */
     @Override
     public int getGeneralization(final String attribute) {
         checkRegistry();
@@ -314,6 +292,10 @@ public class DataHandleOutput extends DataHandle {
         return new ResultIterator();
     }
 
+    @Override
+    public boolean replace(int column, String original, String replacement) {
+        throw new UnsupportedOperationException("This operation is only supported by handles for data input");
+    }
 
     /**
      * Releases all resources.
@@ -337,7 +319,6 @@ public class DataHandleOutput extends DataHandle {
         statistics = null;
         node = null;
     }
-
     /**
      * Creates the data type array.
      *
@@ -496,6 +477,34 @@ public class DataHandleOutput extends DataHandle {
      */
     protected boolean internalIsOutlier(final int row) {
         return ((dataQI.getArray()[row][0] & Data.OUTLIER_MASK) != 0);
+    }
+
+    @Override
+    protected boolean internalReplace(int column,
+                                      String original,
+                                      String replacement) {
+
+
+        // Init and check
+        if (column >= inverseMap.length) return false;
+        int type = inverseMap[column] >>> AttributeType.SHIFT;
+        if (type >= inverseDictionaries.length) return false;
+        String[][] dictionary = inverseDictionaries[type].getMapping();
+        int index = inverseMap[column] & AttributeType.MASK;
+        if (index >= dictionary.length) return false;
+        String[] values = dictionary[index];
+        
+        // Replace
+        boolean found = false;
+        for (int i = 0; i < values.length; i++) {
+            if (values[i].equals(original)) {
+                values[i] = replacement;
+                found = true;
+            }
+        }
+        
+        // Return
+        return found;
     }
 
     /**

@@ -1,19 +1,18 @@
 /*
  * ARX: Powerful Data Anonymization
- * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
+ * Copyright 2012 - 2015 Florian Kohlmayer, Fabian Prasser
  * 
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.deidentifier.arx.gui.view.impl.wizard;
@@ -24,6 +23,7 @@ import java.util.List;
 import org.deidentifier.arx.DataType;
 import org.deidentifier.arx.aggregates.AggregateFunction;
 import org.deidentifier.arx.aggregates.AggregateFunction.AggregateFunctionWithParameter;
+import org.deidentifier.arx.gui.resources.Resources;
 import org.deidentifier.arx.gui.view.SWTUtil;
 import org.deidentifier.arx.gui.view.impl.menu.EditorSelection;
 import org.deidentifier.arx.gui.view.impl.menu.EditorString;
@@ -50,8 +50,8 @@ public class HierarchyWizardEditorFunction<T> {
     public static interface IHierarchyFunctionEditorParent<T> {
         
         /**
+         * Sets the function
          * 
-         *
          * @param function
          */
         public void setFunction(AggregateFunction<T> function);
@@ -102,13 +102,13 @@ public class HierarchyWizardEditorFunction<T> {
         this.defaultFunction = new AggregateFunction<T>(type){
             private static final long serialVersionUID = -6444219024682845316L;
             @Override public String aggregate(String[] values) {return null;}
-            @Override public String toLabel() {return "Default";}
-            @Override public String toString() {return "Default";}
+            @Override public String toLabel() {return Resources.getMessage("HierarchyWizardEditorFunction.0");} //$NON-NLS-1$
+            @Override public String toString() {return Resources.getMessage("HierarchyWizardEditorFunction.1");} //$NON-NLS-1$
         };
         
         if (!general) {
             this.createEntry(this.defaultFunction);
-            this.createEntry(AggregateFunction.forType(type).createConstantFunction(""));
+            this.createEntry(AggregateFunction.forType(type).createConstantFunction("")); //$NON-NLS-1$
         } 
         
         this.createEntry(AggregateFunction.forType(type).createBoundsFunction());
@@ -116,9 +116,13 @@ public class HierarchyWizardEditorFunction<T> {
         this.createEntry(AggregateFunction.forType(type).createIntervalFunction(true, false));
         this.createEntry(AggregateFunction.forType(type).createSetFunction());
         this.createEntry(AggregateFunction.forType(type).createSetOfPrefixesFunction(1));
+        this.createEntry(AggregateFunction.forType(type).createArithmeticMeanFunction());
+        this.createEntry(AggregateFunction.forType(type).createArithmeticMeanOfBoundsFunction());
+        this.createEntry(AggregateFunction.forType(type).createGeometricMeanFunction());
+        this.createEntry(AggregateFunction.forType(type).createGeometricMeanOfBoundsFunction());
         
 
-        createLabel(composite, "Aggregate function:");
+        createLabel(composite, Resources.getMessage("HierarchyWizardEditorFunction.3")); //$NON-NLS-1$
         this.editor1 = new EditorSelection(composite, labels.toArray(new String[labels.size()])) {
             @Override
             public boolean accepts(final String s) {
@@ -141,11 +145,11 @@ public class HierarchyWizardEditorFunction<T> {
             }
         };
 
-        createLabel(composite, "Function Parameter:");
+        createLabel(composite, Resources.getMessage("HierarchyWizardEditorFunction.4")); //$NON-NLS-1$
         this.editor2 = new EditorString(composite) {
             @Override
             public boolean accepts(String s) {
-                if (s=="") s = null;
+                if (s=="") s = null; //$NON-NLS-1$
                 if (function == null) return false;
                 if (!function.hasParameter()) return false;
                 else return ((AggregateFunctionWithParameter<T>)function).acceptsParameter(s);
@@ -153,18 +157,18 @@ public class HierarchyWizardEditorFunction<T> {
 
             @Override
             public String getValue() {
-                if (function == null) return "";
-                if (!function.hasParameter()) return "";
+                if (function == null) return ""; //$NON-NLS-1$
+                if (!function.hasParameter()) return ""; //$NON-NLS-1$
                 else {
                     String param = ((AggregateFunctionWithParameter<T>)function).getParameter();
-                    if (param == null) return "";
+                    if (param == null) return ""; //$NON-NLS-1$
                     else return param;
                 }
             }
 
             @Override
             public void setValue(String s) {
-                if (s=="") s = null;
+                if (s=="") s = null; //$NON-NLS-1$
                 if (function == null) return;
                 if (!function.hasParameter()) return;
                 else {

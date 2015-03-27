@@ -1,19 +1,18 @@
 /*
  * ARX: Powerful Data Anonymization
- * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
+ * Copyright 2012 - 2015 Florian Kohlmayer, Fabian Prasser
  * 
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package org.deidentifier.arx.metric.v2;
 
@@ -34,21 +33,21 @@ public class __MetricV2 {
 
     /**
      * Creates a new instance of the AECS metric.
+     * 
+     * @return
+     */
+    public static Metric<ILSingleDimensional> createAECSMetric() {
+        return new MetricSDAECS();
+    }
+    
+    /**
+     * Creates a new instance of the AECS metric.
      *
      * @param rowCount
      * @return
      */
     public static Metric<ILSingleDimensional> createAECSMetric(double rowCount) {
         return new MetricSDAECS(rowCount);
-    }
-    
-    /**
-     * Creates a new instance of the AECS metric.
-     * 
-     * @return
-     */
-    public static Metric<ILSingleDimensional> createAECSMetric() {
-        return new MetricSDAECS();
     }
     
     /**
@@ -162,6 +161,19 @@ public class __MetricV2 {
     }
     
     /**
+     * Creates an instance of the height metric.
+     * This metric will respect attribute weights defined in the configuration. 
+     * 
+     * @param function The aggregate function to use for comparing results
+     * 
+     * @return
+     */
+    public static Metric<AbstractILMultiDimensional> createHeightMetric(AggregateFunction function) {
+        return new MetricMDHeight(function);
+    }
+
+
+    /**
      * Creates an instance of the height metric. The default aggregate function, which is the sum-function,
      * will be used for comparing results.
      * This metric will respect attribute weights defined in the configuration.
@@ -174,19 +186,6 @@ public class __MetricV2 {
         MetricMDHeight result = new MetricMDHeight();
         result.initialize(minHeight, maxHeight);
         return result;
-    }
-
-
-    /**
-     * Creates an instance of the height metric.
-     * This metric will respect attribute weights defined in the configuration. 
-     * 
-     * @param function The aggregate function to use for comparing results
-     * 
-     * @return
-     */
-    public static Metric<AbstractILMultiDimensional> createHeightMetric(AggregateFunction function) {
-        return new MetricMDHeight(function);
     }
 
     /**
@@ -309,23 +308,6 @@ public class __MetricV2 {
 
     /**
      * Creates an instance of the precision metric.
-     * The default aggregate function, which is the arithmetic mean, will be used.
-     * This metric will respect attribute weights defined in the configuration.
-     *
-     * @param monotonic If set to true, the monotonic variant of the metric will be created
-     * @param heights
-     * @param cells
-     * @return
-     */
-    public static Metric<AbstractILMultiDimensional> createPrecisionMetric(boolean monotonic, int[] heights, double cells) {
-        MetricMDNMPrecision result = (MetricMDNMPrecision)createPrecisionMetric(monotonic, AggregateFunction.ARITHMETIC_MEAN);
-        result.initialize(heights, cells);
-        return result;
-    }
-
-
-    /**
-     * Creates an instance of the precision metric.
      * This metric will respect attribute weights defined in the configuration.
      *
      * @param monotonic If set to true, the monotonic variant of the metric will be created
@@ -338,6 +320,23 @@ public class __MetricV2 {
         } else {
             return new MetricMDNMPrecision(function);
         }
+    }
+
+
+    /**
+     * Creates an instance of the precision metric.
+     * The default aggregate function, which is the arithmetic mean, will be used.
+     * This metric will respect attribute weights defined in the configuration.
+     *
+     * @param monotonic If set to true, the monotonic variant of the metric will be created
+     * @param heights
+     * @param cells
+     * @return
+     */
+    public static Metric<AbstractILMultiDimensional> createPrecisionMetric(boolean monotonic, int[] heights, double cells) {
+        MetricMDNMPrecision result = (MetricMDNMPrecision)createPrecisionMetric(monotonic, AggregateFunction.ARITHMETIC_MEAN);
+        result.initialize(heights, cells);
+        return result;
     }
 
     /**

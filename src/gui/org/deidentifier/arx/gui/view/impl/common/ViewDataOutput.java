@@ -1,19 +1,18 @@
 /*
  * ARX: Powerful Data Anonymization
- * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
+ * Copyright 2012 - 2015 Florian Kohlmayer, Fabian Prasser
  * 
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.deidentifier.arx.gui.view.impl.common;
@@ -45,68 +44,9 @@ public class ViewDataOutput extends ViewData {
     public ViewDataOutput(final Composite parent,
                          final Controller controller) {
         
-        super(parent, controller, Resources.getMessage("AnalyzeView.0")); //$NON-NLS-1
+        super(parent, controller, Resources.getMessage("AnalyzeView.0")); //$NON-NLS-1 //$NON-NLS-1$
     }
     
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.gui.view.impl.common.ViewData#actionCellSelected(org.eclipse.nebula.widgets.nattable.selection.event.CellSelectionEvent)
-     */
-    @Override
-    protected void actionCellSelected(CellSelectionEvent arg1) {
-    	super.actionCellSelected(arg1);
-    }
-    
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.gui.view.impl.common.ViewData#actionSort()
-     */
-    @Override
-    protected void actionSort(){
-        controller.actionDataSort(false);
-    }
-
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.gui.view.impl.common.ViewData#getDefinition()
-     */
-    @Override
-    protected DataDefinition getDefinition() {
-        if (model == null) return null;
-        else return model.getOutputDefinition();
-    }
-
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.gui.view.impl.common.ViewData#getHandle()
-     */
-    @Override
-    protected DataHandle getHandle() {
-        if (model != null){
-            DataHandle handle = model.getOutput();
-            if (model.getViewConfig().isSubset() && 
-                model.getOutputConfig() != null &&
-                model.getOutputConfig().getConfig() != null) {
-                handle = handle.getView();
-            }
-            return handle;
-        } else {
-            return null;
-        }
-    }
-    
-    /**
-     * Returns the research subset.
-     *
-     * @return
-     */
-    private RowSet getSubset(){
-        if (model != null && model.getOutputConfig() != null){
-            return model.getOutputConfig().getResearchSubset();
-        } else {
-            return null;
-        }
-    }
-
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.gui.view.impl.common.ViewData#update(org.deidentifier.arx.gui.model.ModelEvent)
-     */
     @Override
     public void update(final ModelEvent event) {
         
@@ -165,7 +105,7 @@ public class ViewDataOutput extends ViewData {
             table.setResearchSubset((RowSet)event.data);
             table.redraw();
             
-        } else if (event.part == ModelPart.VIEW_CONFIG || event.part == ModelPart.RESULT) {
+        } else if (event.part == ModelPart.SELECTED_VIEW_CONFIG || event.part == ModelPart.RESULT) {
 
             // Update the table
             DataHandle handle = getHandle();
@@ -180,6 +120,50 @@ public class ViewDataOutput extends ViewData {
             table.setGroups(model.getGroups());
             table.setResearchSubset(getSubset());
             table.redraw();
+        }
+    }
+    
+    /**
+     * Returns the research subset.
+     *
+     * @return
+     */
+    private RowSet getSubset(){
+        if (model != null && model.getOutputConfig() != null){
+            return model.getOutputConfig().getResearchSubset();
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    protected void actionCellSelected(CellSelectionEvent arg1) {
+    	super.actionCellSelected(arg1);
+    }
+
+    @Override
+    protected void actionSort(){
+        controller.actionDataSort(false);
+    }
+    
+    @Override
+    protected DataDefinition getDefinition() {
+        if (model == null) return null;
+        else return model.getOutputDefinition();
+    }
+
+    @Override
+    protected DataHandle getHandle() {
+        if (model != null){
+            DataHandle handle = model.getOutput();
+            if (model.getViewConfig().isSubset() && 
+                model.getOutputConfig() != null &&
+                model.getOutputConfig().getConfig() != null) {
+                handle = handle.getView();
+            }
+            return handle;
+        } else {
+            return null;
         }
     }
 }

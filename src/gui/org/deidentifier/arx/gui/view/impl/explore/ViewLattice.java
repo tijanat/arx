@@ -1,26 +1,23 @@
 /*
  * ARX: Powerful Data Anonymization
- * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
+ * Copyright 2012 - 2015 Florian Kohlmayer, Fabian Prasser
  * 
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.deidentifier.arx.gui.view.impl.explore;
 
 import java.io.Serializable;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -29,16 +26,11 @@ import java.util.Set;
 
 import org.deidentifier.arx.ARXLattice;
 import org.deidentifier.arx.ARXLattice.ARXNode;
-import org.deidentifier.arx.ARXLattice.Anonymity;
 import org.deidentifier.arx.ARXResult;
 import org.deidentifier.arx.gui.Controller;
-import org.deidentifier.arx.gui.model.Model;
-import org.deidentifier.arx.gui.model.ModelEvent;
-import org.deidentifier.arx.gui.model.ModelEvent.ModelPart;
 import org.deidentifier.arx.gui.model.ModelNodeFilter;
 import org.deidentifier.arx.gui.resources.Resources;
-import org.deidentifier.arx.gui.view.def.IView;
-import org.deidentifier.arx.metric.InformationLoss;
+import org.deidentifier.arx.gui.view.SWTUtil;
 import org.eclipse.nebula.widgets.nattable.util.GUIHelper;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlAdapter;
@@ -50,8 +42,6 @@ import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseMoveListener;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
@@ -60,20 +50,17 @@ import org.eclipse.swt.graphics.Path;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.graphics.Transform;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
-import org.eclipse.swt.widgets.Menu;
-import org.eclipse.swt.widgets.MenuItem;
 
 /**
  * This class implements a view of a lattice.
  *
  * @author Fabian Prasser
  */
-public class ViewLattice implements IView {
+public class ViewLattice extends ViewSolutionSpace {
 
     /**
      * This class is here for backwards compatibility only.
@@ -85,6 +72,21 @@ public class ViewLattice implements IView {
         private static final long serialVersionUID = -7472570696920782588L;
     }
     
+    /**
+     * The current drag type.
+     */
+    private static enum DragType {
+        
+        /**  TODO */
+        MOVE,
+        
+        /**  TODO */
+        ZOOM,
+        
+        /**  TODO */
+        NONE
+    }
+
     /**
      * This class is here for serializability, only.
      */
@@ -124,53 +126,11 @@ public class ViewLattice implements IView {
         }
     }
 
-    /**
-     * The current drag type.
-     */
-    private static enum DragType {
-        
-        /**  TODO */
-        MOVE,
-        
-        /**  TODO */
-        ZOOM,
-        
-        /**  TODO */
-        NONE
-    }
-
     /** Color. */
-    public static final Color         COLOR_GREEN             = GUIHelper.getColor(50, 205, 50);
+    private static final Color         COLOR_BLACK             = GUIHelper.getColor(0, 0, 0);
     
     /** Color. */
-    public static final Color         COLOR_LIGHT_GREEN       = GUIHelper.getColor(150, 255, 150);
-    
-    /** Color. */
-    public static final Color         COLOR_ORANGE            = GUIHelper.getColor(255, 145, 0);
-    
-    /** Color. */
-    public static final Color         COLOR_RED               = GUIHelper.getColor(255, 99, 71);
-    
-    /** Color. */
-    public static final Color         COLOR_LIGHT_RED         = GUIHelper.getColor(255, 150, 150);
-    
-    /** Color. */
-    public static final Color         COLOR_BLUE              = GUIHelper.getColor(0, 0, 255);
-    
-    /** Color. */
-    public static final Color         COLOR_YELLOW            = GUIHelper.getColor(255, 215, 0);
-    
-    /** Color. */
-    public static final Color         COLOR_WHITE             = GUIHelper.getColor(255, 255, 255);
-    
-    /** Color. */
-    public static final Color         COLOR_BLACK             = GUIHelper.getColor(0, 0, 0);
-    
-    /** Color. */
-    public static final Color         COLOR_LIGHT_GRAY        = GUIHelper.getColor(211, 211, 211);
-    
-    /** Color. */
-    public static final Color         COLOR_DARK_GRAY         = GUIHelper.getColor(180, 180, 180);
+    private static final Color         COLOR_LIGHT_GRAY        = GUIHelper.getColor(211, 211, 211);
 
     /** Attribute constant. */
     private static final int          ATTRIBUTE_CENTER        = 4;
@@ -219,9 +179,6 @@ public class ViewLattice implements IView {
     
     /** For the current view. */
     private static final int          STROKE_WIDTH_CONNECTION = 1;
-
-    /** The model. */
-    private Model                     model                   = null;
     
     /** The font. */
     private Font                      font                    = null;
@@ -262,12 +219,6 @@ public class ViewLattice implements IView {
     /** Drag parameters. */
     private DragType                  dragType                = DragType.NONE;
 
-    /** The optimum. */
-    private ARXNode                   optimum                 = null;
-
-    /** The selected node. */
-    private ARXNode                   selectedNode            = null;
-
     /** The tool tip. */
     private int                       tooltipX                = -1;
     
@@ -279,15 +230,6 @@ public class ViewLattice implements IView {
     
     /** The tool tip. */
     private int                       oldTooltipY             = -1;
-
-    /** Context menu. */
-    private Menu                      menu                    = null;
-    
-    /** Number format. */
-    private final NumberFormat        format;
-    
-    /** The controller. */
-    private final Controller          controller;
     
     /** The canvas. */
     private final Canvas              canvas;
@@ -300,23 +242,16 @@ public class ViewLattice implements IView {
      */
     public ViewLattice(final Composite parent, final Controller controller) {
 
-        // Listen
-        controller.addListener(ModelPart.SELECTED_NODE, this);
-        controller.addListener(ModelPart.FILTER, this);
-        controller.addListener(ModelPart.MODEL, this);
-        controller.addListener(ModelPart.RESULT, this);
-
-        this.controller = controller;
-        this.format = new DecimalFormat("##0.000"); //$NON-NLS-1$
-        
+        super(parent, controller);
+                
         // Compute font
         FontData[] fd = parent.getFont().getFontData();
         fd[0].setHeight(8);
         this.font = new Font(parent.getDisplay(), fd[0]);
 
         // Build canvas
-        parent.setLayout(new FillLayout());
-        this.canvas = new Canvas(parent, SWT.DOUBLE_BUFFERED);
+        this.canvas = new Canvas(getPrimaryComposite(), SWT.DOUBLE_BUFFERED);
+        this.canvas.setLayoutData(SWTUtil.createFillGridData());
         this.canvas.addPaintListener(new PaintListener() {
             @Override
             public void paintControl(PaintEvent e) {
@@ -334,16 +269,12 @@ public class ViewLattice implements IView {
         
         // Initialize
         this.initializeToolTipTimer();
-        this.initializeMenu();
         this.initializeListeners();
     }
 
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.gui.view.def.IView#dispose()
-     */
     @Override
     public void dispose() {
-        controller.removeListener(this);
+        super.dispose();
         font.dispose();
     }
 
@@ -352,35 +283,13 @@ public class ViewLattice implements IView {
      */
     @Override
     public void reset() {
+        super.reset();
         this.numNodes = 0;
-        this.optimum = null;
-        this.selectedNode = null;
         this.arxLattice = null;
         this.clearLatticeAndDisposePaths();
         this.latticeWidth = 0;
         this.screen = null;
         this.canvas.redraw();
-    }
-
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.gui.view.def.IView#update(org.deidentifier.arx.gui.model.ModelEvent)
-     */
-    @Override
-    public void update(final ModelEvent event) {
-
-        if (event.part == ModelPart.SELECTED_NODE) {
-            selectedNode = (ARXNode) event.data;
-            canvas.redraw();
-        } else if (event.part == ModelPart.RESULT) {
-            if (model.getResult() == null) reset();
-        } else if (event.part == ModelPart.MODEL) {
-            model = (Model) event.data;
-        } else if (event.part == ModelPart.FILTER) {
-            if (model != null) {
-                initialize(model.getResult(), (ModelNodeFilter) event.data);
-                canvas.redraw();
-            }
-        }
     }
 
     /**
@@ -389,10 +298,7 @@ public class ViewLattice implements IView {
      * @param node
      */
     private void actionButtonClicked1(ARXNode node) {
-        selectedNode = node;
-        model.setSelectedNode(selectedNode);
-        controller.update(new ModelEvent(ViewLattice.this, 
-                                         ModelPart.SELECTED_NODE, selectedNode));
+        actionSelectNode(node);
         canvas.redraw();
     }
 
@@ -404,36 +310,10 @@ public class ViewLattice implements IView {
      * @param y
      */
     private void actionButtonClicked3(ARXNode node, final int x, final int y) {
-        selectedNode = node;
-        model.setSelectedNode(selectedNode);
-        controller.update(new ModelEvent(ViewLattice.this, 
-                                         ModelPart.SELECTED_NODE, selectedNode));
+        actionSelectNode(node);
         canvas.redraw();
-        menu.setLocation(x, y);
-        menu.setVisible(true);
+        actionShowMenu(x, y);
         dragType = DragType.NONE;
-    }
-
-    /**
-     * Converts an information loss into a relative value in percent.
-     *
-     * @param infoLoss
-     * @return
-     */
-    private double asRelativeValue(final InformationLoss<?> infoLoss) {
-        return infoLoss.relativeTo(model.getResult().getLattice().getMinimumInformationLoss(), 
-                                   model.getResult().getLattice().getMaximumInformationLoss()) * 100d;
-    }
-
-    /**
-     * Converts a generalization to a relative value.
-     *
-     * @param generalization
-     * @param max
-     * @return
-     */
-    private double asRelativeValue(final int generalization, final int max) {
-        return ((double) generalization / (double) max) * 100d;
     }
 
     /**
@@ -461,16 +341,20 @@ public class ViewLattice implements IView {
 
         // Fill background
         Point size = canvas.getSize();
-        g.setBackground(COLOR_WHITE);
+        g.setBackground(g.getDevice().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
         g.fillRectangle(0, 0, size.x, size.y);
                 
         // Return, if nothing to show
-        if (model == null) {
+        if (getModel() == null) {
+
+            // Draw border
+            g.setForeground(g.getDevice().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
+            g.drawRectangle(0, 0, screen.x-1, screen.y-1);
             return;
         }
 
         // If too many nodes
-        if (numNodes > model.getMaxNodesInViewer()) {
+        if (numNodes > getModel().getMaxNodesInViewer()) {
             int x = (size.x / 2) - (MSG_WIDTH / 2);
             int y = (size.y / 2) - (MSG_HEIGHT / 2);
             if ((x < 0) || (y < 0)) { return; }
@@ -490,6 +374,10 @@ public class ViewLattice implements IView {
         
         // Draw nodes
         drawNodes(g);
+        
+        // Draw border
+        g.setForeground(g.getDevice().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
+        g.drawRectangle(0, 0, screen.x-1, screen.y-1);
     }
 
     /**
@@ -598,7 +486,7 @@ public class ViewLattice implements IView {
                         // Fill background
                         g.setBackground(getInnerColor(node));
                         g.setAntialias(SWT.OFF);
-                        if (node != selectedNode) {
+                        if (node != getSelectedNode()) {
                             g.fillOval(bounds.x, bounds.y, bounds.width, bounds.height);
                         } else {
                             g.fillRectangle(bounds.x, bounds.y, bounds.width, bounds.height);
@@ -608,7 +496,7 @@ public class ViewLattice implements IView {
                         g.setLineWidth(getOuterStrokeWidth(node, bounds.width));
                         g.setForeground(getOuterColor(node));
                         g.setAntialias(SWT.ON);
-                        if (node != selectedNode) {
+                        if (node != getSelectedNode()) {
                             g.drawOval(bounds.x, bounds.y, bounds.width, bounds.height);
                         } else {
                             g.drawRectangle(bounds.x, bounds.y, bounds.width, bounds.height);
@@ -670,26 +558,6 @@ public class ViewLattice implements IView {
     }
 
     /**
-     * Returns the inner color.
-     *
-     * @param node
-     * @return
-     */
-    private Color getInnerColor(final ARXNode node) {
-        if (node.getAnonymity() == Anonymity.ANONYMOUS) {
-            return node.equals(optimum) ? COLOR_YELLOW : COLOR_GREEN;
-        } else if (node.getAnonymity() == Anonymity.PROBABLY_ANONYMOUS) {
-            return COLOR_LIGHT_GREEN;
-        } else if (node.getAnonymity() == Anonymity.PROBABLY_NOT_ANONYMOUS) {
-            return COLOR_LIGHT_RED;
-        } else if (node.getAnonymity() == Anonymity.UNKNOWN) {
-            return COLOR_DARK_GRAY;
-        } else {
-            return COLOR_RED;
-        }
-    }
-
-    /**
      * Returns a line color for drawing the connections.
      *
      * @param nodeWidth
@@ -724,60 +592,6 @@ public class ViewLattice implements IView {
     }
 
     /**
-     * Returns the outer color.
-     *
-     * @param node
-     * @return
-     */
-    private Color getOuterColor(final ARXNode node) {
-        return node.isChecked() ? COLOR_BLUE : COLOR_BLACK;
-    }
-
-    /**
-     * Returns the outer stroke width.
-     *
-     * @param node
-     * @param width
-     * @return
-     */
-    private int getOuterStrokeWidth(final ARXNode node, final int width) {
-        int result = node.isChecked() ? width / 100 : 1;
-        result = node.isChecked() ? result + 1 : result;
-        return result >=1 ? result < 1 ? 1 : result : 1;
-    }
-
-    /**
-     * Creates a tooltip text.
-     *
-     * @param node
-     * @return
-     */
-    private String getTooltipText(final ARXNode node) {
-        final StringBuffer b = new StringBuffer();
-        b.append(Resources.getMessage("LatticeView.1")); //$NON-NLS-1$
-        b.append(format.format(asRelativeValue(node.getMinimumInformationLoss())));
-        b.append(" - "); //$NON-NLS-1$
-        b.append(format.format(asRelativeValue(node.getMaximumInformationLoss())));
-        b.append(" [%]\n"); //$NON-NLS-1$
-        if (model.getOutputDefinition() != null) {
-	        for (final String qi : node.getQuasiIdentifyingAttributes()) {
-	
-	            // Determine height of hierarchy
-	            int height = model.getOutputDefinition().isHierarchyAvailable(qi) ? 
-	                         model.getOutputDefinition().getHierarchy(qi)[0].length : 0;
-	            b.append(" * "); //$NON-NLS-1$
-	            b.append(qi);
-	            b.append(": "); //$NON-NLS-1$
-	            b.append(format.format(asRelativeValue(node.getGeneralization(qi), height - 1)));
-	            b.append(" [%]\n"); //$NON-NLS-1$
-	        }
-        }
-        b.setLength(b.length() - 1);
-        return b.toString();
-    }
-    
-
-    /**
      * Initializes the data structures for displaying a new lattice.
      *
      * @param result
@@ -803,7 +617,6 @@ public class ViewLattice implements IView {
         ARXLattice originalLattice = result.getLattice();
         this.latticeWidth = 0;
         this.numNodes = 0;
-        this.optimum = result.getGlobalOptimum();
         for (ARXNode[] originalLevel : originalLattice.getLevels()) {
             List<ARXNode> level = new ArrayList<ARXNode>();
             for (ARXNode node : originalLevel) {
@@ -821,7 +634,7 @@ public class ViewLattice implements IView {
         }
 
         // Check
-        if (numNodes > model.getMaxNodesInViewer()) { return; }
+        if (numNodes > getModel().getMaxNodesInViewer()) { return; }
 
         // Now initialize the text attribute
         for (List<ARXNode> level : this.lattice) {
@@ -1032,37 +845,6 @@ public class ViewLattice implements IView {
     }
 
     /**
-     * Creates the context menu.
-     */
-    private void initializeMenu() {
-        menu = new Menu(canvas.getShell());
-        MenuItem item1 = new MenuItem(menu, SWT.NONE);
-        item1.setText(Resources.getMessage("LatticeView.9")); //$NON-NLS-1$
-        item1.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(final SelectionEvent arg0) {
-                model.getClipboard().addToClipboard(selectedNode);
-                controller.update(new ModelEvent(ViewLattice.this, ModelPart.CLIPBOARD, selectedNode));
-                model.setSelectedNode(selectedNode);
-                controller.update(new ModelEvent(ViewLattice.this, ModelPart.SELECTED_NODE, selectedNode));
-                canvas.redraw();
-            }
-        });
-        
-        MenuItem item2 = new MenuItem(menu, SWT.NONE);
-        item2.setText(Resources.getMessage("LatticeView.10")); //$NON-NLS-1$
-        item2.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(final SelectionEvent arg0) {
-                controller.actionApplySelectedTransformation();
-                model.setSelectedNode(selectedNode);
-                controller.update(new ModelEvent(ViewLattice.this, ModelPart.SELECTED_NODE, selectedNode));
-                canvas.redraw();
-            }
-        });
-    }
-
-    /**
      * For performance reasons, we check for tool tips only at certain times.
      */
     private void initializeToolTipTimer() {
@@ -1073,7 +855,7 @@ public class ViewLattice implements IView {
                     String text = null;
                     if (tooltipX != -1 && tooltipY != -1) {
                         ARXNode node = getNode(tooltipX, tooltipY);
-                        text = node == null ? null : getTooltipText(node);
+                        text = node == null ? null : getTooltipDecorator().decorate(node);
                     } 
                     canvas.setToolTipText(text);
                 }
@@ -1136,4 +918,30 @@ public class ViewLattice implements IView {
          clip[3] = (int)(y0src + t1*ydelta);
          return true;
      }
+
+    @Override
+    protected void actionRedraw() {
+        this.canvas.redraw();
+    }
+
+    @Override
+    protected void eventFilterChanged(ARXResult result, ModelNodeFilter filter) {
+        initialize(result, filter);
+        canvas.redraw();
+    }
+
+    @Override
+    protected void eventModelChanged() {
+        // Empty by design
+    }
+
+    @Override
+    protected void eventNodeSelected() {
+        canvas.redraw();
+    }
+
+    @Override
+    protected void eventResultChanged(ARXResult result) {
+        if (getModel().getResult() == null) reset();
+    }
 }

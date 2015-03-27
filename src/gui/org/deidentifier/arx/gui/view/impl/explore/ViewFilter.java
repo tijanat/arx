@@ -1,19 +1,18 @@
 /*
  * ARX: Powerful Data Anonymization
- * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
+ * Copyright 2012 - 2015 Florian Kohlmayer, Fabian Prasser
  * 
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.deidentifier.arx.gui.view.impl.explore;
@@ -36,8 +35,8 @@ import org.deidentifier.arx.gui.resources.Resources;
 import org.deidentifier.arx.gui.view.SWTUtil;
 import org.deidentifier.arx.gui.view.def.IView;
 import org.deidentifier.arx.gui.view.impl.common.ComponentFilterTable;
-import org.deidentifier.arx.gui.view.impl.common.ComponentTitledFolderButton;
 import org.deidentifier.arx.gui.view.impl.common.ComponentTitledFolder;
+import org.deidentifier.arx.gui.view.impl.common.ComponentTitledFolderButton;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.swt.SWT;
@@ -50,8 +49,11 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Scale;
+import org.eclipse.swt.widgets.Listener;
+
+import de.linearbits.swt.rangeslider.RangeSlider;
 
 /**
  * This class displays a filter for the lattice.
@@ -61,7 +63,10 @@ import org.eclipse.swt.widgets.Scale;
 public class ViewFilter implements IView {
 
     /** Scale size. */
-    private static final int SCALE_MAX_VALUE = 1000;
+    private static final int     SCALE_MAX_VALUE       = 1000;
+
+    /** Scale update interval. */
+    private static final int     SCALE_UPDATE_INTERVAL = 100;
 
     /** Image. */
     private final Image          IMG_RESET;
@@ -71,36 +76,39 @@ public class ViewFilter implements IView {
 
     /** Widget. */
     private Composite            root;
-    
+
     /** Widget. */
     private ComponentFilterTable generalization;
-    
+
     /** Widget. */
     private Button               anonymous;
-    
+
     /** Widget. */
     private Button               nonanonymous;
-    
+
     /** Widget. */
     private Button               unknown;
-    
-    /** Widget. */
-    private Scale                max;
-    
-    /** Widget. */
-    private Scale                min;
+
+    /** Widget */
+    private RangeSlider          slider;
 
     /** Model. */
     private Controller           controller;
-    
+
     /** Model. */
-    private ModelNodeFilter      filter          = null;
-    
+    private ModelNodeFilter      filter                = null;
+
     /** Model. */
-    private Model                model           = null;
-    
+    private Model                model                 = null;
+
     /** Model. */
-    private ARXResult            result          = null;
+    private ARXResult            result                = null;
+
+    /** Model. */
+    private boolean              mouseDown             = false;
+
+    /** Fire the event */
+    private volatile Boolean     fireEvent             = false;
 
     /**
      * Creates a new instance.
@@ -123,12 +131,12 @@ public class ViewFilter implements IView {
 
         // Bar
         ComponentTitledFolderButton bar = new ComponentTitledFolderButton("id-21"); //$NON-NLS-1$
-        bar.add("Show optimum", IMG_OPTIMUM, new Runnable(){
+        bar.add(Resources.getMessage("ViewFilter.0"), IMG_OPTIMUM, new Runnable(){ //$NON-NLS-1$
             public void run() {
                 actionShowOptimum();
             }
         });
-        bar.add("Reset", IMG_RESET, new Runnable(){
+        bar.add(Resources.getMessage("ViewFilter.1"), IMG_RESET, new Runnable(){ //$NON-NLS-1$
             public void run() {
                 actionReset();
             }
@@ -151,11 +159,22 @@ public class ViewFilter implements IView {
         border.setSelection(0);
         border.setEnabled(true);
         reset();
+        
+        parent.getDisplay().timerExec(SCALE_UPDATE_INTERVAL, new Runnable(){
+            public void run() {
+                synchronized(fireEvent) {
+                    if (fireEvent) {
+                        fireEvent = false;
+                        actionInfoLossChanged();
+                    }
+                }
+                if (!parent.isDisposed() && !parent.getDisplay().isDisposed()) {
+                    parent.getDisplay().timerExec(SCALE_UPDATE_INTERVAL, this);
+                }
+            }
+        });
     }
 
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.gui.view.def.IView#dispose()
-     */
     @Override
     public void dispose() {
         controller.removeListener(this);
@@ -163,9 +182,6 @@ public class ViewFilter implements IView {
         IMG_OPTIMUM.dispose();
     }
     
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.gui.view.def.IView#reset()
-     */
     @Override
     public void reset() {
         filter = null;
@@ -173,27 +189,23 @@ public class ViewFilter implements IView {
         anonymous.setSelection(false);
         nonanonymous.setSelection(false);
         unknown.setSelection(false);
-        min.setSelection(min.getMinimum());
-        max.setSelection(max.getMaximum());
-        min.setEnabled(false);
-        max.setEnabled(false);
+        slider.setSelection(slider.getMinimum(), slider.getMaximum());
+        slider.setEnabled(false);
         generalization.clear();
         SWTUtil.disable(root);
     }
 
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.gui.view.def.IView#update(org.deidentifier.arx.gui.model.ModelEvent)
-     */
     @Override
     public void update(final ModelEvent event) {
         if (event.part == ModelPart.INPUT) {
             reset();
         } else if (event.part == ModelPart.RESULT) {
-            if (model.getResult() == null || model.getResult().getLattice() == null){
+            ARXResult result = (ARXResult)event.data;
+            if (result == null || result.getLattice() == null){
                 reset();
                 SWTUtil.disable(root);
             } else {
-                initialize(model.getResult(), null);
+                initialize(result, model.getNodeFilter());
                 SWTUtil.enable(root);
             }
         } else if (event.part == ModelPart.MODEL) {
@@ -227,22 +239,10 @@ public class ViewFilter implements IView {
     /**
      * Action.
      */
-    private void actionMaxInfoLossChanged() {
+    private void actionInfoLossChanged() {
         if (filter != null) {
-            double maxLoss = (double)max.getSelection() / (double)SCALE_MAX_VALUE;
-            double minLoss = filter.getAllowedMinInformationLoss();
-            filter.allowInformationLoss(minLoss, maxLoss);
-            fireModelEvent();
-        }
-    }
-
-    /**
-     * Action.
-     */
-    private void actionMinInfoLossChanged() {
-        if (filter != null) {
-            double minLoss = (double)min.getSelection() / (double)SCALE_MAX_VALUE;
-            double maxLoss = filter.getAllowedMaxInformationLoss();
+            double maxLoss = (double)slider.getUpperValue() / (double)SCALE_MAX_VALUE;
+            double minLoss = (double)slider.getLowerValue() / (double)SCALE_MAX_VALUE;
             filter.allowInformationLoss(minLoss, maxLoss);
             fireModelEvent();
         }
@@ -325,6 +325,15 @@ public class ViewFilter implements IView {
     }
     
     /**
+     * Fires the according events
+     */
+    private void actionUpdateSlider(){
+        synchronized(fireEvent){
+            fireEvent = true;
+        }
+    }
+    
+    /**
      * Creates the view.
      *
      * @param parent
@@ -368,8 +377,8 @@ public class ViewFilter implements IView {
         
         anonymous = new Button(composite, SWT.CHECK | SWT.NO_FOCUS);
         anonymous.setLayoutData(GridDataFactory.swtDefaults().grab(false, false).create());
-        anonymous.setToolTipText("Anonymous");
-        anonymous.setText("");
+        anonymous.setToolTipText(Resources.getMessage("ViewFilter.2")); //$NON-NLS-1$
+        anonymous.setText(""); //$NON-NLS-1$
         anonymous.setSelection(false);
         anonymous.addSelectionListener(new SelectionAdapter() {
             public void widgetSelected(SelectionEvent arg0) {
@@ -378,7 +387,7 @@ public class ViewFilter implements IView {
         });
         
         final Label anonymousLabel = new Label(composite, SWT.NONE);
-        anonymousLabel.setText(" Anonymous");
+        anonymousLabel.setText(Resources.getMessage("ViewFilter.4")); //$NON-NLS-1$
         anonymousLabel.setLayoutData(GridDataFactory.swtDefaults().grab(true, false).create());
         anonymousLabel.addMouseListener(new MouseAdapter(){
             public void mouseDown(MouseEvent arg0) {
@@ -389,8 +398,8 @@ public class ViewFilter implements IView {
         
         
         nonanonymous = new Button(composite, SWT.CHECK | SWT.NO_FOCUS);
-        nonanonymous.setToolTipText("Non-anonymous");
-        nonanonymous.setText("");
+        nonanonymous.setToolTipText(Resources.getMessage("ViewFilter.5")); //$NON-NLS-1$
+        nonanonymous.setText(""); //$NON-NLS-1$
         nonanonymous.setSelection(false);
         nonanonymous.setLayoutData(GridDataFactory.swtDefaults().grab(false, false).create());
         nonanonymous.addSelectionListener(new SelectionAdapter() {
@@ -400,7 +409,7 @@ public class ViewFilter implements IView {
         });
         
         final Label nonanonymousLabel = new Label(composite, SWT.NONE);
-        nonanonymousLabel.setText(" Non-anonymous");
+        nonanonymousLabel.setText(Resources.getMessage("ViewFilter.7")); //$NON-NLS-1$
         nonanonymousLabel.setLayoutData(GridDataFactory.swtDefaults().grab(true, false).create());
         nonanonymousLabel.addMouseListener(new MouseAdapter(){
             public void mouseDown(MouseEvent arg0) {
@@ -410,8 +419,8 @@ public class ViewFilter implements IView {
         });
         
         unknown = new Button(composite, SWT.CHECK | SWT.NO_FOCUS);
-        unknown.setToolTipText("Unknown");
-        unknown.setText("");
+        unknown.setToolTipText(Resources.getMessage("ViewFilter.8")); //$NON-NLS-1$
+        unknown.setText(""); //$NON-NLS-1$
         unknown.setLayoutData(GridDataFactory.swtDefaults().grab(false, false).create());
         unknown.setSelection(false);
         unknown.addSelectionListener(new SelectionAdapter() {
@@ -421,7 +430,7 @@ public class ViewFilter implements IView {
         });
         
         final Label unknownLabel = new Label(composite, SWT.NONE);
-        unknownLabel.setText(" Unknown");
+        unknownLabel.setText(Resources.getMessage("ViewFilter.10")); //$NON-NLS-1$
         unknownLabel.setLayoutData(GridDataFactory.swtDefaults().grab(true, false).create());
         unknownLabel.addMouseListener(new MouseAdapter(){
             public void mouseDown(MouseEvent arg0) {
@@ -431,27 +440,44 @@ public class ViewFilter implements IView {
         });
         
         final Label tableItem5 = new Label(parent, SWT.NONE);
-        tableItem5.setText(Resources.getMessage("NodeFilterView.15")); //$NON-NLS-1$
-        min = new Scale(parent, SWT.HORIZONTAL);
-        min.setMaximum(SCALE_MAX_VALUE);
-        min.setMinimum(0);
-        min.setLayoutData(SWTUtil.createFillHorizontallyGridData());
-        min.addSelectionListener(new SelectionAdapter() {
+        tableItem5.setText(Resources.getMessage("NodeFilterView.22")); //$NON-NLS-1$
+        
+        this.slider = new RangeSlider(parent, SWT.HORIZONTAL);
+        this.slider.setMaximum(SCALE_MAX_VALUE);
+        this.slider.setMinimum(0);
+        this.slider.setLayoutData(SWTUtil.createFillHorizontallyGridData());
+        this.slider.addSelectionListener(new SelectionAdapter() {
             public void widgetSelected(final SelectionEvent arg0) {
-                actionMinInfoLossChanged();
+                actionUpdateSlider();
+            }
+        });
+        this.slider.addListener(SWT.MouseMove, new Listener() {
+            public void handleEvent(Event e) {
+                if (mouseDown == true) {
+                    actionUpdateSlider();
+                }
             }
         });
 
-        final Label tableItem6 = new Label(parent, SWT.NONE);
-        tableItem6.setText(Resources.getMessage("NodeFilterView.16")); //$NON-NLS-1$
-        max = new Scale(parent, SWT.HORIZONTAL);
-        max.setLayoutData(SWTUtil.createFillHorizontallyGridData());
-        max.setMaximum(SCALE_MAX_VALUE);
-        max.setMinimum(0);
-        max.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(final SelectionEvent arg0) {
-                actionMaxInfoLossChanged();
+        this.slider.addListener(SWT.MouseDown, new Listener() {
+            public void handleEvent(Event e) {
+                mouseDown = true;
+            }
+        });
+
+        this.slider.addListener(SWT.MouseUp, new Listener() {
+            public void handleEvent(Event e) {
+                mouseDown = false;
+            }
+        });
+        this.slider.addListener(SWT.KeyDown, new Listener() {
+            public void handleEvent(Event e) {
+                actionUpdateSlider();
+            }
+        });
+        this.slider.addListener(SWT.KeyUp, new Listener() {
+            public void handleEvent(Event e) {
+                actionUpdateSlider();
             }
         });
     }
@@ -487,22 +513,10 @@ public class ViewFilter implements IView {
 
         // Reset filter
         if (nodeFilter == null) {
-
-            // Create filter
-            filter = new ModelNodeFilter(result.getLattice().getTop().getTransformation(), 
-                                         model.getInitialNodesInViewer());
-            
-            // Initialize filter
-            filter.initialize(result);
-            
-            // Update model
-            if (model != null) {
-                model.setNodeFilter(filter);
-                controller.update(new ModelEvent(this, ModelPart.FILTER, filter));
-            }
-        } else {
-            filter = nodeFilter;
+            throw new IllegalStateException(Resources.getMessage("ViewFilter.11")); //$NON-NLS-1$
         }
+        
+        filter = nodeFilter;
         
         // Update
         this.update();
@@ -575,8 +589,8 @@ public class ViewFilter implements IView {
         unknown.setSelection(filter.isAllowedUnknown());
         
         // Min and max
-        this.min.setSelection((int)Math.round(filter.getAllowedMinInformationLoss() * (double)SCALE_MAX_VALUE));
-        this.max.setSelection((int)Math.round(filter.getAllowedMaxInformationLoss() * (double)SCALE_MAX_VALUE));
+        this.slider.setSelection((int)Math.round(filter.getAllowedMinInformationLoss() * (double)SCALE_MAX_VALUE), 
+                                 (int)Math.round(filter.getAllowedMaxInformationLoss() * (double)SCALE_MAX_VALUE));
         
         // Draw
         this.root.setRedraw(true);

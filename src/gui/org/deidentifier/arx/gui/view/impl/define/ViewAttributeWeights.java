@@ -1,19 +1,18 @@
 /*
  * ARX: Powerful Data Anonymization
- * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
+ * Copyright 2012 - 2015 Florian Kohlmayer, Fabian Prasser
  * 
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.deidentifier.arx.gui.view.impl.define;
@@ -68,7 +67,7 @@ public class ViewAttributeWeights implements IView {
     private final Composite     root;
     
     /** Misc. */
-    private final DecimalFormat format     = new DecimalFormat("0.000");
+    private final DecimalFormat format     = new DecimalFormat("0.000"); //$NON-NLS-1$
 
     /**
      * Creates a new instance.
@@ -91,20 +90,17 @@ public class ViewAttributeWeights implements IView {
         root.pack();
     }
 
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.gui.view.def.IView#dispose()
-     */
     @Override
     public void dispose() {
         controller.removeListener(this);
         root.dispose();
     }
 
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.gui.view.def.IView#reset()
-     */
     @Override
     public void reset() {
+        if (root.isDisposed()) {
+            return;
+        }
         root.setRedraw(false);
         if (panel != null) {
             panel.dispose();
@@ -114,9 +110,6 @@ public class ViewAttributeWeights implements IView {
         root.setRedraw(true);
     }
 
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.gui.view.def.IView#update(org.deidentifier.arx.gui.model.ModelEvent)
-     */
     @Override
     public void update(ModelEvent event) {
 
@@ -200,7 +193,7 @@ public class ViewAttributeWeights implements IView {
                 for(int i=0; i<qis.size(); i++){
                     
                     final Label label = new Label(composites.get(i), SWT.CENTER);
-                    label.setText("0.0");
+                    label.setText("0.0"); //$NON-NLS-1$
                     label.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
                     
                     final String attribute = qis.get(i);
@@ -217,12 +210,12 @@ public class ViewAttributeWeights implements IView {
                                 // Correctly indicate weights slightly > 0
                                 double parsedValue = format.parse(format.format(value)).doubleValue();
                                 if (parsedValue == 0d && value > 0d) {
-                                    label.setText(">0");
+                                    label.setText(">0"); //$NON-NLS-1$
                                 }
                                 
                                 // Correctly indicate weights slightly < 1
                                 if (parsedValue == 1d && value < 1d) {
-                                    label.setText("<1");
+                                    label.setText("<1"); //$NON-NLS-1$
                                 }
                                 
                             } catch (ParseException e) {

@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <!-- NewPage -->
-<html lang="de">
+<html lang="en">
 <head>
 <title>I-Index (ARX API Documentation)</title>
 <link rel="stylesheet" type="text/css" href="../stylesheet.css" title="Style">
@@ -106,7 +106,7 @@
 <dd>
 <div class="block">Creates a new instance without a lower bound.</div>
 </dd>
-<dt><span class="strong"><a href="../org/deidentifier/arx/metric/v2/ILMultiDimensionalWithBound.html#ILMultiDimensionalWithBound(org.deidentifier.arx.metric.v2.AbstractILMultiDimensional, org.deidentifier.arx.metric.v2.AbstractILMultiDimensional)">ILMultiDimensionalWithBound(AbstractILMultiDimensional, AbstractILMultiDimensional)</a></span> - Constructor for class org.deidentifier.arx.metric.v2.<a href="../org/deidentifier/arx/metric/v2/ILMultiDimensionalWithBound.html" title="class in org.deidentifier.arx.metric.v2">ILMultiDimensionalWithBound</a></dt>
+<dt><span class="strong"><a href="../org/deidentifier/arx/metric/v2/ILMultiDimensionalWithBound.html#ILMultiDimensionalWithBound(org.deidentifier.arx.metric.v2.AbstractILMultiDimensional,%20org.deidentifier.arx.metric.v2.AbstractILMultiDimensional)">ILMultiDimensionalWithBound(AbstractILMultiDimensional, AbstractILMultiDimensional)</a></span> - Constructor for class org.deidentifier.arx.metric.v2.<a href="../org/deidentifier/arx/metric/v2/ILMultiDimensionalWithBound.html" title="class in org.deidentifier.arx.metric.v2">ILMultiDimensionalWithBound</a></dt>
 <dd>
 <div class="block">Creates a new instance.</div>
 </dd>
@@ -123,7 +123,7 @@
 <dd>
 <div class="block">Creates a new instance without a lower bound.</div>
 </dd>
-<dt><span class="strong"><a href="../org/deidentifier/arx/metric/v2/ILSingleDimensionalWithBound.html#ILSingleDimensionalWithBound(double, double)">ILSingleDimensionalWithBound(double, double)</a></span> - Constructor for class org.deidentifier.arx.metric.v2.<a href="../org/deidentifier/arx/metric/v2/ILSingleDimensionalWithBound.html" title="class in org.deidentifier.arx.metric.v2">ILSingleDimensionalWithBound</a></dt>
+<dt><span class="strong"><a href="../org/deidentifier/arx/metric/v2/ILSingleDimensionalWithBound.html#ILSingleDimensionalWithBound(double,%20double)">ILSingleDimensionalWithBound(double, double)</a></span> - Constructor for class org.deidentifier.arx.metric.v2.<a href="../org/deidentifier/arx/metric/v2/ILSingleDimensionalWithBound.html" title="class in org.deidentifier.arx.metric.v2">ILSingleDimensionalWithBound</a></dt>
 <dd>
 <div class="block">Creates a new instance.</div>
 </dd>
@@ -132,7 +132,9 @@
 <div class="block">A privacy criterion that is implicitly bound to the quasi-identifiers.</div>
 </dd>
 <dt><span class="strong"><a href="../org/deidentifier/arx/criteria/ImplicitPrivacyCriterion.html#ImplicitPrivacyCriterion(boolean)">ImplicitPrivacyCriterion(boolean)</a></span> - Constructor for class org.deidentifier.arx.criteria.<a href="../org/deidentifier/arx/criteria/ImplicitPrivacyCriterion.html" title="class in org.deidentifier.arx.criteria">ImplicitPrivacyCriterion</a></dt>
-<dd>&nbsp;</dd>
+<dd>
+<div class="block">Creates a new instance</div>
+</dd>
 <dt><a href="../org/deidentifier/arx/io/ImportAdapter.html" title="class in org.deidentifier.arx.io"><span class="strong">ImportAdapter</span></a> - Class in <a href="../org/deidentifier/arx/io/package-summary.html">org.deidentifier.arx.io</a></dt>
 <dd>
 <div class="block">Base adapter for all data sources
@@ -164,7 +166,11 @@
  
  This represents a single column that will be imported from.</div>
 </dd>
-<dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportColumn.html#ImportColumn(java.lang.String, org.deidentifier.arx.DataType)">ImportColumn(String, DataType&lt;?&gt;)</a></span> - Constructor for class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportColumn.html" title="class in org.deidentifier.arx.io">ImportColumn</a></dt>
+<dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportColumn.html#ImportColumn(java.lang.String,%20org.deidentifier.arx.DataType)">ImportColumn(String, DataType&lt;?&gt;)</a></span> - Constructor for class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportColumn.html" title="class in org.deidentifier.arx.io">ImportColumn</a></dt>
+<dd>
+<div class="block">Creates a new instance of this object with the given parameters.</div>
+</dd>
+<dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportColumn.html#ImportColumn(java.lang.String,%20org.deidentifier.arx.DataType,%20boolean)">ImportColumn(String, DataType&lt;?&gt;, boolean)</a></span> - Constructor for class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportColumn.html" title="class in org.deidentifier.arx.io">ImportColumn</a></dt>
 <dd>
 <div class="block">Creates a new instance of this object with the given parameters.</div>
 </dd>
@@ -174,19 +180,35 @@
  
  CSV columns are referred to by an index (see <a href="../org/deidentifier/arx/io/ImportColumnIndexed.html" title="class in org.deidentifier.arx.io"><code>ImportColumnIndexed</code></a>).</div>
 </dd>
-<dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportColumnCSV.html#ImportColumnCSV(int, org.deidentifier.arx.DataType)">ImportColumnCSV(int, DataType&lt;?&gt;)</a></span> - Constructor for class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportColumnCSV.html" title="class in org.deidentifier.arx.io">ImportColumnCSV</a></dt>
+<dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportColumnCSV.html#ImportColumnCSV(int,%20org.deidentifier.arx.DataType)">ImportColumnCSV(int, DataType&lt;?&gt;)</a></span> - Constructor for class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportColumnCSV.html" title="class in org.deidentifier.arx.io">ImportColumnCSV</a></dt>
 <dd>
 <div class="block">Creates a new instance of this object with the given parameters.</div>
 </dd>
-<dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportColumnCSV.html#ImportColumnCSV(int, java.lang.String, org.deidentifier.arx.DataType)">ImportColumnCSV(int, String, DataType&lt;?&gt;)</a></span> - Constructor for class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportColumnCSV.html" title="class in org.deidentifier.arx.io">ImportColumnCSV</a></dt>
+<dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportColumnCSV.html#ImportColumnCSV(int,%20org.deidentifier.arx.DataType,%20boolean)">ImportColumnCSV(int, DataType&lt;?&gt;, boolean)</a></span> - Constructor for class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportColumnCSV.html" title="class in org.deidentifier.arx.io">ImportColumnCSV</a></dt>
 <dd>
 <div class="block">Creates a new instance of this object with the given parameters.</div>
 </dd>
-<dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportColumnCSV.html#ImportColumnCSV(java.lang.String, org.deidentifier.arx.DataType)">ImportColumnCSV(String, DataType&lt;?&gt;)</a></span> - Constructor for class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportColumnCSV.html" title="class in org.deidentifier.arx.io">ImportColumnCSV</a></dt>
+<dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportColumnCSV.html#ImportColumnCSV(int,%20java.lang.String,%20org.deidentifier.arx.DataType)">ImportColumnCSV(int, String, DataType&lt;?&gt;)</a></span> - Constructor for class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportColumnCSV.html" title="class in org.deidentifier.arx.io">ImportColumnCSV</a></dt>
 <dd>
 <div class="block">Creates a new instance of this object with the given parameters.</div>
 </dd>
-<dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportColumnCSV.html#ImportColumnCSV(java.lang.String, java.lang.String, org.deidentifier.arx.DataType)">ImportColumnCSV(String, String, DataType&lt;?&gt;)</a></span> - Constructor for class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportColumnCSV.html" title="class in org.deidentifier.arx.io">ImportColumnCSV</a></dt>
+<dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportColumnCSV.html#ImportColumnCSV(int,%20java.lang.String,%20org.deidentifier.arx.DataType,%20boolean)">ImportColumnCSV(int, String, DataType&lt;?&gt;, boolean)</a></span> - Constructor for class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportColumnCSV.html" title="class in org.deidentifier.arx.io">ImportColumnCSV</a></dt>
+<dd>
+<div class="block">Creates a new instance of this object with the given parameters.</div>
+</dd>
+<dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportColumnCSV.html#ImportColumnCSV(java.lang.String,%20org.deidentifier.arx.DataType)">ImportColumnCSV(String, DataType&lt;?&gt;)</a></span> - Constructor for class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportColumnCSV.html" title="class in org.deidentifier.arx.io">ImportColumnCSV</a></dt>
+<dd>
+<div class="block">Creates a new instance of this object with the given parameters.</div>
+</dd>
+<dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportColumnCSV.html#ImportColumnCSV(java.lang.String,%20org.deidentifier.arx.DataType,%20boolean)">ImportColumnCSV(String, DataType&lt;?&gt;, boolean)</a></span> - Constructor for class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportColumnCSV.html" title="class in org.deidentifier.arx.io">ImportColumnCSV</a></dt>
+<dd>
+<div class="block">Creates a new instance of this object with the given parameters.</div>
+</dd>
+<dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportColumnCSV.html#ImportColumnCSV(java.lang.String,%20java.lang.String,%20org.deidentifier.arx.DataType)">ImportColumnCSV(String, String, DataType&lt;?&gt;)</a></span> - Constructor for class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportColumnCSV.html" title="class in org.deidentifier.arx.io">ImportColumnCSV</a></dt>
+<dd>
+<div class="block">Creates a new instance of this object with the given parameters.</div>
+</dd>
+<dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportColumnCSV.html#ImportColumnCSV(java.lang.String,%20java.lang.String,%20org.deidentifier.arx.DataType,%20boolean)">ImportColumnCSV(String, String, DataType&lt;?&gt;, boolean)</a></span> - Constructor for class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportColumnCSV.html" title="class in org.deidentifier.arx.io">ImportColumnCSV</a></dt>
 <dd>
 <div class="block">Creates a new instance of this object with the given parameters.</div>
 </dd>
@@ -196,19 +218,35 @@
  
  Excel columns are referred to by an index (see <a href="../org/deidentifier/arx/io/ImportColumnIndexed.html" title="class in org.deidentifier.arx.io"><code>ImportColumnIndexed</code></a>).</div>
 </dd>
-<dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportColumnExcel.html#ImportColumnExcel(int, org.deidentifier.arx.DataType)">ImportColumnExcel(int, DataType&lt;?&gt;)</a></span> - Constructor for class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportColumnExcel.html" title="class in org.deidentifier.arx.io">ImportColumnExcel</a></dt>
+<dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportColumnExcel.html#ImportColumnExcel(int,%20org.deidentifier.arx.DataType)">ImportColumnExcel(int, DataType&lt;?&gt;)</a></span> - Constructor for class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportColumnExcel.html" title="class in org.deidentifier.arx.io">ImportColumnExcel</a></dt>
 <dd>
 <div class="block">Creates a new instance of this object with the given parameters.</div>
 </dd>
-<dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportColumnExcel.html#ImportColumnExcel(int, java.lang.String, org.deidentifier.arx.DataType)">ImportColumnExcel(int, String, DataType&lt;?&gt;)</a></span> - Constructor for class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportColumnExcel.html" title="class in org.deidentifier.arx.io">ImportColumnExcel</a></dt>
+<dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportColumnExcel.html#ImportColumnExcel(int,%20org.deidentifier.arx.DataType,%20boolean)">ImportColumnExcel(int, DataType&lt;?&gt;, boolean)</a></span> - Constructor for class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportColumnExcel.html" title="class in org.deidentifier.arx.io">ImportColumnExcel</a></dt>
 <dd>
 <div class="block">Creates a new instance of this object with the given parameters.</div>
 </dd>
-<dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportColumnExcel.html#ImportColumnExcel(java.lang.String, org.deidentifier.arx.DataType)">ImportColumnExcel(String, DataType&lt;?&gt;)</a></span> - Constructor for class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportColumnExcel.html" title="class in org.deidentifier.arx.io">ImportColumnExcel</a></dt>
+<dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportColumnExcel.html#ImportColumnExcel(int,%20java.lang.String,%20org.deidentifier.arx.DataType)">ImportColumnExcel(int, String, DataType&lt;?&gt;)</a></span> - Constructor for class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportColumnExcel.html" title="class in org.deidentifier.arx.io">ImportColumnExcel</a></dt>
 <dd>
 <div class="block">Creates a new instance of this object with the given parameters.</div>
 </dd>
-<dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportColumnExcel.html#ImportColumnExcel(java.lang.String, java.lang.String, org.deidentifier.arx.DataType)">ImportColumnExcel(String, String, DataType&lt;?&gt;)</a></span> - Constructor for class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportColumnExcel.html" title="class in org.deidentifier.arx.io">ImportColumnExcel</a></dt>
+<dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportColumnExcel.html#ImportColumnExcel(int,%20java.lang.String,%20org.deidentifier.arx.DataType,%20boolean)">ImportColumnExcel(int, String, DataType&lt;?&gt;, boolean)</a></span> - Constructor for class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportColumnExcel.html" title="class in org.deidentifier.arx.io">ImportColumnExcel</a></dt>
+<dd>
+<div class="block">Creates a new instance of this object with the given parameters.</div>
+</dd>
+<dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportColumnExcel.html#ImportColumnExcel(java.lang.String,%20org.deidentifier.arx.DataType)">ImportColumnExcel(String, DataType&lt;?&gt;)</a></span> - Constructor for class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportColumnExcel.html" title="class in org.deidentifier.arx.io">ImportColumnExcel</a></dt>
+<dd>
+<div class="block">Creates a new instance of this object with the given parameters.</div>
+</dd>
+<dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportColumnExcel.html#ImportColumnExcel(java.lang.String,%20org.deidentifier.arx.DataType,%20boolean)">ImportColumnExcel(String, DataType&lt;?&gt;, boolean)</a></span> - Constructor for class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportColumnExcel.html" title="class in org.deidentifier.arx.io">ImportColumnExcel</a></dt>
+<dd>
+<div class="block">Creates a new instance of this object with the given parameters.</div>
+</dd>
+<dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportColumnExcel.html#ImportColumnExcel(java.lang.String,%20java.lang.String,%20org.deidentifier.arx.DataType)">ImportColumnExcel(String, String, DataType&lt;?&gt;)</a></span> - Constructor for class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportColumnExcel.html" title="class in org.deidentifier.arx.io">ImportColumnExcel</a></dt>
+<dd>
+<div class="block">Creates a new instance of this object with the given parameters.</div>
+</dd>
+<dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportColumnExcel.html#ImportColumnExcel(java.lang.String,%20java.lang.String,%20org.deidentifier.arx.DataType,%20boolean)">ImportColumnExcel(String, String, DataType&lt;?&gt;, boolean)</a></span> - Constructor for class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportColumnExcel.html" title="class in org.deidentifier.arx.io">ImportColumnExcel</a></dt>
 <dd>
 <div class="block">Creates a new instance of this object with the given parameters.</div>
 </dd>
@@ -216,19 +254,35 @@
 <dd>
 <div class="block">Superclass for column types that are only referred to by an index.</div>
 </dd>
-<dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportColumnIndexed.html#ImportColumnIndexed(int, org.deidentifier.arx.DataType)">ImportColumnIndexed(int, DataType&lt;?&gt;)</a></span> - Constructor for class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportColumnIndexed.html" title="class in org.deidentifier.arx.io">ImportColumnIndexed</a></dt>
+<dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportColumnIndexed.html#ImportColumnIndexed(int,%20org.deidentifier.arx.DataType)">ImportColumnIndexed(int, DataType&lt;?&gt;)</a></span> - Constructor for class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportColumnIndexed.html" title="class in org.deidentifier.arx.io">ImportColumnIndexed</a></dt>
 <dd>
 <div class="block">Creates a new instance of this object with the given parameters.</div>
 </dd>
-<dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportColumnIndexed.html#ImportColumnIndexed(int, java.lang.String, org.deidentifier.arx.DataType)">ImportColumnIndexed(int, String, DataType&lt;?&gt;)</a></span> - Constructor for class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportColumnIndexed.html" title="class in org.deidentifier.arx.io">ImportColumnIndexed</a></dt>
+<dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportColumnIndexed.html#ImportColumnIndexed(int,%20org.deidentifier.arx.DataType,%20boolean)">ImportColumnIndexed(int, DataType&lt;?&gt;, boolean)</a></span> - Constructor for class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportColumnIndexed.html" title="class in org.deidentifier.arx.io">ImportColumnIndexed</a></dt>
 <dd>
 <div class="block">Creates a new instance of this object with the given parameters.</div>
 </dd>
-<dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportColumnIndexed.html#ImportColumnIndexed(java.lang.String, org.deidentifier.arx.DataType)">ImportColumnIndexed(String, DataType&lt;?&gt;)</a></span> - Constructor for class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportColumnIndexed.html" title="class in org.deidentifier.arx.io">ImportColumnIndexed</a></dt>
+<dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportColumnIndexed.html#ImportColumnIndexed(int,%20java.lang.String,%20org.deidentifier.arx.DataType)">ImportColumnIndexed(int, String, DataType&lt;?&gt;)</a></span> - Constructor for class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportColumnIndexed.html" title="class in org.deidentifier.arx.io">ImportColumnIndexed</a></dt>
 <dd>
 <div class="block">Creates a new instance of this object with the given parameters.</div>
 </dd>
-<dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportColumnIndexed.html#ImportColumnIndexed(java.lang.String, java.lang.String, org.deidentifier.arx.DataType)">ImportColumnIndexed(String, String, DataType&lt;?&gt;)</a></span> - Constructor for class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportColumnIndexed.html" title="class in org.deidentifier.arx.io">ImportColumnIndexed</a></dt>
+<dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportColumnIndexed.html#ImportColumnIndexed(int,%20java.lang.String,%20org.deidentifier.arx.DataType,%20boolean)">ImportColumnIndexed(int, String, DataType&lt;?&gt;, boolean)</a></span> - Constructor for class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportColumnIndexed.html" title="class in org.deidentifier.arx.io">ImportColumnIndexed</a></dt>
+<dd>
+<div class="block">Creates a new instance of this object with the given parameters.</div>
+</dd>
+<dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportColumnIndexed.html#ImportColumnIndexed(java.lang.String,%20org.deidentifier.arx.DataType)">ImportColumnIndexed(String, DataType&lt;?&gt;)</a></span> - Constructor for class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportColumnIndexed.html" title="class in org.deidentifier.arx.io">ImportColumnIndexed</a></dt>
+<dd>
+<div class="block">Creates a new instance of this object with the given parameters.</div>
+</dd>
+<dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportColumnIndexed.html#ImportColumnIndexed(java.lang.String,%20org.deidentifier.arx.DataType,%20boolean)">ImportColumnIndexed(String, DataType&lt;?&gt;, boolean)</a></span> - Constructor for class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportColumnIndexed.html" title="class in org.deidentifier.arx.io">ImportColumnIndexed</a></dt>
+<dd>
+<div class="block">Creates a new instance of this object with the given parameters.</div>
+</dd>
+<dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportColumnIndexed.html#ImportColumnIndexed(java.lang.String,%20java.lang.String,%20org.deidentifier.arx.DataType)">ImportColumnIndexed(String, String, DataType&lt;?&gt;)</a></span> - Constructor for class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportColumnIndexed.html" title="class in org.deidentifier.arx.io">ImportColumnIndexed</a></dt>
+<dd>
+<div class="block">Creates a new instance of this object with the given parameters.</div>
+</dd>
+<dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportColumnIndexed.html#ImportColumnIndexed(java.lang.String,%20java.lang.String,%20org.deidentifier.arx.DataType,%20boolean)">ImportColumnIndexed(String, String, DataType&lt;?&gt;, boolean)</a></span> - Constructor for class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportColumnIndexed.html" title="class in org.deidentifier.arx.io">ImportColumnIndexed</a></dt>
 <dd>
 <div class="block">Creates a new instance of this object with the given parameters.</div>
 </dd>
@@ -239,19 +293,35 @@
  JDBC columns can be referred to by both an index (<code>IIndexColumn</code>) and
  by name (<code>IImportColumnNamed</code>.</div>
 </dd>
-<dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportColumnJDBC.html#ImportColumnJDBC(int, org.deidentifier.arx.DataType)">ImportColumnJDBC(int, DataType&lt;?&gt;)</a></span> - Constructor for class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportColumnJDBC.html" title="class in org.deidentifier.arx.io">ImportColumnJDBC</a></dt>
+<dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportColumnJDBC.html#ImportColumnJDBC(int,%20org.deidentifier.arx.DataType)">ImportColumnJDBC(int, DataType&lt;?&gt;)</a></span> - Constructor for class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportColumnJDBC.html" title="class in org.deidentifier.arx.io">ImportColumnJDBC</a></dt>
 <dd>
 <div class="block">Creates a new instance of this object with the given parameters.</div>
 </dd>
-<dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportColumnJDBC.html#ImportColumnJDBC(int, java.lang.String, org.deidentifier.arx.DataType)">ImportColumnJDBC(int, String, DataType&lt;?&gt;)</a></span> - Constructor for class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportColumnJDBC.html" title="class in org.deidentifier.arx.io">ImportColumnJDBC</a></dt>
+<dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportColumnJDBC.html#ImportColumnJDBC(int,%20org.deidentifier.arx.DataType,%20boolean)">ImportColumnJDBC(int, DataType&lt;?&gt;, boolean)</a></span> - Constructor for class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportColumnJDBC.html" title="class in org.deidentifier.arx.io">ImportColumnJDBC</a></dt>
 <dd>
 <div class="block">Creates a new instance of this object with the given parameters.</div>
 </dd>
-<dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportColumnJDBC.html#ImportColumnJDBC(java.lang.String, org.deidentifier.arx.DataType)">ImportColumnJDBC(String, DataType&lt;?&gt;)</a></span> - Constructor for class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportColumnJDBC.html" title="class in org.deidentifier.arx.io">ImportColumnJDBC</a></dt>
+<dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportColumnJDBC.html#ImportColumnJDBC(int,%20java.lang.String,%20org.deidentifier.arx.DataType)">ImportColumnJDBC(int, String, DataType&lt;?&gt;)</a></span> - Constructor for class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportColumnJDBC.html" title="class in org.deidentifier.arx.io">ImportColumnJDBC</a></dt>
 <dd>
 <div class="block">Creates a new instance of this object with the given parameters.</div>
 </dd>
-<dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportColumnJDBC.html#ImportColumnJDBC(java.lang.String, java.lang.String, org.deidentifier.arx.DataType)">ImportColumnJDBC(String, String, DataType&lt;?&gt;)</a></span> - Constructor for class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportColumnJDBC.html" title="class in org.deidentifier.arx.io">ImportColumnJDBC</a></dt>
+<dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportColumnJDBC.html#ImportColumnJDBC(int,%20java.lang.String,%20org.deidentifier.arx.DataType,%20boolean)">ImportColumnJDBC(int, String, DataType&lt;?&gt;, boolean)</a></span> - Constructor for class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportColumnJDBC.html" title="class in org.deidentifier.arx.io">ImportColumnJDBC</a></dt>
+<dd>
+<div class="block">Creates a new instance of this object with the given parameters.</div>
+</dd>
+<dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportColumnJDBC.html#ImportColumnJDBC(java.lang.String,%20org.deidentifier.arx.DataType)">ImportColumnJDBC(String, DataType&lt;?&gt;)</a></span> - Constructor for class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportColumnJDBC.html" title="class in org.deidentifier.arx.io">ImportColumnJDBC</a></dt>
+<dd>
+<div class="block">Creates a new instance of this object with the given parameters.</div>
+</dd>
+<dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportColumnJDBC.html#ImportColumnJDBC(java.lang.String,%20org.deidentifier.arx.DataType,%20boolean)">ImportColumnJDBC(String, DataType&lt;?&gt;, boolean)</a></span> - Constructor for class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportColumnJDBC.html" title="class in org.deidentifier.arx.io">ImportColumnJDBC</a></dt>
+<dd>
+<div class="block">Creates a new instance of this object with the given parameters.</div>
+</dd>
+<dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportColumnJDBC.html#ImportColumnJDBC(java.lang.String,%20java.lang.String,%20org.deidentifier.arx.DataType)">ImportColumnJDBC(String, String, DataType&lt;?&gt;)</a></span> - Constructor for class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportColumnJDBC.html" title="class in org.deidentifier.arx.io">ImportColumnJDBC</a></dt>
+<dd>
+<div class="block">Creates a new instance of this object with the given parameters.</div>
+</dd>
+<dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportColumnJDBC.html#ImportColumnJDBC(java.lang.String,%20java.lang.String,%20org.deidentifier.arx.DataType,%20boolean)">ImportColumnJDBC(String, String, DataType&lt;?&gt;, boolean)</a></span> - Constructor for class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportColumnJDBC.html" title="class in org.deidentifier.arx.io">ImportColumnJDBC</a></dt>
 <dd>
 <div class="block">Creates a new instance of this object with the given parameters.</div>
 </dd>
@@ -260,7 +330,7 @@
 <div class="block">Abstract base configuration
 
  This abstract superclass defines properties that all configurations have
- in common, i.e. a notion of columns, which can be added and retrieved.</div>
+ in common, i.e.</div>
 </dd>
 <dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportConfiguration.html#ImportConfiguration()">ImportConfiguration()</a></span> - Constructor for class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportConfiguration.html" title="class in org.deidentifier.arx.io">ImportConfiguration</a></dt>
 <dd>&nbsp;</dd>
@@ -268,7 +338,23 @@
 <dd>
 <div class="block">Configuration describing a CSV file.</div>
 </dd>
-<dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportConfigurationCSV.html#ImportConfigurationCSV(java.lang.String, char, boolean)">ImportConfigurationCSV(String, char, boolean)</a></span> - Constructor for class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportConfigurationCSV.html" title="class in org.deidentifier.arx.io">ImportConfigurationCSV</a></dt>
+<dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportConfigurationCSV.html#ImportConfigurationCSV(java.lang.String,%20boolean)">ImportConfigurationCSV(String, boolean)</a></span> - Constructor for class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportConfigurationCSV.html" title="class in org.deidentifier.arx.io">ImportConfigurationCSV</a></dt>
+<dd>
+<div class="block">Creates a new instance of this object.</div>
+</dd>
+<dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportConfigurationCSV.html#ImportConfigurationCSV(java.lang.String,%20char,%20boolean)">ImportConfigurationCSV(String, char, boolean)</a></span> - Constructor for class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportConfigurationCSV.html" title="class in org.deidentifier.arx.io">ImportConfigurationCSV</a></dt>
+<dd>
+<div class="block">Creates a new instance of this object.</div>
+</dd>
+<dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportConfigurationCSV.html#ImportConfigurationCSV(java.lang.String,%20char,%20char,%20boolean)">ImportConfigurationCSV(String, char, char, boolean)</a></span> - Constructor for class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportConfigurationCSV.html" title="class in org.deidentifier.arx.io">ImportConfigurationCSV</a></dt>
+<dd>
+<div class="block">Creates a new instance of this object.</div>
+</dd>
+<dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportConfigurationCSV.html#ImportConfigurationCSV(java.lang.String,%20char,%20char,%20char,%20boolean)">ImportConfigurationCSV(String, char, char, char, boolean)</a></span> - Constructor for class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportConfigurationCSV.html" title="class in org.deidentifier.arx.io">ImportConfigurationCSV</a></dt>
+<dd>
+<div class="block">Creates a new instance of this object.</div>
+</dd>
+<dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportConfigurationCSV.html#ImportConfigurationCSV(java.lang.String,%20char,%20char,%20char,%20char[],%20boolean)">ImportConfigurationCSV(String, char, char, char, char[], boolean)</a></span> - Constructor for class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportConfigurationCSV.html" title="class in org.deidentifier.arx.io">ImportConfigurationCSV</a></dt>
 <dd>
 <div class="block">Creates a new instance of this object.</div>
 </dd>
@@ -278,11 +364,11 @@
  
  This is used to describe Excel files.</div>
 </dd>
-<dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportConfigurationExcel.html#ImportConfigurationExcel(java.lang.String, org.deidentifier.arx.io.ImportConfigurationExcel.ExcelFileTypes, int, boolean)">ImportConfigurationExcel(String, ImportConfigurationExcel.ExcelFileTypes, int, boolean)</a></span> - Constructor for class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportConfigurationExcel.html" title="class in org.deidentifier.arx.io">ImportConfigurationExcel</a></dt>
+<dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportConfigurationExcel.html#ImportConfigurationExcel(java.lang.String,%20org.deidentifier.arx.io.ImportConfigurationExcel.ExcelFileTypes,%20int,%20boolean)">ImportConfigurationExcel(String, ImportConfigurationExcel.ExcelFileTypes, int, boolean)</a></span> - Constructor for class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportConfigurationExcel.html" title="class in org.deidentifier.arx.io">ImportConfigurationExcel</a></dt>
 <dd>
 <div class="block">Creates a new instance of this object.</div>
 </dd>
-<dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportConfigurationExcel.html#ImportConfigurationExcel(java.lang.String, int, boolean)">ImportConfigurationExcel(String, int, boolean)</a></span> - Constructor for class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportConfigurationExcel.html" title="class in org.deidentifier.arx.io">ImportConfigurationExcel</a></dt>
+<dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportConfigurationExcel.html#ImportConfigurationExcel(java.lang.String,%20int,%20boolean)">ImportConfigurationExcel(String, int, boolean)</a></span> - Constructor for class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportConfigurationExcel.html" title="class in org.deidentifier.arx.io">ImportConfigurationExcel</a></dt>
 <dd>
 <div class="block">Creates a new instance of this object without specifying the file type
  
@@ -307,15 +393,15 @@
 <dd>
 <div class="block">Configuration describing a JDBC source.</div>
 </dd>
-<dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportConfigurationJDBC.html#ImportConfigurationJDBC(java.sql.Connection, java.lang.String)">ImportConfigurationJDBC(Connection, String)</a></span> - Constructor for class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportConfigurationJDBC.html" title="class in org.deidentifier.arx.io">ImportConfigurationJDBC</a></dt>
+<dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportConfigurationJDBC.html#ImportConfigurationJDBC(java.sql.Connection,%20java.lang.String)">ImportConfigurationJDBC(Connection, String)</a></span> - Constructor for class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportConfigurationJDBC.html" title="class in org.deidentifier.arx.io">ImportConfigurationJDBC</a></dt>
 <dd>
 <div class="block">Creates a new instance of this object.</div>
 </dd>
-<dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportConfigurationJDBC.html#ImportConfigurationJDBC(java.lang.String, java.lang.String)">ImportConfigurationJDBC(String, String)</a></span> - Constructor for class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportConfigurationJDBC.html" title="class in org.deidentifier.arx.io">ImportConfigurationJDBC</a></dt>
+<dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportConfigurationJDBC.html#ImportConfigurationJDBC(java.lang.String,%20java.lang.String)">ImportConfigurationJDBC(String, String)</a></span> - Constructor for class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportConfigurationJDBC.html" title="class in org.deidentifier.arx.io">ImportConfigurationJDBC</a></dt>
 <dd>
 <div class="block">Creates a new instance of this object.</div>
 </dd>
-<dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportConfigurationJDBC.html#ImportConfigurationJDBC(java.lang.String, java.lang.String, java.lang.String, java.lang.String)">ImportConfigurationJDBC(String, String, String, String)</a></span> - Constructor for class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportConfigurationJDBC.html" title="class in org.deidentifier.arx.io">ImportConfigurationJDBC</a></dt>
+<dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportConfigurationJDBC.html#ImportConfigurationJDBC(java.lang.String,%20java.lang.String,%20java.lang.String,%20java.lang.String)">ImportConfigurationJDBC(String, String, String, String)</a></span> - Constructor for class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportConfigurationJDBC.html" title="class in org.deidentifier.arx.io">ImportConfigurationJDBC</a></dt>
 <dd>
 <div class="block">Creates a new instance of this object.</div>
 </dd>
@@ -340,7 +426,7 @@
 <dd>
 <div class="block">Creates a new instance without a lower bound.</div>
 </dd>
-<dt><span class="strong"><a href="../org/deidentifier/arx/metric/InformationLossDefaultWithBound.html#InformationLossDefaultWithBound(double, double)">InformationLossDefaultWithBound(double, double)</a></span> - Constructor for class org.deidentifier.arx.metric.<a href="../org/deidentifier/arx/metric/InformationLossDefaultWithBound.html" title="class in org.deidentifier.arx.metric">InformationLossDefaultWithBound</a></dt>
+<dt><span class="strong"><a href="../org/deidentifier/arx/metric/InformationLossDefaultWithBound.html#InformationLossDefaultWithBound(double,%20double)">InformationLossDefaultWithBound(double, double)</a></span> - Constructor for class org.deidentifier.arx.metric.<a href="../org/deidentifier/arx/metric/InformationLossDefaultWithBound.html" title="class in org.deidentifier.arx.metric">InformationLossDefaultWithBound</a></dt>
 <dd>
 <div class="block">Creates a new instance.</div>
 </dd>
@@ -352,7 +438,7 @@
 <dd>
 <div class="block">Creates a new instance without a lower bound.</div>
 </dd>
-<dt><span class="strong"><a href="../org/deidentifier/arx/metric/InformationLossWithBound.html#InformationLossWithBound(T, T)">InformationLossWithBound(T, T)</a></span> - Constructor for class org.deidentifier.arx.metric.<a href="../org/deidentifier/arx/metric/InformationLossWithBound.html" title="class in org.deidentifier.arx.metric">InformationLossWithBound</a></dt>
+<dt><span class="strong"><a href="../org/deidentifier/arx/metric/InformationLossWithBound.html#InformationLossWithBound(T,%20T)">InformationLossWithBound(T, T)</a></span> - Constructor for class org.deidentifier.arx.metric.<a href="../org/deidentifier/arx/metric/InformationLossWithBound.html" title="class in org.deidentifier.arx.metric">InformationLossWithBound</a></dt>
 <dd>
 <div class="block">Creates a new instance.</div>
 </dd>
@@ -370,11 +456,11 @@
 <dd>
 <div class="block">Override this to initialize the criterion.</div>
 </dd>
-<dt><span class="strong"><a href="../org/deidentifier/arx/metric/Metric.html#initialize(org.deidentifier.arx.DataDefinition, org.deidentifier.arx.framework.data.Data, org.deidentifier.arx.framework.data.GeneralizationHierarchy[], org.deidentifier.arx.ARXConfiguration)">initialize(DataDefinition, Data, GeneralizationHierarchy[], ARXConfiguration)</a></span> - Method in class org.deidentifier.arx.metric.<a href="../org/deidentifier/arx/metric/Metric.html" title="class in org.deidentifier.arx.metric">Metric</a></dt>
+<dt><span class="strong"><a href="../org/deidentifier/arx/metric/Metric.html#initialize(org.deidentifier.arx.DataDefinition,%20org.deidentifier.arx.framework.data.Data,%20org.deidentifier.arx.framework.data.GeneralizationHierarchy[],%20org.deidentifier.arx.ARXConfiguration)">initialize(DataDefinition, Data, GeneralizationHierarchy[], ARXConfiguration)</a></span> - Method in class org.deidentifier.arx.metric.<a href="../org/deidentifier/arx/metric/Metric.html" title="class in org.deidentifier.arx.metric">Metric</a></dt>
 <dd>
 <div class="block">Initializes the metric.</div>
 </dd>
-<dt><span class="strong"><a href="../org/deidentifier/arx/metric/v2/MetricMDHeight.html#initialize(int, int)">initialize(int, int)</a></span> - Method in class org.deidentifier.arx.metric.v2.<a href="../org/deidentifier/arx/metric/v2/MetricMDHeight.html" title="class in org.deidentifier.arx.metric.v2">MetricMDHeight</a></dt>
+<dt><span class="strong"><a href="../org/deidentifier/arx/metric/v2/MetricMDHeight.html#initialize(int,%20int)">initialize(int, int)</a></span> - Method in class org.deidentifier.arx.metric.v2.<a href="../org/deidentifier/arx/metric/v2/MetricMDHeight.html" title="class in org.deidentifier.arx.metric.v2">MetricMDHeight</a></dt>
 <dd>
 <div class="block">For backwards compatibility only.</div>
 </dd>
@@ -387,6 +473,10 @@
 <div class="block">A generic integer data type.</div>
 </dd>
 <dt><span class="strong"><a href="../org/deidentifier/arx/aggregates/StatisticsBuilderInterruptible.html#interrupt()">interrupt()</a></span> - Method in class org.deidentifier.arx.aggregates.<a href="../org/deidentifier/arx/aggregates/StatisticsBuilderInterruptible.html" title="class in org.deidentifier.arx.aggregates">StatisticsBuilderInterruptible</a></dt>
+<dd>
+<div class="block">Interrupts all computations.</div>
+</dd>
+<dt><span class="strong"><a href="../org/deidentifier/arx/risk/RiskEstimateBuilderInterruptible.html#interrupt()">interrupt()</a></span> - Method in class org.deidentifier.arx.risk.<a href="../org/deidentifier/arx/risk/RiskEstimateBuilderInterruptible.html" title="class in org.deidentifier.arx.risk">RiskEstimateBuilderInterruptible</a></dt>
 <dd>
 <div class="block">Interrupts all computations.</div>
 </dd>
@@ -422,6 +512,10 @@
 </dd>
 <dt><span class="strong"><a href="../org/deidentifier/arx/criteria/RecursiveCLDiversity.html#isAnonymous(org.deidentifier.arx.framework.check.groupify.HashGroupifyEntry)">isAnonymous(HashGroupifyEntry)</a></span> - Method in class org.deidentifier.arx.criteria.<a href="../org/deidentifier/arx/criteria/RecursiveCLDiversity.html" title="class in org.deidentifier.arx.criteria">RecursiveCLDiversity</a></dt>
 <dd>&nbsp;</dd>
+<dt><span class="strong"><a href="../org/deidentifier/arx/criteria/SampleBasedCriterion.html#isAnonymous(org.deidentifier.arx.framework.check.groupify.HashGroupifyEntry)">isAnonymous(HashGroupifyEntry)</a></span> - Method in class org.deidentifier.arx.criteria.<a href="../org/deidentifier/arx/criteria/SampleBasedCriterion.html" title="class in org.deidentifier.arx.criteria">SampleBasedCriterion</a></dt>
+<dd>
+<div class="block">Not supported by this type of criterion</div>
+</dd>
 <dt><span class="strong"><a href="../org/deidentifier/arx/ARXConfiguration.html#isAttributeTypeSuppressed(org.deidentifier.arx.AttributeType)">isAttributeTypeSuppressed(AttributeType)</a></span> - Method in class org.deidentifier.arx.<a href="../org/deidentifier/arx/ARXConfiguration.html" title="class in org.deidentifier.arx">ARXConfiguration</a></dt>
 <dd>
 <div class="block">Returns whether values of the given attribute type will be replaced by the suppression 
@@ -429,9 +523,33 @@
 </dd>
 <dt><span class="strong"><a href="../org/deidentifier/arx/metric/MetricDescription.html#isAttributeWeightsSupported()">isAttributeWeightsSupported()</a></span> - Method in class org.deidentifier.arx.metric.<a href="../org/deidentifier/arx/metric/MetricDescription.html" title="class in org.deidentifier.arx.metric">MetricDescription</a></dt>
 <dd>&nbsp;</dd>
+<dt><span class="strong"><a href="../org/deidentifier/arx/risk/RiskModelPopulationUniqueness.html#isAvailableEstimate(org.deidentifier.arx.risk.RiskModelPopulationUniqueness.PopulationUniquenessModel)">isAvailableEstimate(RiskModelPopulationUniqueness.PopulationUniquenessModel)</a></span> - Method in class org.deidentifier.arx.risk.<a href="../org/deidentifier/arx/risk/RiskModelPopulationUniqueness.html" title="class in org.deidentifier.arx.risk">RiskModelPopulationUniqueness</a></dt>
+<dd>
+<div class="block">Returns whether the according estimate is available</div>
+</dd>
+<dt><span class="strong"><a href="../org/deidentifier/arx/risk/RiskModelPopulationUniqueness.html#isAvailableEstimateDankar()">isAvailableEstimateDankar()</a></span> - Method in class org.deidentifier.arx.risk.<a href="../org/deidentifier/arx/risk/RiskModelPopulationUniqueness.html" title="class in org.deidentifier.arx.risk">RiskModelPopulationUniqueness</a></dt>
+<dd>
+<div class="block">Returns whether the according estimate is available</div>
+</dd>
+<dt><span class="strong"><a href="../org/deidentifier/arx/risk/RiskModelPopulationUniqueness.html#isAvailableEstimatePitman()">isAvailableEstimatePitman()</a></span> - Method in class org.deidentifier.arx.risk.<a href="../org/deidentifier/arx/risk/RiskModelPopulationUniqueness.html" title="class in org.deidentifier.arx.risk">RiskModelPopulationUniqueness</a></dt>
+<dd>
+<div class="block">Returns whether the according estimate is available</div>
+</dd>
+<dt><span class="strong"><a href="../org/deidentifier/arx/risk/RiskModelPopulationUniqueness.html#isAvailableEstimateSNB()">isAvailableEstimateSNB()</a></span> - Method in class org.deidentifier.arx.risk.<a href="../org/deidentifier/arx/risk/RiskModelPopulationUniqueness.html" title="class in org.deidentifier.arx.risk">RiskModelPopulationUniqueness</a></dt>
+<dd>
+<div class="block">Returns whether the according estimate is available</div>
+</dd>
+<dt><span class="strong"><a href="../org/deidentifier/arx/risk/RiskModelPopulationUniqueness.html#isAvailableEstimateZayatz()">isAvailableEstimateZayatz()</a></span> - Method in class org.deidentifier.arx.risk.<a href="../org/deidentifier/arx/risk/RiskModelPopulationUniqueness.html" title="class in org.deidentifier.arx.risk">RiskModelPopulationUniqueness</a></dt>
+<dd>
+<div class="block">Returns whether the according estimate is available</div>
+</dd>
 <dt><span class="strong"><a href="../org/deidentifier/arx/ARXLattice.ARXNode.html#isChecked()">isChecked()</a></span> - Method in class org.deidentifier.arx.<a href="../org/deidentifier/arx/ARXLattice.ARXNode.html" title="class in org.deidentifier.arx">ARXLattice.ARXNode</a></dt>
 <dd>
 <div class="block">Returns if the node has been checked explicitly.</div>
+</dd>
+<dt><span class="strong"><a href="../org/deidentifier/arx/io/ImportColumn.html#isCleansing()">isCleansing()</a></span> - Method in class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/ImportColumn.html" title="class in org.deidentifier.arx.io">ImportColumn</a></dt>
+<dd>
+<div class="block">Should non-matching values be replaced with NULL values.</div>
 </dd>
 <dt><span class="strong"><a href="../org/deidentifier/arx/metric/MetricDescription.html#isConfigurableCodingModelSupported()">isConfigurableCodingModelSupported()</a></span> - Method in class org.deidentifier.arx.metric.<a href="../org/deidentifier/arx/metric/MetricDescription.html" title="class in org.deidentifier.arx.metric">MetricDescription</a></dt>
 <dd>&nbsp;</dd>
@@ -484,6 +602,10 @@
 <dd>
 <div class="block">Returns whether a minimum generalization level is available.</div>
 </dd>
+<dt><span class="strong"><a href="../org/deidentifier/arx/ARXSolverConfiguration.html#isModified()">isModified()</a></span> - Method in class org.deidentifier.arx.<a href="../org/deidentifier/arx/ARXSolverConfiguration.html" title="class in org.deidentifier.arx">ARXSolverConfiguration</a></dt>
+<dd>
+<div class="block">Modified</div>
+</dd>
 <dt><span class="strong"><a href="../org/deidentifier/arx/criteria/PrivacyCriterion.html#isMonotonic()">isMonotonic()</a></span> - Method in class org.deidentifier.arx.criteria.<a href="../org/deidentifier/arx/criteria/PrivacyCriterion.html" title="class in org.deidentifier.arx.criteria">PrivacyCriterion</a></dt>
 <dd>
 <div class="block">Returns whether the criterion is monotonic with tuple suppression.</div>
@@ -500,6 +622,14 @@
 <dd>
 <div class="block">Returns true if the metric is multi-dimensional.</div>
 </dd>
+<dt><span class="strong"><a href="../org/deidentifier/arx/DataType.html#isNull(java.lang.String)">isNull(String)</a></span> - Method in class org.deidentifier.arx.<a href="../org/deidentifier/arx/DataType.html" title="class in org.deidentifier.arx">DataType</a></dt>
+<dd>
+<div class="block">Returns whether the given value represent null</div>
+</dd>
+<dt><span class="strong"><a href="../org/deidentifier/arx/aggregates/HierarchyBuilderIntervalBased.Interval.html#isNullInterval()">isNullInterval()</a></span> - Method in class org.deidentifier.arx.aggregates.<a href="../org/deidentifier/arx/aggregates/HierarchyBuilderIntervalBased.Interval.html" title="class in org.deidentifier.arx.aggregates">HierarchyBuilderIntervalBased.Interval</a></dt>
+<dd>
+<div class="block">Is this an interval for null values</div>
+</dd>
 <dt><span class="strong"><a href="../org/deidentifier/arx/DataHandle.html#isOrphaned()">isOrphaned()</a></span> - Method in class org.deidentifier.arx.<a href="../org/deidentifier/arx/DataHandle.html" title="class in org.deidentifier.arx">DataHandle</a></dt>
 <dd>
 <div class="block">Determines whether this handle is orphaned, i.e., should not be used anymore</div>
@@ -511,6 +641,14 @@
 </dd>
 <dt><span class="strong"><a href="../org/deidentifier/arx/DataHandleInput.html#isOutlier(int)">isOutlier(int)</a></span> - Method in class org.deidentifier.arx.<a href="../org/deidentifier/arx/DataHandleInput.html" title="class in org.deidentifier.arx">DataHandleInput</a></dt>
 <dd>&nbsp;</dd>
+<dt><span class="strong"><a href="../org/deidentifier/arx/aggregates/HierarchyBuilderIntervalBased.Interval.html#isOutOfBound()">isOutOfBound()</a></span> - Method in class org.deidentifier.arx.aggregates.<a href="../org/deidentifier/arx/aggregates/HierarchyBuilderIntervalBased.Interval.html" title="class in org.deidentifier.arx.aggregates">HierarchyBuilderIntervalBased.Interval</a></dt>
+<dd>
+<div class="block">Is this an interval representing values that are out of bounds</div>
+</dd>
+<dt><span class="strong"><a href="../org/deidentifier/arx/aggregates/HierarchyBuilderIntervalBased.Interval.html#isOutOfLowerBound()">isOutOfLowerBound()</a></span> - Method in class org.deidentifier.arx.aggregates.<a href="../org/deidentifier/arx/aggregates/HierarchyBuilderIntervalBased.Interval.html" title="class in org.deidentifier.arx.aggregates">HierarchyBuilderIntervalBased.Interval</a></dt>
+<dd>
+<div class="block">Is this an interval representing values that are out of the lower bound</div>
+</dd>
 <dt><span class="strong"><a href="../org/deidentifier/arx/ARXConfiguration.ARXConfigurationInternal.html#isPracticalMonotonicity()">isPracticalMonotonicity()</a></span> - Method in class org.deidentifier.arx.<a href="../org/deidentifier/arx/ARXConfiguration.ARXConfigurationInternal.html" title="class in org.deidentifier.arx">ARXConfiguration.ARXConfigurationInternal</a></dt>
 <dd>
 <div class="block">Is practical monotonicity assumed.</div>
@@ -531,6 +669,12 @@
 <dd>
 <div class="block">Indicates if a result is available.</div>
 </dd>
+<dt><span class="strong"><a href="../org/deidentifier/arx/criteria/PrivacyCriterion.html#isSampleBased()">isSampleBased()</a></span> - Method in class org.deidentifier.arx.criteria.<a href="../org/deidentifier/arx/criteria/PrivacyCriterion.html" title="class in org.deidentifier.arx.criteria">PrivacyCriterion</a></dt>
+<dd>
+<div class="block">Is this criterion based on the overall sample</div>
+</dd>
+<dt><span class="strong"><a href="../org/deidentifier/arx/criteria/SampleBasedCriterion.html#isSampleBased()">isSampleBased()</a></span> - Method in class org.deidentifier.arx.criteria.<a href="../org/deidentifier/arx/criteria/SampleBasedCriterion.html" title="class in org.deidentifier.arx.criteria">SampleBasedCriterion</a></dt>
+<dd>&nbsp;</dd>
 <dt><span class="strong"><a href="../org/deidentifier/arx/DataSelector.html#isSelected(int)">isSelected(int)</a></span> - Method in class org.deidentifier.arx.<a href="../org/deidentifier/arx/DataSelector.html" title="class in org.deidentifier.arx">DataSelector</a></dt>
 <dd>
 <div class="block">Determines whether the given row is selected by the expression.</div>
@@ -543,6 +687,14 @@
 <dt><span class="strong"><a href="../org/deidentifier/arx/ARXConfiguration.html#isSuppressionAlwaysEnabled()">isSuppressionAlwaysEnabled()</a></span> - Method in class org.deidentifier.arx.<a href="../org/deidentifier/arx/ARXConfiguration.html" title="class in org.deidentifier.arx">ARXConfiguration</a></dt>
 <dd>
 <div class="block">Returns whether suppression is applied to the output of anonymous as well as non-anonymous transformations.</div>
+</dd>
+<dt><span class="strong"><a href="../org/deidentifier/arx/ARXConfiguration.ARXConfigurationInternal.html#isUseHeuristicForSampleBasedCriteria()">isUseHeuristicForSampleBasedCriteria()</a></span> - Method in class org.deidentifier.arx.<a href="../org/deidentifier/arx/ARXConfiguration.ARXConfigurationInternal.html" title="class in org.deidentifier.arx">ARXConfiguration.ARXConfigurationInternal</a></dt>
+<dd>
+<div class="block">Do we guarantee optimality for sample-based criteria?</div>
+</dd>
+<dt><span class="strong"><a href="../org/deidentifier/arx/ARXConfiguration.html#isUseHeuristicSearchForSampleBasedCriteria()">isUseHeuristicSearchForSampleBasedCriteria()</a></span> - Method in class org.deidentifier.arx.<a href="../org/deidentifier/arx/ARXConfiguration.html" title="class in org.deidentifier.arx">ARXConfiguration</a></dt>
+<dd>
+<div class="block">Do we guarantee optimality for sample-based criteria?</div>
 </dd>
 <dt><span class="strong"><a href="../org/deidentifier/arx/aggregates/HierarchyBuilderGroupingBased.html#isValid()">isValid()</a></span> - Method in class org.deidentifier.arx.aggregates.<a href="../org/deidentifier/arx/aggregates/HierarchyBuilderGroupingBased.html" title="class in org.deidentifier.arx.aggregates">HierarchyBuilderGroupingBased</a></dt>
 <dd>
@@ -570,6 +722,10 @@
 <dd>
 <div class="block">Returns true if the metric is weighted.</div>
 </dd>
+<dt><span class="strong"><a href="../org/deidentifier/arx/ARXSolverConfiguration.html#iterationsPerTry(int)">iterationsPerTry(int)</a></span> - Method in class org.deidentifier.arx.<a href="../org/deidentifier/arx/ARXSolverConfiguration.html" title="class in org.deidentifier.arx">ARXSolverConfiguration</a></dt>
+<dd>&nbsp;</dd>
+<dt><span class="strong"><a href="../org/deidentifier/arx/ARXSolverConfiguration.html#iterationsTotal(int)">iterationsTotal(int)</a></span> - Method in class org.deidentifier.arx.<a href="../org/deidentifier/arx/ARXSolverConfiguration.html" title="class in org.deidentifier.arx">ARXSolverConfiguration</a></dt>
+<dd>&nbsp;</dd>
 <dt><span class="strong"><a href="../org/deidentifier/arx/aggregates/StatisticsContingencyTable.html#iterator">iterator</a></span> - Variable in class org.deidentifier.arx.aggregates.<a href="../org/deidentifier/arx/aggregates/StatisticsContingencyTable.html" title="class in org.deidentifier.arx.aggregates">StatisticsContingencyTable</a></dt>
 <dd>
 <div class="block">An iterator over the elements in the contingency table.</div>
@@ -586,7 +742,7 @@
 </dd>
 <dt><span class="strong"><a href="../org/deidentifier/arx/DataHandleSubset.html#iterator()">iterator()</a></span> - Method in class org.deidentifier.arx.<a href="../org/deidentifier/arx/DataHandleSubset.html" title="class in org.deidentifier.arx">DataHandleSubset</a></dt>
 <dd>&nbsp;</dd>
-<dt><span class="strong"><a href="../org/deidentifier/arx/io/CSVAbstractInput.html#iterator()">iterator()</a></span> - Method in class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/CSVAbstractInput.html" title="class in org.deidentifier.arx.io">CSVAbstractInput</a></dt>
+<dt><span class="strong"><a href="../org/deidentifier/arx/io/CSVDataInput.html#iterator()">iterator()</a></span> - Method in class org.deidentifier.arx.io.<a href="../org/deidentifier/arx/io/CSVDataInput.html" title="class in org.deidentifier.arx.io">CSVDataInput</a></dt>
 <dd>
 <div class="block">Returns an iterator.</div>
 </dd>

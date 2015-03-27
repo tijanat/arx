@@ -1,20 +1,18 @@
 /*
  * ARX: Powerful Data Anonymization
- * Copyright (C) 2014 Karol Babioch <karol@babioch.de>
- * Copyright (C) 2014 Fabian Prasser
+ * Copyright 2014 Karol Babioch <karol@babioch.de>
  * 
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.deidentifier.arx.io;
@@ -27,6 +25,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.io.input.CountingInputStream;
+import org.deidentifier.arx.DataType;
 
 /**
  * Import adapter for CSV files
@@ -80,8 +79,7 @@ public class ImportAdapterCSV extends ImportAdapter {
     /**
      * Indicates whether the first row has already been returned
      * 
-     * The first row contains the name of the columns. Depending upon
-     * {@link #containsHeader} and whether the name of the column has been
+     * The first row contains the name of the columns. Depending upon {@link #containsHeader} and whether the name of the column has been
      * assigned explicitly, this is either the value of the file itself, the
      * value defined by the user, or a default value.
      */
@@ -103,7 +101,7 @@ public class ImportAdapterCSV extends ImportAdapter {
         cin = new CountingInputStream(new FileInputStream(new File(config.getFileLocation())));
 
         /* Get CSV iterator */
-        in = new CSVDataInput(cin, config.getSeparator());
+        in = new CSVDataInput(cin, config.getDelimiter(), config.getQuote(), config.getEscape(), config.getLinebreak());
         it = in.iterator();
 
         /* Check whether there is actual data within the CSV file */
@@ -117,7 +115,7 @@ public class ImportAdapterCSV extends ImportAdapter {
         } else {
             throw new IOException("CSV file contains no data");
         }
-        
+
         // Create header
         header = createHeader();
     }
@@ -178,7 +176,11 @@ public class ImportAdapterCSV extends ImportAdapter {
         for (int i = 0; i < indexes.length; i++) {
             result[i] = row[indexes[i]];
             if (!dataTypes[i].isValid(result[i])) {
-                throw new IllegalArgumentException("Data value does not match data type");
+                if (config.columns.get(i).isCleansing()) {
+                    result[i] = DataType.NULL_VALUE;
+                } else {
+                    throw new IllegalArgumentException("Data value does not match data type");
+                }
             }
         }
 
@@ -214,7 +216,7 @@ public class ImportAdapterCSV extends ImportAdapter {
      * @return
      */
     private String[] createHeader() {
-        
+
         /* Preparation work */
         if (config.getContainsHeader()) this.config.prepare(row);
         this.indexes = getIndexesToImport();
@@ -232,7 +234,7 @@ public class ImportAdapterCSV extends ImportAdapter {
             /* Check whether there is a header, which is not empty */
             if (config.getContainsHeader() &&
                 !row[((ImportColumnCSV) column).getIndex()].equals("")) {
-                
+
                 /* Assign name of CSV file itself */
                 header[i] = row[((ImportColumnCSV) column).getIndex()];
             } else {

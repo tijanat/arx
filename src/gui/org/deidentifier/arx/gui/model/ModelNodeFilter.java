@@ -1,19 +1,18 @@
 /*
  * ARX: Powerful Data Anonymization
- * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
+ * Copyright 2012 - 2015 Florian Kohlmayer, Fabian Prasser
  * 
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.deidentifier.arx.gui.model;
@@ -27,6 +26,7 @@ import java.util.Set;
 import org.deidentifier.arx.ARXLattice;
 import org.deidentifier.arx.ARXLattice.ARXNode;
 import org.deidentifier.arx.ARXLattice.Anonymity;
+import org.deidentifier.arx.gui.resources.Resources;
 import org.deidentifier.arx.ARXResult;
 
 /**
@@ -68,6 +68,36 @@ public class ModelNodeFilter implements Serializable {
             generalizations[i] = new HashSet<Integer>();
         }
     }
+    
+    /**
+     * Creates a new instance used for cloning.
+     * 
+     * @param anonymity
+     * @param generalizations
+     * @param maxNumNodesInitial
+     * @param minInformationLoss
+     * @param maxInformationLoss
+     */
+    @SuppressWarnings("unchecked")
+    private ModelNodeFilter(Set<Anonymity> anonymity, Set<Integer>[] generalizations, int maxNumNodesInitial, double minInformationLoss, double maxInformationLoss) {
+        for (Anonymity element : anonymity) {
+            this.anonymity.add(element);
+        }
+
+        this.generalizations = new Set[generalizations.length];
+        for (int i = 0; i < generalizations.length; i++) {
+            Set<Integer> current = generalizations[i];
+            this.generalizations[i] = new HashSet<Integer>();
+            for (Integer integer : current) {
+                this.generalizations[i].add(integer);
+            }
+        }
+
+        this.maxNumNodesInitial = maxNumNodesInitial;
+        this.minInformationLoss = minInformationLoss;
+        this.maxInformationLoss = maxInformationLoss;
+
+    }
 
     /**
      * Allows transformations with any information loss to pass the filter.
@@ -76,6 +106,7 @@ public class ModelNodeFilter implements Serializable {
         minInformationLoss = 0d;
         maxInformationLoss = 1d;
     }
+
 
     /**
      * Allows anonymous transformations to pass the filter.
@@ -102,7 +133,7 @@ public class ModelNodeFilter implements Serializable {
      */
     public void allowInformationLoss(final double min, final double max) {
         if (min<0d || min>1d || max <0d || max>1d) {
-            throw new IllegalArgumentException("Threshold must be in range [0,1]");
+            throw new IllegalArgumentException(Resources.getMessage("Model.0")); //$NON-NLS-1$
         }
         minInformationLoss = min;
         maxInformationLoss = max;
@@ -122,6 +153,13 @@ public class ModelNodeFilter implements Serializable {
         anonymity.add(Anonymity.PROBABLY_NOT_ANONYMOUS);
         anonymity.add(Anonymity.PROBABLY_ANONYMOUS);
         anonymity.add(Anonymity.UNKNOWN);
+    }
+
+    /**
+     * Clones the ModelNodeFilter instance.
+     */
+    public ModelNodeFilter clone() {
+        return new ModelNodeFilter(anonymity, generalizations, maxNumNodesInitial, minInformationLoss, maxInformationLoss);
     }
 
     /**

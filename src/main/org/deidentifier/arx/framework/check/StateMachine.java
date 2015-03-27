@@ -1,19 +1,18 @@
 /*
  * ARX: Powerful Data Anonymization
- * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
+ * Copyright 2012 - 2015 Florian Kohlmayer, Fabian Prasser
  * 
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.deidentifier.arx.framework.check;
@@ -113,67 +112,6 @@ public class StateMachine {
     }
 
     /**
-     * Returns the projection. All bits are set for the columns that don't need
-     * to be checked
-     * 
-     * @param currentNode
-     *            the current node
-     * @return the projection
-     */
-    private long getProjection(final Node currentNode) {
-        long projection = 0L;
-        for (int i = 0; i < currentNode.getTransformation().length; i++) {
-            if (currentNode.getTransformation()[i] == lastNode.getTransformation()[i]) {
-                projection |= 1L << i;
-            }
-        }
-        return projection;
-    }
-
-    /**
-     * Is a rollup optimization possible.
-     * 
-     * @param currentNode
-     *            the current node
-     * @return true, if is possible rollup
-     */
-    private boolean isPossibleRollup(final Node currentNode) {
-        for (int i = 0; i < lastNode.getTransformation().length; i++) {
-            if (currentNode.getTransformation()[i] < lastNode.getTransformation()[i]) { return false; }
-        }
-        return true;
-
-    }
-
-    /**
-     * Is a snapshot optimization possible.
-     * 
-     * @param currentNode
-     *            the current node
-     * @return true, if is possible snapshot
-     */
-    private boolean isPossibleSnapshot(final Node currentNode) {
-        snapshot = history.get(currentNode);
-        snapshotNode = history.getTransformation();
-        if (snapshot != null) { return true; }
-        return false;
-    }
-
-    /**
-     * Is node2 a predecessor of or equal to node1?.
-     *
-     * @param node1
-     * @param node2
-     * @return
-     */
-    private boolean isPredecessor(final Node node1, final Node node2) {
-        for (int i = 0; i < node2.getTransformation().length; i++) {
-            if (node1.getTransformation()[i] < node2.getTransformation()[i]) { return false; }
-        }
-        return true;
-    }
-
-    /**
      * Resets the state machine.
      */
     public void reset() {
@@ -238,5 +176,66 @@ public class StateMachine {
 
         // Return
         return result;
+    }
+
+    /**
+     * Returns the projection. All bits are set for the columns that don't need
+     * to be checked
+     * 
+     * @param currentNode
+     *            the current node
+     * @return the projection
+     */
+    private long getProjection(final Node currentNode) {
+        long projection = 0L;
+        for (int i = 0; i < currentNode.getTransformation().length; i++) {
+            if (currentNode.getTransformation()[i] == lastNode.getTransformation()[i]) {
+                projection |= 1L << i;
+            }
+        }
+        return projection;
+    }
+
+    /**
+     * Is a rollup optimization possible.
+     * 
+     * @param currentNode
+     *            the current node
+     * @return true, if is possible rollup
+     */
+    private boolean isPossibleRollup(final Node currentNode) {
+        for (int i = 0; i < lastNode.getTransformation().length; i++) {
+            if (currentNode.getTransformation()[i] < lastNode.getTransformation()[i]) { return false; }
+        }
+        return true;
+
+    }
+
+    /**
+     * Is a snapshot optimization possible.
+     * 
+     * @param currentNode
+     *            the current node
+     * @return true, if is possible snapshot
+     */
+    private boolean isPossibleSnapshot(final Node currentNode) {
+        snapshot = history.get(currentNode);
+        snapshotNode = history.getTransformation();
+        if (snapshot != null) { return true; }
+        return false;
+    }
+
+    /**
+     * Is node2 a predecessor of or equal to node1?.
+     *
+     * @param node1
+     * @param node2
+     * @return
+     */
+    private boolean isPredecessor(final Node node1, final Node node2) {
+        for (int i = 0; i < node2.getTransformation().length; i++) {
+            if (node1.getTransformation()[i] < node2.getTransformation()[i]) { return false; }
+        }
+        return true;
     }
 }

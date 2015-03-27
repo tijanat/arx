@@ -1,19 +1,18 @@
 /*
  * ARX: Powerful Data Anonymization
- * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
+ * Copyright 2012 - 2015 Florian Kohlmayer, Fabian Prasser
  * 
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.deidentifier.arx.gui.view.impl.define;
@@ -22,6 +21,7 @@ import org.deidentifier.arx.gui.Controller;
 import org.deidentifier.arx.gui.model.Model;
 import org.deidentifier.arx.gui.model.ModelEvent;
 import org.deidentifier.arx.gui.model.ModelEvent.ModelPart;
+import org.deidentifier.arx.gui.resources.Resources;
 import org.deidentifier.arx.gui.view.def.IView;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
@@ -44,35 +44,35 @@ import org.eclipse.swt.widgets.Scale;
  * @author Fabian Prasser
  */
 public class ViewCodingModel implements IView {
-    
-    /**  TODO */
-    private final Color COLOR_MEDIUM;
-    
-    /**  TODO */
-    private final Color COLOR_LIGHT;
-    
-    /**  TODO */
-    private final Color COLOR_DARK;
 
-    /**  TODO */
+    /** TODO */
+    private final Color      COLOR_MEDIUM;
+
+    /** TODO */
+    private final Color      COLOR_LIGHT;
+
+    /** TODO */
+    private final Color      COLOR_DARK;
+
+    /** TODO */
     private static final int MINIMUM    = 0;
-    
-    /**  TODO */
+
+    /** TODO */
     private static final int MAXIMUM    = 1000;
 
-    /**  TODO */
+    /** TODO */
     private Controller       controller = null;
-    
-    /**  TODO */
+
+    /** TODO */
     private Model            model      = null;
 
-    /**  TODO */
+    /** TODO */
     private final Scale      slider;
-    
-    /**  TODO */
+
+    /** TODO */
     private final Composite  root;
-    
-    /**  TODO */
+
+    /** TODO */
     private final Canvas     canvas;
 
     /**
@@ -136,12 +136,12 @@ public class ViewCodingModel implements IView {
                 e.gc.fillPolygon(left);
 
                 e.gc.setForeground(COLOR_TEXT);
-                e.gc.drawText("Suppression", OFFSET, OFFSET);
+                e.gc.drawText(Resources.getMessage("ViewCodingModel.0"), OFFSET, OFFSET); //$NON-NLS-1$
 
                 e.gc.setBackground(COLOR_LIGHT);
                 e.gc.fillPolygon(right);
 
-                final String string = "Generalization";
+                final String string = Resources.getMessage("ViewCodingModel.1"); //$NON-NLS-1$
                 e.gc.setForeground(COLOR_TEXT);
                 Point extent = e.gc.textExtent(string);
                 e.gc.drawText(string, width - OFFSET - extent.x, height - OFFSET - extent.y);
@@ -184,7 +184,7 @@ public class ViewCodingModel implements IView {
         // Button
         Button button = new Button(sliderBase, SWT.PUSH);
         button.setLayoutData(GridDataFactory.fillDefaults().grab(false, false).align(SWT.LEFT, SWT.CENTER).create());
-        button.setText("Reset");
+        button.setText(Resources.getMessage("ViewCodingModel.2")); //$NON-NLS-1$
         button.addSelectionListener(new SelectionAdapter() {
             public void widgetSelected(SelectionEvent arg0) {
                 setSuppressionWeight(0.5d);
@@ -199,15 +199,33 @@ public class ViewCodingModel implements IView {
         root.pack();
     }
 
-    /**
-     * Sets the current suppression weight.
-     *
-     * @param d
-     */
-    private void setSuppressionWeight(double d) {
-        int value = (int)(MINIMUM + d * (double)(MAXIMUM - MINIMUM));
-        if (!this.slider.isDisposed()) this.slider.setSelection(value);
-        if (!this.canvas.isDisposed()) this.canvas.redraw();
+    @Override
+    public void dispose() {
+        controller.removeListener(this);
+        root.dispose();
+        COLOR_LIGHT.dispose();
+        COLOR_MEDIUM.dispose();
+        COLOR_DARK.dispose();
+    }
+
+    @Override
+    public void reset() {
+        if (root.isDisposed()) {
+            return;
+        }
+        root.setRedraw(false);
+        setSuppressionWeight(0.5d);
+        root.setRedraw(true);
+    }
+
+    @Override
+    public void update(ModelEvent event) {
+        if (event.part == ModelPart.MODEL) {
+            this.model = (Model)event.data;
+            if (model.getInputConfig() != null) {
+                this.setSuppressionWeight(this.model.getInputConfig().getSuppressionWeight());
+            }
+        } 
     }
 
     /**
@@ -219,38 +237,14 @@ public class ViewCodingModel implements IView {
         return ((double)slider.getSelection() - MINIMUM) / (double)(MAXIMUM - MINIMUM);
     }
 
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.gui.view.def.IView#dispose()
+    /**
+     * Sets the current suppression weight.
+     *
+     * @param d
      */
-    @Override
-    public void dispose() {
-        controller.removeListener(this);
-        root.dispose();
-        COLOR_LIGHT.dispose();
-        COLOR_MEDIUM.dispose();
-        COLOR_DARK.dispose();
-    }
-
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.gui.view.def.IView#reset()
-     */
-    @Override
-    public void reset() {
-        root.setRedraw(false);
-        setSuppressionWeight(0.5d);
-        root.setRedraw(true);
-    }
-
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.gui.view.def.IView#update(org.deidentifier.arx.gui.model.ModelEvent)
-     */
-    @Override
-    public void update(ModelEvent event) {
-        if (event.part == ModelPart.MODEL) {
-            this.model = (Model)event.data;
-            if (model.getInputConfig() != null) {
-                this.setSuppressionWeight(this.model.getInputConfig().getSuppressionWeight());
-            }
-        } 
+    private void setSuppressionWeight(double d) {
+        int value = (int)(MINIMUM + d * (double)(MAXIMUM - MINIMUM));
+        if (!this.slider.isDisposed()) this.slider.setSelection(value);
+        if (!this.canvas.isDisposed()) this.canvas.redraw();
     }
 }

@@ -1,19 +1,18 @@
 /*
  * ARX: Powerful Data Anonymization
- * Copyright (C) 2014 Karol Babioch <karol@babioch.de>
+ * Copyright 2014 Karol Babioch <karol@babioch.de>
  * 
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.deidentifier.arx.io;
@@ -30,6 +29,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.deidentifier.arx.DataType;
 import org.deidentifier.arx.io.ImportConfigurationExcel.ExcelFileTypes;
 
 /**
@@ -74,16 +74,7 @@ public class ImportAdapterExcel extends ImportAdapter {
     /** Current row {@link lastRow} is referencing. */
     private int                      currentRow     = 0;
 
-    /**
-     * Holds the number of columns
-     * 
-     * This is set in the first iteration and is checked against in every other
-     * iteration. Once a row contains more columns that this, an exception is
-     * thrown.
-     */
-    private int                      numberOfColumns;
-
-    /**  TODO */
+    /** TODO */
     private FileInputStream          input;
 
     /**
@@ -153,7 +144,7 @@ public class ImportAdapterExcel extends ImportAdapter {
      */
     @Override
     public int getProgress() {
-        return (int) ((double) currentRow / (double) totalRows * 100d);
+        return (int) (((double) currentRow / (double) totalRows) * 100d);
     }
 
     /**
@@ -190,12 +181,6 @@ public class ImportAdapterExcel extends ImportAdapter {
             return header;
         }
 
-
-        /* Check whether number of columns is too big */
-        if (row.getPhysicalNumberOfCells() > numberOfColumns) {
-            throw new IllegalArgumentException("Number of columns in row " + currentRow + " is too big");
-        }
-
         /* Create regular row */
         String[] result = new String[indexes.length];
         for (int i = 0; i < indexes.length; i++) {
@@ -204,7 +189,11 @@ public class ImportAdapterExcel extends ImportAdapter {
             result[i] = row.getCell(indexes[i]).getStringCellValue();
 
             if (!dataTypes[i].isValid(result[i])) {
-                throw new IllegalArgumentException("Data value does not match data type");
+                if (config.columns.get(i).isCleansing()) {
+                    result[i] = DataType.NULL_VALUE;
+                } else {
+                    throw new IllegalArgumentException("Data value does not match data type");
+                }
             }
         }
 
@@ -216,8 +205,8 @@ public class ImportAdapterExcel extends ImportAdapter {
             row = null;
             try {
                 input.close();
-            } catch (Exception e){
-                /* Die silently*/
+            } catch (Exception e) {
+                /* Die silently */
             }
         }
 
@@ -248,9 +237,11 @@ public class ImportAdapterExcel extends ImportAdapter {
     private String[] createHeader() {
 
         /* Preparation work */
-        if (config.getContainsHeader()) this.config.prepare(row);
-        this.indexes = getIndexesToImport();
-        this.dataTypes = getColumnDatatypes();
+        if (config.getContainsHeader()) {
+            config.prepare(row);
+        }
+        indexes = getIndexesToImport();
+        dataTypes = getColumnDatatypes();
 
         /* Initialization */
         String[] header = new String[config.getColumns().size()];
@@ -262,9 +253,9 @@ public class ImportAdapterExcel extends ImportAdapter {
             ImportColumn column = columns.get(i);
 
             row.getCell(((ImportColumnExcel) column).getIndex())
-                   .setCellType(Cell.CELL_TYPE_STRING);
+               .setCellType(Cell.CELL_TYPE_STRING);
             String name = row.getCell(((ImportColumnExcel) column).getIndex())
-                                 .getStringCellValue();
+                             .getStringCellValue();
 
             if (config.getContainsHeader() && !name.equals("")) {
                 /* Assign name of file itself */
@@ -293,9 +284,6 @@ public class ImportAdapterExcel extends ImportAdapter {
                 row = null;
             }
         }
-
-        /* Store number of columns */
-        numberOfColumns = header.length;
 
         /* Return header */
         return header;

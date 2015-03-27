@@ -1,19 +1,18 @@
 /*
  * ARX: Powerful Data Anonymization
- * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
+ * Copyright 2012 - 2015 Florian Kohlmayer, Fabian Prasser
  * 
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.deidentifier.arx.gui.view.impl.common;
@@ -102,7 +101,7 @@ public abstract class ViewData implements IView {
         controller.addListener(ModelPart.SELECTED_ATTRIBUTE, this);
         controller.addListener(ModelPart.MODEL, this);
         controller.addListener(ModelPart.OUTPUT, this);
-        controller.addListener(ModelPart.VIEW_CONFIG, this);
+        controller.addListener(ModelPart.SELECTED_VIEW_CONFIG, this);
         controller.addListener(ModelPart.INPUT, this);
         
         // Store
@@ -117,7 +116,7 @@ public abstract class ViewData implements IView {
         IMAGE_DESCENDING        = controller.getResources().getImage("sort_descending.png");//$NON-NLS-1$
 
         // Create title bar
-        ComponentTitledFolderButton bar = new ComponentTitledFolderButton("id-140");
+        ComponentTitledFolderButton bar = new ComponentTitledFolderButton("id-140"); //$NON-NLS-1$
         bar.add(Resources.getMessage("DataView.1"), //$NON-NLS-1$ 
                 IMAGE_ASCENDING,
                 new Runnable() {
@@ -137,7 +136,7 @@ public abstract class ViewData implements IView {
                     }
                 });
         bar.add(Resources.getMessage("DataView.2"), //$NON-NLS-1$ 
-                controller.getResources().getImage("sort_groups.png"),
+                controller.getResources().getImage("sort_groups.png"), //$NON-NLS-1$
                 new Runnable() {
                     @Override
                     public void run() {
@@ -145,7 +144,7 @@ public abstract class ViewData implements IView {
                     }
                 });
         bar.add(Resources.getMessage("DataView.3"), //$NON-NLS-1$ 
-                controller.getResources().getImage("sort_subset.png"),
+                controller.getResources().getImage("sort_subset.png"), //$NON-NLS-1$
                 true,
                 new Runnable() {
                     @Override
@@ -196,9 +195,6 @@ public abstract class ViewData implements IView {
         table.addScrollBarListener(listener);
     }
     
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.gui.view.def.IView#dispose()
-     */
     @Override
     public void dispose() {
         controller.removeListener(this);
@@ -220,9 +216,6 @@ public abstract class ViewData implements IView {
         return table.getViewportLayer();
     }
 
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.gui.view.def.IView#reset()
-     */
     @Override
     public void reset() {
         table.reset();
@@ -232,16 +225,13 @@ public abstract class ViewData implements IView {
         descendingButton.setEnabled(false);
     }
 
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.gui.view.def.IView#update(org.deidentifier.arx.gui.model.ModelEvent)
-     */
     @Override
     public void update(final ModelEvent event) {
 
         // Enable/Disable sort button
         if (event.part == ModelPart.OUTPUT ||
             event.part == ModelPart.INPUT ||
-            event.part == ModelPart.VIEW_CONFIG) {
+            event.part == ModelPart.SELECTED_VIEW_CONFIG) {
             
             if (model != null && model.getOutput() != null){
                 groupsButton.setEnabled(true);
@@ -258,7 +248,7 @@ public abstract class ViewData implements IView {
             reset();
         }
         
-        if (event.part == ModelPart.VIEW_CONFIG) {          
+        if (event.part == ModelPart.SELECTED_VIEW_CONFIG) {          
             subsetButton.setSelection(model.getViewConfig().isSubset());
         }
         

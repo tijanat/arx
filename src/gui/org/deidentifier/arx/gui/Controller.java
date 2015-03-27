@@ -1,20 +1,19 @@
 /*
  * ARX: Powerful Data Anonymization
- * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
- * Copyright (C) 2014 Karol Babioch <karol@babioch.de>
+ * Copyright 2012 - 2015 Florian Kohlmayer, Fabian Prasser
+ * Copyright 2014 Karol Babioch <karol@babioch.de>
  * 
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.deidentifier.arx.gui;
@@ -28,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -35,6 +35,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.math3.util.Pair;
 import org.deidentifier.arx.ARXLattice.ARXNode;
 import org.deidentifier.arx.ARXLattice.Anonymity;
 import org.deidentifier.arx.ARXResult;
@@ -50,12 +51,14 @@ import org.deidentifier.arx.DataType.DataTypeDescription;
 import org.deidentifier.arx.RowSet;
 import org.deidentifier.arx.aggregates.HierarchyBuilder;
 import org.deidentifier.arx.gui.model.Model;
+import org.deidentifier.arx.gui.model.ModelAuditTrailEntry;
 import org.deidentifier.arx.gui.model.ModelCriterion;
 import org.deidentifier.arx.gui.model.ModelEvent;
 import org.deidentifier.arx.gui.model.ModelEvent.ModelPart;
 import org.deidentifier.arx.gui.model.ModelExplicitCriterion;
 import org.deidentifier.arx.gui.model.ModelLDiversityCriterion;
 import org.deidentifier.arx.gui.model.ModelNodeFilter;
+import org.deidentifier.arx.gui.model.ModelRiskBasedCriterion;
 import org.deidentifier.arx.gui.model.ModelTClosenessCriterion;
 import org.deidentifier.arx.gui.model.ModelViewConfig;
 import org.deidentifier.arx.gui.model.ModelViewConfig.Mode;
@@ -81,9 +84,13 @@ import org.deidentifier.arx.io.CSVDataOutput;
 import org.deidentifier.arx.io.ImportConfiguration;
 import org.deidentifier.arx.io.ImportConfigurationCSV;
 import org.eclipse.jface.window.Window;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 
 import cern.colt.Swapper;
+import de.linearbits.swt.choicesdialog.ChoiceItem;
+import de.linearbits.swt.choicesdialog.ChoicesDialog;
 
 /**
  * The main controller for the whole tool.
@@ -148,7 +155,7 @@ public class Controller implements IView {
             } else {
                 this.model.getViewConfig().setMode(Mode.UNSORTED);
             }
-            this.update(new ModelEvent(this, ModelPart.VIEW_CONFIG, model.getOutput()));
+            this.update(new ModelEvent(this, ModelPart.SELECTED_VIEW_CONFIG, model.getOutput()));
         }
     }
 
@@ -157,6 +164,123 @@ public class Controller implements IView {
      */
     public void actionClearEventLog() {
         this.debug.clearEventLog();
+    }
+
+    /**
+     * Adds a criterion
+     */
+    public void actionCriterionAdd() {
+
+        List<ModelCriterion> criteria = new ArrayList<ModelCriterion>();
+        
+        if (!model.getKAnonymityModel().isEnabled()) {
+            criteria.add(model.getKAnonymityModel());
+        }
+        if (!model.getDPresenceModel().isEnabled()) {
+            criteria.add(model.getDPresenceModel());
+        }
+        
+        Set<String> sensitive = model.getInputDefinition().getSensitiveAttributes();
+        
+        List<ModelExplicitCriterion> explicit = new ArrayList<ModelExplicitCriterion>();
+        for (ModelLDiversityCriterion other : model.getLDiversityModel().values()) {
+            if (!other.isEnabled() && sensitive.contains(other.getAttribute())) {
+                explicit.add(other);
+            }
+        }
+        for (ModelTClosenessCriterion other : model.getTClosenessModel().values()) {
+            if (!other.isEnabled() && sensitive.contains(other.getAttribute())) {
+                explicit.add(other);
+            }
+        }
+        Collections.sort(explicit, new Comparator<ModelExplicitCriterion>(){
+            public int compare(ModelExplicitCriterion o1, ModelExplicitCriterion o2) {
+                return o1.getAttribute().compareTo(o2.getAttribute());
+            }
+        });
+        criteria.addAll(explicit);
+        
+        List<ModelRiskBasedCriterion> riskBased = new ArrayList<ModelRiskBasedCriterion>();
+        for (ModelRiskBasedCriterion other : model.getRiskBasedModel()) {
+            if (!other.isEnabled()) {
+                riskBased.add(other);
+            }
+        }
+        Collections.sort(riskBased, new Comparator<ModelRiskBasedCriterion>(){
+            public int compare(ModelRiskBasedCriterion o1, ModelRiskBasedCriterion o2) {
+                return o1.getLabel().compareTo(o2.getLabel());
+            }
+        });
+        criteria.addAll(riskBased);
+        
+        if (criteria.isEmpty()) {
+            return;
+        }
+        
+        // Select criterion
+        ModelCriterion criterion = main.showAddCriterionDialog(criteria);
+        if (criterion != null) {
+            criterion.setEnabled(true);
+            this.update(new ModelEvent(this, ModelPart.CRITERION_DEFINITION, criterion));
+        }
+    }
+
+    /**
+     * Configures a criterion
+     * @param criterion 
+     */
+    public void actionCriterionConfigure(ModelCriterion criterion) {
+
+        List<ModelCriterion> criteria = new ArrayList<ModelCriterion>();
+        
+        if (model.getKAnonymityModel().isEnabled()) {
+            criteria.add(model.getKAnonymityModel());
+        }
+        if (model.getDPresenceModel().isEnabled()) {
+            criteria.add(model.getDPresenceModel());
+        }
+        
+        Set<String> sensitive = model.getInputDefinition().getSensitiveAttributes();
+        
+        List<ModelExplicitCriterion> explicit = new ArrayList<ModelExplicitCriterion>();
+        for (ModelLDiversityCriterion other : model.getLDiversityModel().values()) {
+            if (other.isEnabled() && sensitive.contains(other.getAttribute())) {
+                explicit.add(other);
+            }
+        }
+        for (ModelTClosenessCriterion other : model.getTClosenessModel().values()) {
+            if (other.isEnabled() && sensitive.contains(other.getAttribute())) {
+                explicit.add(other);
+            }
+        }
+        Collections.sort(explicit, new Comparator<ModelExplicitCriterion>(){
+            public int compare(ModelExplicitCriterion o1, ModelExplicitCriterion o2) {
+                return o1.getAttribute().compareTo(o2.getAttribute());
+            }
+        });
+        criteria.addAll(explicit);
+        
+        List<ModelRiskBasedCriterion> riskBased = new ArrayList<ModelRiskBasedCriterion>();
+        for (ModelRiskBasedCriterion other : model.getRiskBasedModel()) {
+            if (other.isEnabled()) {
+                riskBased.add(other);
+            }
+        }
+        Collections.sort(riskBased, new Comparator<ModelRiskBasedCriterion>(){
+            public int compare(ModelRiskBasedCriterion o1, ModelRiskBasedCriterion o2) {
+                return o1.getLabel().compareTo(o2.getLabel());
+            }
+        });
+        criteria.addAll(riskBased);
+        
+        
+        if (criteria.isEmpty()) {
+            return;
+        }
+        
+        // Select criterion
+        main.showConfigureCriterionDialog(criteria, criterion);
+        this.update(new ModelEvent(this, ModelPart.CRITERION_DEFINITION, null));
     }
 
     /**
@@ -184,18 +308,18 @@ public class Controller implements IView {
         List<ModelExplicitCriterion> others = new ArrayList<ModelExplicitCriterion>();
         if (criterion instanceof ModelLDiversityCriterion) {
             for (ModelLDiversityCriterion other : model.getLDiversityModel().values()) {
-                if (!other.equals(criterion) && other.isActive() && other.isEnabled()) {
+                if (!other.equals(criterion) && other.isEnabled()) {
                     others.add((ModelExplicitCriterion) other);
                 }
             }
         } else if (criterion instanceof ModelTClosenessCriterion) {
             for (ModelTClosenessCriterion other : model.getTClosenessModel().values()) {
-                if (!other.equals(criterion) && other.isActive() && other.isEnabled()) {
+                if (!other.equals(criterion) && other.isEnabled()) {
                     others.add((ModelExplicitCriterion) other);
                 }
             }
         } else {
-            throw new RuntimeException("Invalid type of criterion");
+            throw new RuntimeException(Resources.getMessage("Controller.1")); //$NON-NLS-1$
         }
 
         // Break if none found
@@ -229,18 +353,18 @@ public class Controller implements IView {
 
             if (criterion instanceof ModelLDiversityCriterion) {
                 for (ModelLDiversityCriterion other : model.getLDiversityModel().values()) {
-                    if (!other.equals(criterion) && other.isActive() && other.isEnabled()) {
+                    if (!other.equals(criterion) && other.isEnabled()) {
                         other.pull((ModelExplicitCriterion) criterion);
                     }
                 }
             } else if (criterion instanceof ModelTClosenessCriterion) {
                 for (ModelTClosenessCriterion other : model.getTClosenessModel().values()) {
-                    if (!other.equals(criterion) && other.isActive() && other.isEnabled()) {
+                    if (!other.equals(criterion) && other.isEnabled()) {
                         other.pull((ModelExplicitCriterion) criterion);
                     }
                 }
             } else {
-                throw new RuntimeException("Invalid type of criterion");
+                throw new RuntimeException(Resources.getMessage("Controller.15")); //$NON-NLS-1$
             }
 
             update(new ModelEvent(this, ModelPart.CRITERION_DEFINITION, criterion));
@@ -259,7 +383,7 @@ public class Controller implements IView {
         this.updateViewConfig(false);
 
         // Update
-        this.update(new ModelEvent(this, ModelPart.VIEW_CONFIG, model.getOutput()));
+        this.update(new ModelEvent(this, ModelPart.SELECTED_VIEW_CONFIG, model.getOutput()));
     }
 
     /**
@@ -282,7 +406,7 @@ public class Controller implements IView {
         this.updateViewConfig(false);
 
         // Update
-        this.update(new ModelEvent(this, ModelPart.VIEW_CONFIG, model.getOutput()));
+        this.update(new ModelEvent(this, ModelPart.SELECTED_VIEW_CONFIG, model.getOutput()));
     }
 
     /**
@@ -297,7 +421,65 @@ public class Controller implements IView {
         boolean val = !model.getViewConfig().isSubset();
         this.model.getViewConfig().setSubset(val);
         this.updateViewConfig(false);
-        this.update(new ModelEvent(this, ModelPart.VIEW_CONFIG, model.getOutput()));
+        this.update(new ModelEvent(this, ModelPart.SELECTED_VIEW_CONFIG, model.getOutput()));
+    }
+
+    /**
+     * Find and replace action
+     */
+    public void actionFindReplace() {
+
+        // Check
+        if (model == null) {
+            main.showInfoDialog(main.getShell(),
+                                Resources.getMessage("Controller.3"), //$NON-NLS-1$
+                                Resources.getMessage("Controller.4")); //$NON-NLS-1$
+            return;
+        }
+
+        // Check
+        if (model.getInputConfig().getInput() == null) {
+            main.showInfoDialog(main.getShell(),
+                                Resources.getMessage("Controller.5"), //$NON-NLS-1$
+                                Resources.getMessage("Controller.6")); //$NON-NLS-1$
+            return;
+        }
+
+        // Show dialog
+        DataHandle handle = model.getInputConfig().getInput().getHandle();
+        int column = handle.getColumnIndexOf(model.getSelectedAttribute());
+        Pair<String, String> pair = main.showFindReplaceDialog(model, handle, column);
+        
+        // If action must be performed
+        if (pair != null) {
+            
+            // Replace in input
+            handle.replace(column, pair.getFirst(), pair.getSecond());
+            
+            // Replace in output
+            if (model.getOutputConfig() != null) {
+                Hierarchy hierarchy = model.getOutputConfig().getHierarchy(model.getSelectedAttribute());
+                if (hierarchy != null) {
+                    for (String[] array : hierarchy.getHierarchy()) {
+                        for (int i=0; i<array.length; i++) {
+                            if (array[i].equals(pair.getFirst())) {
+                                array[i] = pair.getSecond();
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Fire event
+            ModelAuditTrailEntry entry = ModelAuditTrailEntry.createfindReplaceEntry( model.getSelectedAttribute(), 
+                                                                                      pair.getFirst(), 
+                                                                                      pair.getSecond());
+            update(new ModelEvent(this, ModelPart.ATTRIBUTE_VALUE, entry));
+            
+            // Store in model
+            model.addAuditTrailEntry(entry);
+            model.setModified();
+        }
     }
 
     /**
@@ -325,7 +507,7 @@ public class Controller implements IView {
             return;
         }
 
-        actionResetOutput();
+        actionMenuEditReset();
 
         // Run the worker
         final WorkerAnonymize worker = new WorkerAnonymize(model);
@@ -333,21 +515,31 @@ public class Controller implements IView {
 
         // Show errors
         if (worker.getError() != null) {
+            
+            // Extract
             Throwable t = worker.getError();
             if (worker.getError() instanceof InvocationTargetException) {
                 t = worker.getError().getCause();
             }
             if (t instanceof NullPointerException) {
-                main.showErrorDialog(main.getShell(), "Internal error", t);
+                main.showErrorDialog(main.getShell(), Resources.getMessage("Controller.36"), t); //$NON-NLS-1$
             } else {
                 main.showInfoDialog(main.getShell(),
                                     Resources.getMessage("Controller.13"), //$NON-NLS-1$
                                     Resources.getMessage("Controller.14") + t.getMessage()); //$NON-NLS-1$
             }
+            
+            // Log
             StringWriter sw = new StringWriter();
             PrintWriter pw = new PrintWriter(sw);
             worker.getError().printStackTrace(pw);
             getResources().getLogger().info(sw.toString());
+            
+            // Reset
+            model.setOutput(null, null);
+            model.setSelectedNode(null);
+            update(new ModelEvent(this, ModelPart.OUTPUT, null));
+            update(new ModelEvent(this, ModelPart.SELECTED_NODE, null));
             return;
         }
 
@@ -359,8 +551,16 @@ public class Controller implements IView {
             model.createClonedConfig();
             model.setResult(result);
             model.getClipboard().clearClipboard();
+            
 
-            // Update view
+            // Create filter
+            ModelNodeFilter filter = new ModelNodeFilter(result.getLattice().getTop().getTransformation(), 
+                                                         model.getInitialNodesInViewer());
+            filter.initialize(result);
+            model.setNodeFilter(filter);
+            
+            // Update model
+            update(new ModelEvent(this, ModelPart.FILTER, filter));
             update(new ModelEvent(this, ModelPart.RESULT, result));
             update(new ModelEvent(this, ModelPart.CLIPBOARD, null));
             if (result.isResultAvailable()) {
@@ -384,7 +584,7 @@ public class Controller implements IView {
                     this.model.getViewConfig().setSubset(true);
                     this.model.getViewConfig().setMode(Mode.UNSORTED);
                 }
-                this.update(new ModelEvent(this, ModelPart.VIEW_CONFIG, model.getOutput()));
+                this.update(new ModelEvent(this, ModelPart.SELECTED_VIEW_CONFIG, model.getOutput()));
             } else {
                 model.setOutput(null, null);
                 model.setSelectedNode(null);
@@ -447,6 +647,27 @@ public class Controller implements IView {
     }
 
     /**
+     * Resets the current output
+     */
+    public void actionMenuEditReset() {
+        
+        // Reset output
+        model.getViewConfig().setMode(Mode.UNSORTED);
+        model.getViewConfig().setSubset(false);
+        model.setGroups(null);
+        model.setResult(null);
+        model.setOutputConfig(null);
+        model.setOutput(null, null);
+        model.setSelectedNode(null);
+
+        update(new ModelEvent(this, ModelPart.SELECTED_VIEW_CONFIG, null));
+        update(new ModelEvent(this, ModelPart.RESULT, null));
+        update(new ModelEvent(this, ModelPart.OUTPUT, null));
+        update(new ModelEvent(this, ModelPart.SELECTED_NODE, null));
+
+    }
+
+    /**
      * Starts the "edit settings" dialog.
      */
     public void actionMenuEditSettings() {
@@ -458,8 +679,8 @@ public class Controller implements IView {
         }
         try {
             final DialogProperties dialog = new DialogProperties(main.getShell(),
-                                                                 model);
-            dialog.create();
+                                                                 model,
+                                                                 main.getController());
             dialog.open();
 
             // Update the title
@@ -476,19 +697,49 @@ public class Controller implements IView {
      * File->exit.
      */
     public void actionMenuFileExit() {
-        if (main.showQuestionDialog(main.getShell(),
-                                    Resources.getMessage("Controller.26"), //$NON-NLS-1$
-                                    Resources.getMessage("Controller.27"))) { //$NON-NLS-1$
-            if ((model != null) && model.isModified()) {
-                if (main.showQuestionDialog(main.getShell(),
-                                            Resources.getMessage("Controller.28"), //$NON-NLS-1$
-                                            Resources.getMessage("Controller.29"))) { //$NON-NLS-1$
-                    actionMenuFileSave();
-                }
-            }
-            main.getShell().getDisplay().dispose();
-            System.exit(0);
+        
+        // Prepare
+        ChoiceItem[] items;
+        boolean modified = model != null && model.isModified();
+        
+        // Build items
+        if (modified) {
+            items = new ChoiceItem[3];
+            items[0] = new ChoiceItem(Resources.getMessage("Controller.110"), //$NON-NLS-1$
+                                      Resources.getMessage("Controller.111")); //$NON-NLS-1$
+            items[1] = new ChoiceItem(Resources.getMessage("Controller.112"), //$NON-NLS-1$
+                                      Resources.getMessage("Controller.113")); //$NON-NLS-1$
+        } else {
+            items = new ChoiceItem[2];
+            items[0] = new ChoiceItem(Resources.getMessage("Controller.114"), //$NON-NLS-1$
+                                      Resources.getMessage("Controller.115")); //$NON-NLS-1$
         }
+        
+        items[items.length-1] = new ChoiceItem(Resources.getMessage("Controller.116"), //$NON-NLS-1$
+                                               Resources.getMessage("Controller.117")); //$NON-NLS-1$
+        
+        // Show dialog
+        ChoicesDialog dialog = new ChoicesDialog(main.getShell(), SWT.APPLICATION_MODAL);
+        dialog.setTitle(Resources.getMessage("Controller.26")); //$NON-NLS-1$
+        dialog.setMessage(Resources.getMessage("Controller.27"));//$NON-NLS-1$
+        dialog.setImage(Display.getCurrent().getSystemImage(SWT.ICON_QUESTION));
+        dialog.setChoices(items);
+        dialog.setDefaultChoice(items[items.length-1]);
+        int choice = dialog.open();
+        
+        // Cancel
+        if (choice == -1 || choice == items.length-1) {
+            return;
+        }
+
+        // Save
+        if (modified && choice == 0) {
+            actionMenuFileSave();
+        }
+        
+        // Exit
+        main.getShell().getDisplay().dispose();
+        System.exit(0);
     }
 
     /**
@@ -528,7 +779,7 @@ public class Controller implements IView {
 
         // Export
         final WorkerExport worker = new WorkerExport(file,
-                                                     model.getSeparator(),
+                                                     model.getCSVSyntax(),
                                                      model.getOutput(),
                                                      model.getOutputConfig().getConfig(),
                                                      model.getInputBytes());
@@ -575,8 +826,7 @@ public class Controller implements IView {
 
         // Save
         try {
-            final CSVDataOutput out = new CSVDataOutput(file,
-                                                        model.getSeparator());
+            final CSVDataOutput out = new CSVDataOutput(file, model.getCSVSyntax());
             out.write(hierarchy.getHierarchy());
 
         } catch (final Exception e) {
@@ -649,7 +899,7 @@ public class Controller implements IView {
                     }
                 }
                 if ((error instanceof IllegalArgumentException) || (error instanceof IOException)) {
-                    main.showInfoDialog(main.getShell(), "Error loading hierarchy", error.getMessage());
+                    main.showInfoDialog(main.getShell(), Resources.getMessage("Controller.37"), error.getMessage()); //$NON-NLS-1$
                 } else {
                     main.showErrorDialog(main.getShell(),
                                          Resources.getMessage("Controller.78"), error); //$NON-NLS-1$
@@ -807,8 +1057,8 @@ public class Controller implements IView {
         if (worker.getError() != null) {
             
             String message = worker.getError().getMessage();
-            if (message == null || message.equals("")) {
-                message = "Error loading project: "+worker.getError().getClass().getSimpleName();
+            if (message == null || message.equals("")) { //$NON-NLS-1$
+                message = Resources.getMessage("Controller.46")+worker.getError().getClass().getSimpleName(); //$NON-NLS-1$
             }
             
             getResources().getLogger().info(worker.getError());
@@ -851,9 +1101,7 @@ public class Controller implements IView {
         if (tempSelectedNode != null) {
             model.setSelectedNode(tempSelectedNode);
             update(new ModelEvent(this, ModelPart.SELECTED_NODE, model.getSelectedNode()));
-            final DataHandle handle = model.getResult().getOutput(tempSelectedNode, false);
-            model.setOutput(handle, tempSelectedNode);
-            update(new ModelEvent(this, ModelPart.OUTPUT, handle));
+            this.actionApplySelectedTransformation();
         }
 
         // Update subsets of the model
@@ -920,12 +1168,19 @@ public class Controller implements IView {
         // Update view config
         if (model.getOutput() != null) {
             update(new ModelEvent(this,
-                                  ModelPart.VIEW_CONFIG,
+                                  ModelPart.SELECTED_VIEW_CONFIG,
                                   model.getOutput()));
         }
 
         // We just loaded the model, so there are no changes
         model.setUnmodified();
+    }
+
+    /**
+     * Shows the audit trail
+     */
+    public void actionShowAuditTrail() {
+        main.showAuditTrail(model.getAuditTrail());
     }
 
     /**
@@ -1117,7 +1372,7 @@ public class Controller implements IView {
         for (int i = 0; i < data.getHandle().getNumRows(); i++) {
             set.add(i);
         }
-        model.setSubsetOrigin("All");
+        model.setSubsetOrigin(Resources.getMessage("Controller.47")); //$NON-NLS-1$
         update(new ModelEvent(this,
                               ModelPart.RESEARCH_SUBSET,
                               set));
@@ -1144,7 +1399,7 @@ public class Controller implements IView {
         if (worker.getError() != null) {
             if (worker.getError() instanceof IllegalArgumentException) {
                 main.showInfoDialog(main.getShell(),
-                                    "Error loading data",
+                                    Resources.getMessage("Controller.48"), //$NON-NLS-1$
                                     worker.getError().getMessage());
             } else {
                 main.showErrorDialog(main.getShell(),
@@ -1160,12 +1415,12 @@ public class Controller implements IView {
         try {
             DataSubset subset = DataSubset.create(data, subsetData);
             model.getInputConfig().setResearchSubset(subset.getSet());
-            model.setSubsetOrigin("File");
+            model.setSubsetOrigin(Resources.getMessage("Controller.53")); //$NON-NLS-1$
             update(new ModelEvent(this,
                                   ModelPart.RESEARCH_SUBSET,
                                   subset.getSet()));
         } catch (IllegalArgumentException e) {
-            main.showInfoDialog(main.getShell(), "Error matching data", e.getMessage());
+            main.showInfoDialog(main.getShell(), Resources.getMessage("Controller.60"), e.getMessage()); //$NON-NLS-1$
         }
     }
 
@@ -1176,7 +1431,7 @@ public class Controller implements IView {
         Data data = model.getInputConfig().getInput();
         RowSet empty = RowSet.create(data);
         model.getInputConfig().setResearchSubset(empty);
-        model.setSubsetOrigin("None");
+        model.setSubsetOrigin(Resources.getMessage("Controller.65")); //$NON-NLS-1$
         update(new ModelEvent(this,
                               ModelPart.RESEARCH_SUBSET,
                               empty));
@@ -1195,7 +1450,7 @@ public class Controller implements IView {
 
         this.model.getInputConfig().setResearchSubset(subset.getSet());
         this.model.setQuery(result.query);
-        model.setSubsetOrigin("Query");
+        model.setSubsetOrigin(Resources.getMessage("Controller.70")); //$NON-NLS-1$
         update(new ModelEvent(this, ModelPart.RESEARCH_SUBSET, subset.getSet()));
     }
 
@@ -1212,9 +1467,6 @@ public class Controller implements IView {
         listeners.get(target).add(listener);
     }
 
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.gui.view.def.IView#dispose()
-     */
     @Override
     public void dispose() {
         for (final Set<IView> listeners : getListeners().values()) {
@@ -1223,7 +1475,7 @@ public class Controller implements IView {
             }
         }
     }
-
+    
     /**
      * Returns debug data.
      *
@@ -1231,6 +1483,14 @@ public class Controller implements IView {
      */
     public String getDebugData() {
         return this.debug.getData(model);
+    }
+
+    /**
+     * Returns the current model
+     * @return
+     */
+    public Model getModel() {
+        return model;
     }
 
     /**
@@ -1254,9 +1514,6 @@ public class Controller implements IView {
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.gui.view.def.IView#reset()
-     */
     @Override
     public void reset() {
         for (final Set<IView> listeners : getListeners().values()) {
@@ -1266,9 +1523,6 @@ public class Controller implements IView {
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.gui.view.def.IView#update(org.deidentifier.arx.gui.model.ModelEvent)
-     */
     @Override
     public void update(final ModelEvent event) {
         if (model != null && model.isDebugEnabled()) this.debug.addEvent(event);
@@ -1299,7 +1553,7 @@ public class Controller implements IView {
                 }
             }
             if ((error instanceof IllegalArgumentException) || (error instanceof IOException)) {
-                main.showInfoDialog(main.getShell(), "Error loading data", error.getMessage());
+                main.showInfoDialog(main.getShell(), Resources.getMessage("Controller.71"), error.getMessage()); //$NON-NLS-1$
             } else {
                 main.showErrorDialog(main.getShell(), Resources.getMessage("Controller.76"), error); //$NON-NLS-1$
             }
@@ -1311,7 +1565,7 @@ public class Controller implements IView {
 
         final Data data = worker.getResult();
         if (model.getOutput() != null) {
-            this.actionResetOutput();
+            this.actionMenuEditReset();
         }
         model.reset();
 
@@ -1329,9 +1583,14 @@ public class Controller implements IView {
         model.getInputConfig().setResearchSubset(subset);
         model.getInputConfig().setInput(data);
 
-        // TODO: Fix this
+        // Nothing to fix
         if (config instanceof ImportConfigurationCSV) {
-            model.setInputBytes(new File(((ImportConfigurationCSV) config).getFileLocation()).length());
+            ImportConfigurationCSV csvconfig = (ImportConfigurationCSV) config;
+            model.setInputBytes(new File((csvconfig).getFileLocation()).length());
+            model.getCSVSyntax().setDelimiter(csvconfig.getDelimiter());
+            model.getCSVSyntax().setEscape(csvconfig.getEscape());
+            model.getCSVSyntax().setLinebreak(csvconfig.getLinebreak());
+            model.getCSVSyntax().setQuote(csvconfig.getQuote());
         } else {
             model.setInputBytes(0);
         }
@@ -1386,33 +1645,13 @@ public class Controller implements IView {
                 }
             }
             if ((error instanceof IllegalArgumentException) || (error instanceof IOException)) {
-                main.showInfoDialog(main.getShell(), "Error loading hierarchy", error.getMessage());
+                main.showInfoDialog(main.getShell(), Resources.getMessage("Controller.72"), error.getMessage()); //$NON-NLS-1$
             } else {
                 main.showErrorDialog(main.getShell(),
                                      Resources.getMessage("Controller.78"), error); //$NON-NLS-1$
             }
         }
         return null;
-    }
-
-    /**
-     * Resets the output.
-     */
-    private void actionResetOutput() {
-
-        // Reset output
-        model.getViewConfig().setMode(Mode.UNSORTED);
-        model.getViewConfig().setSubset(false);
-        model.setGroups(null);
-        model.setResult(null);
-        model.setOutputConfig(null);
-        model.setOutput(null, null);
-        model.setSelectedNode(null);
-
-        update(new ModelEvent(this, ModelPart.VIEW_CONFIG, null));
-        update(new ModelEvent(this, ModelPart.RESULT, null));
-        update(new ModelEvent(this, ModelPart.OUTPUT, null));
-        update(new ModelEvent(this, ModelPart.SELECTED_NODE, null));
     }
 
     /**
@@ -1434,6 +1673,8 @@ public class Controller implements IView {
                                 Resources.getMessage("Controller.90"), //$NON-NLS-1$
                                 worker.getError().getMessage());
             return;
+        } else {
+            model.setUnmodified();
         }
     }
 

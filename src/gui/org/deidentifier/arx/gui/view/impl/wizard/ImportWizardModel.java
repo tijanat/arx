@@ -1,20 +1,18 @@
 /*
  * ARX: Powerful Data Anonymization
- * Copyright (C) 2014 Karol Babioch <karol@babioch.de>
- * Copyright (C) 2014 Fabian Prasser
+ * Copyright 2014 Karol Babioch <karol@babioch.de>
  * 
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.deidentifier.arx.gui.view.impl.wizard;
@@ -22,7 +20,13 @@ package org.deidentifier.arx.gui.view.impl.wizard;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
+import org.apache.commons.math3.util.Pair;
+import org.deidentifier.arx.Data;
+import org.deidentifier.arx.DataType;
+import org.deidentifier.arx.gui.model.Model;
+import org.deidentifier.arx.gui.resources.Resources;
 import org.deidentifier.arx.io.ImportColumn;
 import org.deidentifier.arx.io.ImportColumnIndexed;
 import org.deidentifier.arx.io.ImportColumnJDBC;
@@ -56,7 +60,13 @@ public class ImportWizardModel {
         
         /**  TODO */
         EXCEL
-    };
+    }
+
+    /** Maximum number of lines to be loaded for preview purposes. */
+    public static final int PREVIEW_MAX_LINES = 25;
+    
+    /** Maximum number of chars to be loaded for detecting separators. */
+    public static final int DETECT_MAX_CHARS  = 100000;;
 
     /** Actual source data should be imported from. */
     private SourceType                    sourceType;
@@ -76,8 +86,17 @@ public class ImportWizardModel {
     /** Location of file to import from. */
     private String                        fileLocation;
 
+    /** Line break characters (in case of CSV import). */
+    private char[]                        csvLinebreak;
+
+    /** Escape character (in case of CSV import). */
+    private char                          csvEscape;
+
     /** Separator for columns (in case of CSV import). */
-    private char                          csvSeparator;
+    private char                          csvDelimiter;
+    
+    /** Character to enclose strings (in case of CSV import). */
+    private char                          csvQuote;
 
     /**
      * Indicates whether first row contains header
@@ -103,7 +122,7 @@ public class ImportWizardModel {
      * {@link ImportWizardPagePreview} doesn't need to know anything about the
      * source type the data is coming from.
      * 
-     * It will contain up to {@link #previewDataMaxLines} lines of data.
+     * It will contain up to {@link #PREVIEW_MAX_LINES} lines of data.
      */
     private List<String[]>                previewData;
 
@@ -116,16 +135,49 @@ public class ImportWizardModel {
     /** Jdbc connection potentially used throughout the wizard. */
     private Connection                    jdbcConnection;
 
-    /** Maximum number of lines to be loaded for preview purposes. */
-    public static final int               previewDataMaxLines    = 25;
+    /** The locale */
+    private Locale                        locale;
+
+    /** Should we perform cleansing */
+    private boolean                       performCleansing       = true;
 
     /**
-     * @return {@link #csvSeparator}
+     * Creates a new instance
+     * @param model
      */
-    public char getCsvSeparator() {
-
-        return csvSeparator;
+    public ImportWizardModel(Model model) {
+        this.locale = model.getLocale();
     }
+
+    /**
+     * @return the csvDelimiter
+     */
+    public char getCsvDelimiter() {
+        return csvDelimiter;
+    }
+
+    /**
+         * @return {@link #csvEscape}
+         */
+        public char getCsvEscape() {
+            return csvEscape;
+        }
+
+    /**
+     * Getter
+     * @return
+     */
+    public char[] getCsvLinebreak() {
+        return csvLinebreak;
+    }
+
+   /**
+ * Getter
+ * @return
+ */
+public char getCsvQuote() {
+    return csvQuote;
+}
 
     /**
      * Returns list of enabled columns
@@ -189,6 +241,28 @@ public class ImportWizardModel {
     }
 
     /**
+     * Returns a list of matching data types
+     * @param column
+     */
+    public List<Pair<DataType<?>, Double>> getMatchingDataTypes(ImportWizardModelColumn column) {
+        
+        if (wizardColumns.indexOf(column) == -1) { 
+            throw new IllegalArgumentException(Resources.getMessage("ImportWizardModel.0"));  //$NON-NLS-1$
+        }
+
+        Data data = Data.create(getPreviewData());
+        int columnIndex = -1;
+        ImportColumn c = column.getColumn();
+        if (c instanceof ImportColumnIndexed) {
+            columnIndex =  ((ImportColumnIndexed) column.getColumn()).getIndex();
+        } else if (column.getColumn() instanceof ImportColumnJDBC){
+            columnIndex = ((ImportColumnJDBC) column.getColumn()).getIndex();
+        }
+        
+        return data.getHandle().getMatchingDataTypes(columnIndex, locale, Math.ulp(0d));
+    }
+    
+    /**
      * @return {@link #previewData}
      */
     public List<String[]> getPreviewData() {
@@ -223,7 +297,7 @@ public class ImportWizardModel {
                 }
             }
         } else {
-            throw new IllegalArgumentException("Column not part of preview data");
+            throw new IllegalArgumentException(Resources.getMessage("ImportWizardModel.1")); //$NON-NLS-1$
         }
 
         return result;
@@ -254,12 +328,41 @@ public class ImportWizardModel {
     }
 
     /**
-     * @param csvSeparator
-     *            {@link #csvSeparator}
+     * @return the performCleansing
      */
-    public void setCsvSeparator(char csvSeparator) {
+    public boolean isPerformCleansing() {
+        return performCleansing;
+    }
 
-        this.csvSeparator = csvSeparator;
+    /**
+     * @param csvDelimiter the csvDelimiter to set
+     */
+    public void setCsvDelimiter(char csvDelimiter) {
+        this.csvDelimiter = csvDelimiter;
+    }
+    
+    /**
+     * 
+     * @param csvEscape
+     */
+    public void setCsvEscape(char csvEscape) {
+        this.csvEscape = csvEscape;
+    }
+
+    /**
+     * Setter
+     * @param csvLinebreak
+     */
+    public void setCsvLinebreak(char[] csvLinebreak) {
+        this.csvLinebreak = csvLinebreak;
+    }
+
+    /**
+     * Setter
+     * @param csvQuote
+     */
+    public void setCsvQuote(char csvQuote) {
+        this.csvQuote = csvQuote;
     }
 
     /**
@@ -309,6 +412,13 @@ public class ImportWizardModel {
     }
 
     /**
+     * @param performCleansing the performCleansing to set
+     */
+    public void setPerformCleansing(boolean performCleansing) {
+        this.performCleansing = performCleansing;
+    }
+
+    /**
      * 
      *
      * @param previewData
@@ -328,8 +438,7 @@ public class ImportWizardModel {
     }
 
     /**
-     * 
-     *
+     * Setter
      * @param sourceType
      */
     public void setSourceType(SourceType sourceType) {

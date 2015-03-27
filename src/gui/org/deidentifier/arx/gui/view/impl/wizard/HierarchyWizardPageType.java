@@ -1,25 +1,24 @@
 /*
  * ARX: Powerful Data Anonymization
- * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
+ * Copyright 2012 - 2015 Florian Kohlmayer, Fabian Prasser
  * 
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.deidentifier.arx.gui.view.impl.wizard;
 
-import org.deidentifier.arx.DataType.DataTypeWithRatioScale;
 import org.deidentifier.arx.aggregates.HierarchyBuilder.Type;
+import org.deidentifier.arx.gui.resources.Resources;
 import org.deidentifier.arx.gui.view.SWTUtil;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardPage;
@@ -86,22 +85,16 @@ public class HierarchyWizardPageType<T> extends WizardPage {
         this.intervalPage = intervalPage;
         this.model = model;
         this.next = intervalPage;
-        setTitle("Create a generalization hierarchy");
-        setDescription("Specify the type of hierarchy");
+        setTitle(Resources.getMessage("HierarchyWizardPageType.0")); //$NON-NLS-1$
+        setDescription(Resources.getMessage("HierarchyWizardPageType.1")); //$NON-NLS-1$
         setPageComplete(true);
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.jface.wizard.WizardPage#canFlipToNextPage()
-     */
     @Override
     public boolean canFlipToNextPage() {
         return isPageComplete();
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.jface.dialogs.IDialogPage#createControl(org.eclipse.swt.widgets.Composite)
-     */
     @Override
     public void createControl(final Composite parent) {
         final Composite composite = new Composite(parent, SWT.NONE);
@@ -109,17 +102,15 @@ public class HierarchyWizardPageType<T> extends WizardPage {
         composite.setLayout(SWTUtil.createGridLayout(1, false));
         
         this.interval = new Button(composite, SWT.RADIO);
-        this.interval.setText("Use intervals (for variables with ratio scale)");
-        if (!(model.getDataType() instanceof DataTypeWithRatioScale)) {
-            this.interval.setEnabled(false);
-        }
+        this.interval.setText(Resources.getMessage("HierarchyWizardPageType.2")); //$NON-NLS-1$
+        this.interval.setEnabled(model.getIntervalModel() != null);
         
         this.order = new Button(composite, SWT.RADIO);
-        this.order.setText("Use ordering (e.g., for variables with ordinal scale)");
+        this.order.setText(Resources.getMessage("HierarchyWizardPageType.3")); //$NON-NLS-1$
         this.order.setEnabled(true);
         
         this.redaction = new Button(composite, SWT.RADIO);
-        this.redaction.setText("Use redaction (e.g., for alphanumeric strings) ");
+        this.redaction.setText(Resources.getMessage("HierarchyWizardPageType.4")); //$NON-NLS-1$
         this.redaction.setEnabled(true);
         
         this.interval.addSelectionListener(new SelectionAdapter(){
@@ -158,31 +149,22 @@ public class HierarchyWizardPageType<T> extends WizardPage {
         case ORDER_BASED:     next = orderPage;     break;
         case REDACTION_BASED: next = redactionPage; break;
         default:
-            throw new IllegalStateException("Unknown type of builder");
+            throw new IllegalStateException("Unknown type of builder"); //$NON-NLS-1$
         }
         
         setControl(composite);
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.jface.wizard.WizardPage#getNextPage()
-     */
     @Override
     public IWizardPage getNextPage() {
         return next;
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.jface.wizard.WizardPage#isPageComplete()
-     */
     @Override
     public boolean isPageComplete() {
         return true;
     }
     
-    /* (non-Javadoc)
-     * @see org.eclipse.jface.dialogs.DialogPage#setVisible(boolean)
-     */
     @Override
     public void setVisible(boolean value){
         

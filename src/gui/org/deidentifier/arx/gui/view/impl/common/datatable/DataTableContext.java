@@ -1,19 +1,18 @@
 /*
  * ARX: Powerful Data Anonymization
- * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
+ * Copyright 2012 - 2015 Florian Kohlmayer, Fabian Prasser
  * 
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.deidentifier.arx.gui.view.impl.common.datatable;
@@ -72,24 +71,6 @@ public class DataTableContext {
     }
     
     /**
-     * Sets the underlying table.
-     *
-     * @param table
-     */
-    public void setTable(NatTable table) {
-		this.table = table;
-	}
-
-	/**
-     * Returns the underlying table.
-     *
-     * @return
-     */
-    public NatTable getTable() {
-		return table;
-	}
-
-	/**
      * Returns the controller.
      *
      * @return
@@ -97,8 +78,17 @@ public class DataTableContext {
     public Controller getController() {
         return controller;
     }
-    
-    /**
+
+	/**
+     * Sets the font.
+     *
+     * @return
+     */
+    public Font getFont() {
+        return font;
+    }
+
+	/**
      * Returns information about the equivalence classes.
      *
      * @return
@@ -106,7 +96,7 @@ public class DataTableContext {
     public int[] getGroups() {
         return groups;
     }
-
+    
     /**
      * Returns the data handle, if any.
      *
@@ -153,6 +143,35 @@ public class DataTableContext {
     }
 
     /**
+     * Returns the underlying table.
+     *
+     * @return
+     */
+    public NatTable getTable() {
+		return table;
+	}
+
+    /**
+     * 
+     *
+     * @return
+     */
+	public boolean isColumnExpanded() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+    /**
+     * 
+     *
+     * @return
+     */
+	public boolean isRowExpanded() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+    /**
      * Resets the context.
      */
     public void reset() {
@@ -163,6 +182,15 @@ public class DataTableContext {
     }
 
     /**
+     * Gets the font.
+     *
+     * @param font
+     */
+    public void setFont(Font font) {
+        this.font = font;
+    }
+
+    /**
      * Sets the groups.
      *
      * @param groups
@@ -170,7 +198,7 @@ public class DataTableContext {
     public void setGroups(int[] groups) {
         this.groups = groups;
     }
-
+    
     /**
      * Sets a data handle.
      *
@@ -179,7 +207,7 @@ public class DataTableContext {
     public void setHandle(DataHandle handle) {
         this.handle = handle;
     }
-
+    
     /**
      * Sets the header images.
      *
@@ -197,7 +225,7 @@ public class DataTableContext {
     public void setListeners(List<ILayerListener> listeners) {
         this.listeners = listeners;
     }
-    
+
     /**
      * Sets the research subset.
      *
@@ -206,8 +234,8 @@ public class DataTableContext {
     public void setRows(RowSet rows) {
         this.rows = rows;
     }
-    
-    /**
+
+	/**
      * Sets the selected column index.
      *
      * @param index
@@ -216,41 +244,12 @@ public class DataTableContext {
         this.selectedIndex = index;
     }
 
-    /**
-     * Sets the font.
-     *
-     * @return
-     */
-    public Font getFont() {
-        return font;
-    }
-
-    /**
-     * Gets the font.
-     *
-     * @param font
-     */
-    public void setFont(Font font) {
-        this.font = font;
-    }
-
 	/**
-     * 
+     * Sets the underlying table.
      *
-     * @return
+     * @param table
      */
-	public boolean isRowExpanded() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	/**
-     * 
-     *
-     * @return
-     */
-	public boolean isColumnExpanded() {
-		// TODO Auto-generated method stub
-		return false;
+    public void setTable(NatTable table) {
+		this.table = table;
 	}
 }

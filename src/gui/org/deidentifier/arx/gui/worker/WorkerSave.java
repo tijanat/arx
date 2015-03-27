@@ -1,19 +1,18 @@
 /*
  * ARX: Powerful Data Anonymization
- * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
+ * Copyright 2012 - 2015 Florian Kohlmayer, Fabian Prasser
  * 
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.deidentifier.arx.gui.worker;
@@ -85,9 +84,6 @@ public class WorkerSave extends Worker<Model> {
         this.model = model;
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.jface.operation.IRunnableWithProgress#run(org.eclipse.core.runtime.IProgressMonitor)
-     */
     @Override
     public void run(final IProgressMonitor arg0) throws InvocationTargetException,
                                                         InterruptedException {
@@ -138,108 +134,6 @@ public class WorkerSave extends Worker<Model> {
      */
     private String toFileName(final String a) {
         return a;
-    }
-
-    /**
-     * Converts a configuration to XML.
-     *
-     * @param config
-     * @return
-     * @throws IOException
-     */
-    private String toXML(final ModelConfiguration config) throws IOException {
-        
-    	XMLWriter writer = new XMLWriter(); 
-        writer.indent(vocabulary.getConfig());
-        writer.write(vocabulary.getSuppressionAlwaysEnabled(), config.isSuppressionAlwaysEnabled());
-        writer.write(vocabulary.getSuppressionString(), config.getSuppressionString());
-        
-        // Write suppressed attribute types
-        writer.indent(vocabulary.getSuppressedAttributeTypes());
-        for (AttributeType type : new AttributeType[]{AttributeType.QUASI_IDENTIFYING_ATTRIBUTE,
-                                                      AttributeType.SENSITIVE_ATTRIBUTE,
-                                                      AttributeType.INSENSITIVE_ATTRIBUTE}) {
-            if (config.isAttributeTypeSuppressed(type)) {
-                writer.write(vocabulary.getType(), type.toString());
-            }
-        }
-        writer.unindent();
-        
-        writer.write(vocabulary.getPracticalMonotonicity(), config.isPracticalMonotonicity());
-        writer.write(vocabulary.getProtectSensitiveAssociations(), config.isProtectSensitiveAssociations());
-        writer.write(vocabulary.getRelativeMaxOutliers(), config.getAllowedOutliers());
-        writer.write(vocabulary.getMetric(), config.getMetric().toString());
-
-        // Write weights
-        writer.indent(vocabulary.getAttributeWeights());
-        for (Entry<String, Double> entry : config.getAttributeWeights().entrySet()) {
-            writer.indent(vocabulary.getAttributeWeight());
-            writer.write(vocabulary.getAttribute(), entry.getKey());
-            writer.write(vocabulary.getWeight(), entry.getValue());
-            writer.unindent();
-        }
-        writer.unindent();
-        
-        // Write criteria
-        writer.indent(vocabulary.getCriteria());
-        for (PrivacyCriterion c : config.getCriteria()) {
-        	if (c != null) {
-        		writer.write(vocabulary.getCriterion(), c.toString());
-        	}
-        }
-        writer.unindent();
-        writer.unindent();
-        return writer.toString();
-    }
-    
-    /**
-     * Returns an XML representation of the data definition.
-     *
-     * @param config
-     * @param handle
-     * @param definition
-     * @return
-     * @throws IOException
-     */
-    private String toXML(final ModelConfiguration config, 
-                         final DataHandle handle,
-                         final DataDefinition definition) throws IOException {
-        
-    	XMLWriter writer = new XMLWriter();
-    	writer.indent(vocabulary.getDefinition());
-        for (int i = 0; i < handle.getNumColumns(); i++) {
-            final String attr = handle.getAttributeName(i);
-            AttributeType t = definition.getAttributeType(attr);
-            DataType<?> dt = definition.getDataType(attr);
-            if (t == null) t = AttributeType.IDENTIFYING_ATTRIBUTE;
-            if (dt == null) dt = DataType.STRING;
-            
-            writer.indent(vocabulary.getAssigment());
-            writer.write(vocabulary.getName(), attr);
-            writer.write(vocabulary.getType(), t.toString());
-            writer.write(vocabulary.getDatatype(), dt.getDescription().getLabel());
-            if (dt.getDescription().hasFormat()){
-                String format = ((DataTypeWithFormat)dt).getFormat();
-                if (format != null){
-                    writer.write(vocabulary.getFormat(), format);
-                }
-            }
-            
-            if (t instanceof Hierarchy || 
-                (t == AttributeType.SENSITIVE_ATTRIBUTE && config.getHierarchy(attr)!=null)) {
-            	writer.write(vocabulary.getRef(), "hierarchies/" + toFileName(attr) + ".csv"); //$NON-NLS-1$ //$NON-NLS-2$
-                if (t instanceof Hierarchy){
-                    Integer min = config.getMinimumGeneralization(attr);
-                    Integer max = config.getMaximumGeneralization(attr);
-                	writer.write(vocabulary.getMin(), min==null ? "All" : String.valueOf(min));
-                	writer.write(vocabulary.getMax(), max==null ? "All" : String.valueOf(max));
-                }
-            }
-            writer.unindent();
-
-        }
-        writer.unindent();
-        return writer.toString();
     }
 
     /**
@@ -302,7 +196,7 @@ public class WorkerSave extends Worker<Model> {
         writer.unindent();
         b.flush();
     }
-
+    
     /**
      * Returns an XML representation of the clipboard.
      *
@@ -335,7 +229,20 @@ public class WorkerSave extends Worker<Model> {
         XMLWriter writer = new XMLWriter();
         writer.indent(vocabulary.getProject());
         writer.write(vocabulary.getName(), model.getName());
-        writer.write(vocabulary.getSeparator(), model.getSeparator());
+        
+        writer.write(vocabulary.getSeparator(), model.getCSVSyntax().getDelimiter());
+        writer.write(vocabulary.getEscape(), model.getCSVSyntax().getEscape());
+        writer.write(vocabulary.getQuote(), model.getCSVSyntax().getQuote());
+        
+        String linebreak = "UNIX"; //$NON-NLS-1$
+        char[] _linebreak = model.getCSVSyntax().getLinebreak();
+        if (_linebreak.length == 1 && _linebreak[0] == '\r') {
+            linebreak = "MAC"; //$NON-NLS-1$
+        } else if (_linebreak.length == 2){
+            linebreak = "WINDOWS"; //$NON-NLS-1$
+        }
+        writer.write(vocabulary.getLinebreak(), linebreak);
+        
         writer.write(vocabulary.getDescription(), model.getDescription());
         writer.write(vocabulary.getLocale(), model.getLocale().getLanguage().toUpperCase());
         writer.write(vocabulary.getHistorySize(), model.getHistorySize());
@@ -346,6 +253,108 @@ public class WorkerSave extends Worker<Model> {
         writer.write(vocabulary.getMaxNodesInViewer(), model.getMaxNodesInViewer());
         writer.write(vocabulary.getSelectedAttribute(), model.getSelectedAttribute());
         writer.write(vocabulary.getInputBytes(), model.getInputBytes());
+        writer.unindent();
+        return writer.toString();
+    }
+
+    /**
+     * Converts a configuration to XML.
+     *
+     * @param config
+     * @return
+     * @throws IOException
+     */
+    private String toXML(final ModelConfiguration config) throws IOException {
+        
+    	XMLWriter writer = new XMLWriter(); 
+        writer.indent(vocabulary.getConfig());
+        writer.write(vocabulary.getSuppressionAlwaysEnabled(), config.isSuppressionAlwaysEnabled());
+        writer.write(vocabulary.getSuppressionString(), config.getSuppressionString());
+        
+        // Write suppressed attribute types
+        writer.indent(vocabulary.getSuppressedAttributeTypes());
+        for (AttributeType type : new AttributeType[]{AttributeType.QUASI_IDENTIFYING_ATTRIBUTE,
+                                                      AttributeType.SENSITIVE_ATTRIBUTE,
+                                                      AttributeType.INSENSITIVE_ATTRIBUTE}) {
+            if (config.isAttributeTypeSuppressed(type)) {
+                writer.write(vocabulary.getType(), type.toString());
+            }
+        }
+        writer.unindent();
+        
+        writer.write(vocabulary.getPracticalMonotonicity(), config.isPracticalMonotonicity());
+        writer.write(vocabulary.getProtectSensitiveAssociations(), config.isProtectSensitiveAssociations());
+        writer.write(vocabulary.getRelativeMaxOutliers(), config.getAllowedOutliers());
+        writer.write(vocabulary.getMetric(), config.getMetric().toString());
+
+        // Write weights
+        writer.indent(vocabulary.getAttributeWeights());
+        for (Entry<String, Double> entry : config.getAttributeWeights().entrySet()) {
+            writer.indent(vocabulary.getAttributeWeight());
+            writer.write(vocabulary.getAttribute(), entry.getKey());
+            writer.write(vocabulary.getWeight(), entry.getValue());
+            writer.unindent();
+        }
+        writer.unindent();
+        
+        // Write criteria
+        writer.indent(vocabulary.getCriteria());
+        for (PrivacyCriterion c : config.getCriteria()) {
+        	if (c != null) {
+        		writer.write(vocabulary.getCriterion(), c.toString());
+        	}
+        }
+        writer.unindent();
+        writer.unindent();
+        return writer.toString();
+    }
+
+    /**
+     * Returns an XML representation of the data definition.
+     *
+     * @param config
+     * @param handle
+     * @param definition
+     * @return
+     * @throws IOException
+     */
+    private String toXML(final ModelConfiguration config, 
+                         final DataHandle handle,
+                         final DataDefinition definition) throws IOException {
+        
+    	XMLWriter writer = new XMLWriter();
+    	writer.indent(vocabulary.getDefinition());
+        for (int i = 0; i < handle.getNumColumns(); i++) {
+            final String attr = handle.getAttributeName(i);
+            AttributeType t = definition.getAttributeType(attr);
+            DataType<?> dt = definition.getDataType(attr);
+            if (t == null) t = AttributeType.IDENTIFYING_ATTRIBUTE;
+            if (dt == null) dt = DataType.STRING;
+            
+            writer.indent(vocabulary.getAssigment());
+            writer.write(vocabulary.getName(), attr);
+            writer.write(vocabulary.getType(), t.toString());
+            writer.write(vocabulary.getDatatype(), dt.getDescription().getLabel());
+            if (dt.getDescription().hasFormat()){
+                String format = ((DataTypeWithFormat)dt).getFormat();
+                if (format != null){
+                    writer.write(vocabulary.getFormat(), format);
+                }
+            }
+            
+            if (t instanceof Hierarchy || 
+                (t == AttributeType.SENSITIVE_ATTRIBUTE && config.getHierarchy(attr)!=null)) {
+            	writer.write(vocabulary.getRef(), "hierarchies/" + toFileName(attr) + ".csv"); //$NON-NLS-1$ //$NON-NLS-2$
+                if (t instanceof Hierarchy){
+                    Integer min = config.getMinimumGeneralization(attr);
+                    Integer max = config.getMaximumGeneralization(attr);
+                	writer.write(vocabulary.getMin(), min==null ? "All" : String.valueOf(min)); //$NON-NLS-1$
+                	writer.write(vocabulary.getMax(), max==null ? "All" : String.valueOf(max)); //$NON-NLS-1$
+                }
+            }
+            writer.unindent();
+
+        }
         writer.unindent();
         return writer.toString();
     }
@@ -374,6 +383,23 @@ public class WorkerSave extends Worker<Model> {
     /**
      * Writes the configuration to the file.
      *
+     * @param model
+     * @param zip
+     * @throws IOException
+     */
+    private void writeConfiguration(final Model model, final ZipOutputStream zip) throws IOException {
+
+        if (model.getInputConfig() != null) {
+            writeConfiguration(model.getInputConfig(), "input/", zip); //$NON-NLS-1$
+        }
+        if (model.getOutputConfig() != null) {
+            writeConfiguration(model.getOutputConfig(), "output/", zip); //$NON-NLS-1$
+        }
+    }
+
+    /**
+     * Writes the configuration to the file.
+     *
      * @param config
      * @param prefix
      * @param zip
@@ -395,23 +421,6 @@ public class WorkerSave extends Worker<Model> {
 
         writeDefinition(config, prefix, zip);
         writeHierarchies(config, prefix, zip);
-    }
-
-    /**
-     * Writes the configuration to the file.
-     *
-     * @param model
-     * @param zip
-     * @throws IOException
-     */
-    private void writeConfiguration(final Model model, final ZipOutputStream zip) throws IOException {
-
-        if (model.getInputConfig() != null) {
-            writeConfiguration(model.getInputConfig(), "input/", zip); //$NON-NLS-1$
-        }
-        if (model.getOutputConfig() != null) {
-            writeConfiguration(model.getOutputConfig(), "output/", zip); //$NON-NLS-1$
-        }
     }
 
     /**
@@ -469,7 +478,7 @@ public class WorkerSave extends Worker<Model> {
 
         for (Entry<String, Hierarchy> entry : config.getHierarchies().entrySet()) {
             zip.putNextEntry(new ZipEntry(prefix + "hierarchies/" + toFileName(entry.getKey()) + ".csv")); //$NON-NLS-1$ //$NON-NLS-2$
-            final CSVDataOutput out = new CSVDataOutput(zip, model.getSeparator());
+            final CSVDataOutput out = new CSVDataOutput(zip, model.getCSVSyntax().getDelimiter());
             out.write(entry.getValue().getHierarchy());
         }
     }
@@ -485,7 +494,7 @@ public class WorkerSave extends Worker<Model> {
         if (model.getInputConfig().getInput() != null) {
             if (model.getInputConfig().getInput().getHandle() != null) {
                 zip.putNextEntry(new ZipEntry("data/input.csv")); //$NON-NLS-1$
-                final CSVDataOutput out = new CSVDataOutput(zip, model.getSeparator());
+                final CSVDataOutput out = new CSVDataOutput(zip, model.getCSVSyntax().getDelimiter());
                 out.write(model.getInputConfig()
                                .getInput()
                                .getHandle()
@@ -506,7 +515,7 @@ public class WorkerSave extends Worker<Model> {
         if (model.getInputConfig().getInput() != null) {
             if (model.getInputConfig().getInput().getHandle() != null) {
                 zip.putNextEntry(new ZipEntry("data/input_subset.csv")); //$NON-NLS-1$
-                final CSVDataOutput out = new CSVDataOutput(zip, model.getSeparator());
+                final CSVDataOutput out = new CSVDataOutput(zip, model.getCSVSyntax().getDelimiter());
                 out.write(model.getInputConfig().getInput().getHandle().getView().iterator());
             }
         }
@@ -587,7 +596,7 @@ public class WorkerSave extends Worker<Model> {
     private void writeMetadata(final Model model, final ZipOutputStream zip) throws IOException {
     	
         // Write metadata
-        zip.putNextEntry(new ZipEntry("metadata.xml"));
+        zip.putNextEntry(new ZipEntry("metadata.xml")); //$NON-NLS-1$
         final OutputStreamWriter w = new OutputStreamWriter(zip);
         XMLWriter writer = new XMLWriter(new FileBuilder(w));
         writer.indent(vocabulary.getMetadata());
@@ -627,7 +636,7 @@ public class WorkerSave extends Worker<Model> {
 	private void writeOutput(final Model model, final ZipOutputStream zip) throws IOException {
 		if (model.getOutput() != null) {
 			zip.putNextEntry(new ZipEntry("data/output.csv")); //$NON-NLS-1$
-			final CSVDataOutput out = new CSVDataOutput(zip, model.getSeparator());
+			final CSVDataOutput out = new CSVDataOutput(zip, model.getCSVSyntax().getDelimiter());
 			out.write(model.getOutput().iterator());
 		}
 	}
@@ -642,7 +651,7 @@ public class WorkerSave extends Worker<Model> {
     private void writeOutputSubset(final Model model, final ZipOutputStream zip) throws IOException {
         if (model.getOutput() != null) {
             zip.putNextEntry(new ZipEntry("data/output_subset.csv")); //$NON-NLS-1$
-            final CSVDataOutput out = new CSVDataOutput(zip, model.getSeparator());
+            final CSVDataOutput out = new CSVDataOutput(zip, model.getCSVSyntax().getDelimiter());
             out.write(model.getOutput().getView().iterator());
         }
     }

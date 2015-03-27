@@ -1,19 +1,18 @@
 /*
  * ARX: Powerful Data Anonymization
- * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
+ * Copyright 2012 - 2015 Florian Kohlmayer, Fabian Prasser
  * 
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.deidentifier.arx.gui.view.impl.menu;
@@ -51,21 +50,18 @@ import org.eclipse.swt.widgets.Text;
 public class DialogAbout extends TitleAreaDialog implements IDialog {
 
     /**  TODO */
-    private static final String LICENSE = Resources.getMessage("AboutDialog.0") + Resources.getMessage("AboutDialog.1") +
-                                          Resources.getMessage("AboutDialog.2") + Resources.getMessage("AboutDialog.3") + "\n" +
-                                          Resources.getMessage("AboutDialog.5") + Resources.getMessage("AboutDialog.6") +
-                                          Resources.getMessage("AboutDialog.7") + Resources.getMessage("AboutDialog.8") + "\n" +
-                                          Resources.getMessage("AboutDialog.10") + Resources.getMessage("AboutDialog.11");
+    private static final String LICENSE      = Resources.getLicencseText();
     
     /**  TODO */
-    private static final String ABOUT =   Resources.getMessage("AboutDialog.16") + "\n" +
-                                          Resources.getMessage("AboutDialog.18") + "\n\n" +
-                                          Resources.getMessage("AboutDialog.21") + Resources.getVersion();
+    private static final String ABOUT =   Resources.getMessage("AboutDialog.16") + "\n" + //$NON-NLS-1$ //$NON-NLS-2$
+                                          Resources.getMessage("AboutDialog.18") + "\n\n" + //$NON-NLS-1$ //$NON-NLS-2$
+                                          Resources.getMessage("AboutDialog.21") + Resources.getVersion(); //$NON-NLS-1$
     
     /**  TODO */
-    private static final String CONTRIBUTORS = "Karol Babioch (data import wizard)\n" +
-                                               "Ledian Xhani (hierarchy editor)\n" +
-                                               "Ljubomir Dshevlekov (hierarchy editor)";
+    private static final String CONTRIBUTORS = "Karol Babioch (data import wizard)\n" + //$NON-NLS-1$
+                                               "Ledian Xhani (hierarchy editor)\n" + //$NON-NLS-1$
+                                               "Ljubomir Dshevlekov (hierarchy editor)\n" +  //$NON-NLS-1$
+                                               "Michael Schneider (risk analysis)"; //$NON-NLS-1$
     
     /**  TODO */
     private Image image;
@@ -81,9 +77,6 @@ public class DialogAbout extends TitleAreaDialog implements IDialog {
         this.image = controller.getResources().getImage("logo_small.png"); //$NON-NLS-1$
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.jface.dialogs.Dialog#close()
-     */
     @Override
     public boolean close() {
         if (image != null)
@@ -116,18 +109,12 @@ public class DialogAbout extends TitleAreaDialog implements IDialog {
         });
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.jface.window.Window#configureShell(org.eclipse.swt.widgets.Shell)
-     */
     @Override
     protected void configureShell(Shell newShell) {
         super.configureShell(newShell);
         newShell.setImages(Resources.getIconSet(newShell.getDisplay()));
     }
     
-    /* (non-Javadoc)
-     * @see org.eclipse.jface.dialogs.Dialog#createButtonsForButtonBar(org.eclipse.swt.widgets.Composite)
-     */
     @Override
     protected void createButtonsForButtonBar(final Composite parent) {
 
@@ -145,9 +132,6 @@ public class DialogAbout extends TitleAreaDialog implements IDialog {
         });
     }
     
-    /* (non-Javadoc)
-     * @see org.eclipse.jface.dialogs.TitleAreaDialog#createContents(org.eclipse.swt.widgets.Composite)
-     */
     @Override
     protected Control createContents(Composite parent) {
     	Control contents = super.createContents(parent);
@@ -157,9 +141,6 @@ public class DialogAbout extends TitleAreaDialog implements IDialog {
         return contents;
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.jface.dialogs.TitleAreaDialog#createDialogArea(org.eclipse.swt.widgets.Composite)
-     */
     @Override
     protected Control createDialogArea(final Composite parent) {
         parent.setLayout(new GridLayout());
@@ -176,7 +157,7 @@ public class DialogAbout extends TitleAreaDialog implements IDialog {
         
         // License
         CTabItem item1 = new CTabItem(folder, SWT.NULL);
-        item1.setText("License");
+        item1.setText("License"); //$NON-NLS-1$
         final Text license = new Text(folder, SWT.NONE | SWT.MULTI | SWT.V_SCROLL | SWT.BORDER);
         license.setText(LICENSE);
         license.setEditable(false);
@@ -185,7 +166,7 @@ public class DialogAbout extends TitleAreaDialog implements IDialog {
         
         // Contributors
         CTabItem item2 = new CTabItem(folder, SWT.NULL);
-        item2.setText("Contributors");
+        item2.setText("Contributors"); //$NON-NLS-1$
         Composite composite = new Composite(folder, SWT.BORDER);
         composite.setBackground(license.getBackground());
         item2.setControl(composite);
@@ -198,22 +179,19 @@ public class DialogAbout extends TitleAreaDialog implements IDialog {
         
         // Information
         CTabItem item3 = new CTabItem(folder, SWT.NULL);
-        item3.setText("Links");
+        item3.setText("Links"); //$NON-NLS-1$
         Composite composite3 = new Composite(folder, SWT.BORDER);
         composite3.setBackground(license.getBackground());
         item3.setControl(composite3);
         composite3.setLayout(SWTUtil.createGridLayout(1, false));
-        createLink(composite3, "Website: <a>arx.deidentifier.org</a>", "Website", "http://arx.deidentifier.org");
-        createLink(composite3, "Manual: <a>arx.deidentifier.org/anonymization-tool</a>", "Manual", "http://arx.deidentifier.org/anonymization-tool/");
-        createLink(composite3, "API: <a>arx.deidentifier.org/api</a>", "API", "http://arx.deidentifier.org/api");
-        createLink(composite3, "Downloads: <a>arx.deidentifier.org/downloads</a>", "Downloads", "http://arx.deidentifier.org/downloads");
-        createLink(composite3, "Github: <a>github.com/arx-deidentifier</a>", "Github", "https://github.com/arx-deidentifier");
+        createLink(composite3, "Website: <a>arx.deidentifier.org</a>", "Website", "http://arx.deidentifier.org"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        createLink(composite3, "Manual: <a>arx.deidentifier.org/anonymization-tool</a>", "Manual", "http://arx.deidentifier.org/anonymization-tool/"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        createLink(composite3, "API: <a>arx.deidentifier.org/api</a>", "API", "http://arx.deidentifier.org/api"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        createLink(composite3, "Downloads: <a>arx.deidentifier.org/downloads</a>", "Downloads", "http://arx.deidentifier.org/downloads"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        createLink(composite3, "Github: <a>github.com/arx-deidentifier</a>", "Github", "https://github.com/arx-deidentifier"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         return parent;
     }
     
-    /* (non-Javadoc)
-     * @see org.eclipse.jface.dialogs.Dialog#isResizable()
-     */
     @Override
     protected boolean isResizable() {
         return false;

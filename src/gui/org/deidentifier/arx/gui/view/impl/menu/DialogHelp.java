@@ -1,19 +1,18 @@
 /*
  * ARX: Powerful Data Anonymization
- * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
+ * Copyright 2012 - 2015 Florian Kohlmayer, Fabian Prasser
  * 
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.deidentifier.arx.gui.view.impl.menu;
@@ -27,16 +26,12 @@ import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.SWTError;
-import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.browser.LocationAdapter;
 import org.eclipse.swt.browser.LocationEvent;
-import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -49,6 +44,8 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 
+import de.linearbits.swt.simplebrowser.HTMLBrowser;
+
 /**
  * A help dialog.
  *
@@ -56,19 +53,19 @@ import org.eclipse.swt.widgets.ToolItem;
  */
 public class DialogHelp extends TitleAreaDialog implements IDialog {
 
-    /**  TODO */
+    /** View */
     private String           id;
-    
-    /**  TODO */
-    private Browser          browser;
-    
-    /**  TODO */
+
+    /** View */
+    private HTMLBrowser      browser;
+
+    /** View */
     private List             list;
-    
-    /**  TODO */
+
+    /** View */
     private Image            image;
-    
-    /**  TODO */
+
+    /** Model */
     private DialogHelpConfig config = new DialogHelpConfig();
 
     /**
@@ -84,9 +81,6 @@ public class DialogHelp extends TitleAreaDialog implements IDialog {
         this.image = controller.getResources().getImage("logo_small.png"); //$NON-NLS-1$
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.jface.dialogs.Dialog#close()
-     */
     @Override
     public boolean close() {
         if (image != null)
@@ -94,28 +88,12 @@ public class DialogHelp extends TitleAreaDialog implements IDialog {
         return super.close();
     }
 
-    /**
-     * Returns the index of a url.
-     *
-     * @param location
-     * @return
-     */
-    private int getIndexOf(String location) {
-        return config.getIndexForUrl(location);
-    }
-
-    /* (non-Javadoc)
-     * @see org.eclipse.jface.window.Window#configureShell(org.eclipse.swt.widgets.Shell)
-     */
     @Override
     protected void configureShell(Shell newShell) {
         super.configureShell(newShell);
         newShell.setImages(Resources.getIconSet(newShell.getDisplay()));
     }
     
-    /* (non-Javadoc)
-     * @see org.eclipse.jface.dialogs.Dialog#createButtonsForButtonBar(org.eclipse.swt.widgets.Composite)
-     */
     @Override
     protected void createButtonsForButtonBar(final Composite parent) {
 
@@ -133,9 +111,6 @@ public class DialogHelp extends TitleAreaDialog implements IDialog {
         });
     }
     
-    /* (non-Javadoc)
-     * @see org.eclipse.jface.dialogs.TitleAreaDialog#createContents(org.eclipse.swt.widgets.Composite)
-     */
     @Override
     protected Control createContents(Composite parent) {
     	Control contents = super.createContents(parent);
@@ -145,77 +120,81 @@ public class DialogHelp extends TitleAreaDialog implements IDialog {
         return contents;
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.jface.dialogs.TitleAreaDialog#createDialogArea(org.eclipse.swt.widgets.Composite)
-     */
     @Override
     protected Control createDialogArea(final Composite parent) {
         
-        Composite compTools = new Composite(parent, SWT.NONE);
-        compTools.setLayoutData(SWTUtil.createFillHorizontallyGridData());
-        compTools.setLayout(new GridLayout(1, false));
-        ToolBar navBar = new ToolBar(compTools, SWT.NONE);
-        navBar.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_END));
-        final ToolItem back = new ToolItem(navBar, SWT.PUSH);
-        back.setText("Back");
+        // Root
+        Composite root = new Composite(parent, SWT.NONE);
+        root.setLayoutData(SWTUtil.createFillHorizontallyGridData());
+        root.setLayout(new GridLayout(1, false));
+        
+        // Toolbar
+        ToolBar toolbar = new ToolBar(root, SWT.NONE);
+        toolbar.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_END));
+        final ToolItem back = new ToolItem(toolbar, SWT.PUSH);
+        back.setText(Resources.getMessage("DialogHelp.0")); //$NON-NLS-1$
         back.setEnabled(false);
-        final ToolItem forward = new ToolItem(navBar, SWT.PUSH);
-        forward.setText("Forward");
+        final ToolItem forward = new ToolItem(toolbar, SWT.PUSH);
+        forward.setText(Resources.getMessage("DialogHelp.3")); //$NON-NLS-1$
         forward.setEnabled(false);
         
-        Composite comp = new Composite(parent, SWT.NONE);
-        comp.setLayoutData(SWTUtil.createFillGridData());
-        comp.setLayout(new FillLayout());
-        
-        final SashForm form = new SashForm(comp, SWT.HORIZONTAL);
-        form.setLayout(new FillLayout());
+        // Base
+        Composite base = new Composite(parent, SWT.NONE);
+        base.setLayoutData(SWTUtil.createFillGridData());
+        base.setLayout(SWTUtil.createGridLayout(2));
 
-        list = new List(form, SWT.SINGLE);
-        try {
-            browser = new Browser(form, SWT.BORDER);
-        } catch (SWTError e) {
-            throw new RuntimeException(e);
-        }
-        
+        // List
+        list = new List(base, SWT.SINGLE | SWT.V_SCROLL);
         for (Entry entry : config.getEntries()) {
             list.add(entry.title);
         }
+        list.setLayoutData(SWTUtil.createFillVerticallyGridData());
         
-        form.setWeights(new int[]{25,75});
-        
+        // Browser
+        browser = new HTMLBrowser(base, SWT.BORDER);
+        browser.setLayoutData(SWTUtil.createFillGridData());
+
+        // Listeners
         back.addListener(SWT.Selection, new Listener() {
             public void handleEvent(Event event) {
-                browser.back();
+                try {browser.back();} catch (Exception e){}
             }
         });
         forward.addListener(SWT.Selection, new Listener() {
             public void handleEvent(Event event) {
-                browser.forward();
+                try {browser.forward();} catch (Exception e){}
             }
         });
         browser.addLocationListener(new LocationAdapter() {
             public void changed(LocationEvent event) {
-                Browser browser = (Browser) event.widget;
                 back.setEnabled(browser.isBackEnabled());
                 forward.setEnabled(browser.isForwardEnabled());
-                list.select(getIndexOf(event.location));
+                try{list.select(getIndexOf(event.location));} catch (Exception e){}
             }
         });
         list.addSelectionListener(new SelectionAdapter(){
             public void widgetSelected(SelectionEvent arg0) {
-                browser.setUrl(getUrlOf(list.getSelectionIndex()));
+                try{browser.setUrl(getUrlOf(list.getSelectionIndex()));} catch (Exception e){}
             }
         });
         
+        // Init
         int index = id == null ? 0 : config.getIndexForId(id);
         list.select(index);
-        browser.setUrl(getUrlOf(index));
+        try{browser.setUrl(getUrlOf(index));} catch (Exception e){}
         return parent;
     }
-    
-    /* (non-Javadoc)
-     * @see org.eclipse.jface.dialogs.TitleAreaDialog#getInitialSize()
+
+    /**
+     * Returns the index of a url.
+     *
+     * @param location
+     * @return
      */
+    private int getIndexOf(String location) {
+        return config.getIndexForUrl(location);
+    }
+    
     @Override
     protected Point getInitialSize() {
         return new Point(900,600);
@@ -231,9 +210,6 @@ public class DialogHelp extends TitleAreaDialog implements IDialog {
         return config.getUrlForIndex(index);
     }
     
-    /* (non-Javadoc)
-     * @see org.eclipse.jface.dialogs.Dialog#isResizable()
-     */
     @Override
     protected boolean isResizable() {
         return true;

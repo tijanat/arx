@@ -1,19 +1,18 @@
 /*
  * ARX: Powerful Data Anonymization
- * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
+ * Copyright 2012 - 2015 Florian Kohlmayer, Fabian Prasser
  * 
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.deidentifier.arx;
@@ -30,6 +29,7 @@ import org.deidentifier.arx.criteria.DPresence;
 import org.deidentifier.arx.criteria.KAnonymity;
 import org.deidentifier.arx.criteria.LDiversity;
 import org.deidentifier.arx.criteria.PrivacyCriterion;
+import org.deidentifier.arx.criteria.SampleBasedCriterion;
 import org.deidentifier.arx.criteria.TCloseness;
 import org.deidentifier.arx.framework.data.DataManager;
 import org.deidentifier.arx.metric.Metric;
@@ -60,7 +60,16 @@ public class ARXConfiguration implements Serializable, Cloneable {
         protected ARXConfigurationInternal(ARXConfiguration config){
             this.config = config;
         }
-        
+
+        /**
+         * @param clazz
+         * @return
+         * @see org.deidentifier.arx.ARXConfiguration#containsCriterion(java.lang.Class)
+         */
+        public boolean containsCriterion(Class<? extends PrivacyCriterion> clazz) {
+            return config.containsCriterion(clazz);
+        }
+
         /**
          * Returns the maximum number of allowed outliers.
          *
@@ -71,14 +80,53 @@ public class ARXConfiguration implements Serializable, Cloneable {
         }
         
         /**
-         * Returns all criteria (except k-anonymity) as an array. Only used internally. If k-anonymity is included the minimal
+         * Returns all class-based criteria (except k-anonymity) as an array. 
+         * Only used internally. If k-anonymity is included the minimal
          * group size should be obtained and enforced 
          * @return
          */
-        public PrivacyCriterion[] getCriteriaAsArray() {
+        public PrivacyCriterion[] getClassBasedCriteriaAsArray() {
             return config.getCriteriaAsArray();
         }
 
+        /**
+         * Returns all criteria.
+         * @return
+         */
+        public Set<PrivacyCriterion> getCriteria() {
+            return config.getCriteria();
+        }
+
+        /**
+         * 
+         *
+         * @param <T>
+         * @param clazz
+         * @return
+         * @see org.deidentifier.arx.ARXConfiguration#getCriterion(java.lang.Class)
+         */
+        public <T extends PrivacyCriterion> T getCriterion(Class<T> clazz) {
+            return config.getCriterion(clazz);
+        }
+
+        /**
+         * Returns the max relative number of outliers.
+         *
+         * @return
+         */
+        public double getMaxOutliers() {
+            return config.getMaxOutliers();
+        }
+
+        /**
+         * Returns the metric used for measuring information loss.
+         *
+         * @return
+         */
+        public Metric<?> getMetric() {
+            return config.getMetric();
+        }
+        
         /**
          * Returns the minimal size of an equivalence class induced by the contained criteria.
          * @return If k-anonymity is contained, k is returned. If l-diversity is contained, l is returned.
@@ -98,6 +146,14 @@ public class ARXConfiguration implements Serializable, Cloneable {
         }
 
         /**
+         * Returns all sample-based criteria as an array.
+         * @return
+         */
+        public SampleBasedCriterion[] getSampleBasedCriteriaAsArray() {
+            return config.getSampleBasedCriteriaAsArray();
+        }
+
+        /**
          * Returns the specific length of each entry in a snapshot.
          *
          * @return
@@ -105,7 +161,7 @@ public class ARXConfiguration implements Serializable, Cloneable {
         public int getSnapshotLength() {
             return config.getSnapshotLength();
         }
-        
+
         /**
          * Returns an integer representing all attribute types that must be suppressed.
          *
@@ -116,22 +172,12 @@ public class ARXConfiguration implements Serializable, Cloneable {
         }
 
         /**
-         * Convenience method for checking the requirements.
-         *
-         * @param requirement
-         * @return
-         */
-        public boolean requires(int requirement) {
-            return config.requires(requirement);
-        }
-
-        /**
-         * Returns the max relative number of outliers.
+         * Determines whether the anonymity criterion is montonic.
          *
          * @return
          */
-        public double getMaxOutliers() {
-            return config.getMaxOutliers();
+        public boolean isCriterionMonotonic() {
+            return config.isCriterionMonotonic();
         }
 
         /**
@@ -141,35 +187,6 @@ public class ARXConfiguration implements Serializable, Cloneable {
          */
         public boolean isPracticalMonotonicity() {
             return config.isPracticalMonotonicity();
-        }
-
-        /**
-         * Returns all criteria.
-         * @return
-         */
-        public Set<PrivacyCriterion> getCriteria() {
-            return config.getCriteria();
-        }
-
-        /**
-         * @param clazz
-         * @return
-         * @see org.deidentifier.arx.ARXConfiguration#containsCriterion(java.lang.Class)
-         */
-        public boolean containsCriterion(Class<? extends PrivacyCriterion> clazz) {
-            return config.containsCriterion(clazz);
-        }
-
-        /**
-         * 
-         *
-         * @param <T>
-         * @param clazz
-         * @return
-         * @see org.deidentifier.arx.ARXConfiguration#getCriterion(java.lang.Class)
-         */
-        public <T extends PrivacyCriterion> T getCriterion(Class<T> clazz) {
-            return config.getCriterion(clazz);
         }
 
         /**
@@ -184,21 +201,20 @@ public class ARXConfiguration implements Serializable, Cloneable {
         }
 
         /**
-         * Returns the metric used for measuring information loss.
-         *
-         * @return
+         * Do we guarantee optimality for sample-based criteria?
          */
-        public Metric<?> getMetric() {
-            return config.getMetric();
+        public boolean isUseHeuristicForSampleBasedCriteria() {
+            return config.isUseHeuristicSearchForSampleBasedCriteria();
         }
 
         /**
-         * Determines whether the anonymity criterion is montonic.
+         * Convenience method for checking the requirements.
          *
+         * @param requirement
          * @return
          */
-        public boolean isCriterionMonotonic() {
-            return config.isCriterionMonotonic();
+        public boolean requires(int requirement) {
+            return config.requires(requirement);
         }
     }
 
@@ -257,47 +273,62 @@ public class ARXConfiguration implements Serializable, Cloneable {
     }
 
     /** Absolute tuple outliers. */
-    private int                                absMaxOutliers               = 0;
+    private int                                absMaxOutliers                        = 0;
 
     /** Criteria. */
-    private PrivacyCriterion[]                 aCriteria                    = new PrivacyCriterion[0];
+    private PrivacyCriterion[]                 aCriteria                             = new PrivacyCriterion[0];
+
+    /** Criteria. */
+    private SampleBasedCriterion[]             bCriteria                             = new SampleBasedCriterion[0];
 
     /** A map of weights per attribute. */
-    private Map<String, Double>                attributeWeights             = null;
+    private Map<String, Double>                attributeWeights                      = null;
 
     /** The criteria. */
-    private Set<PrivacyCriterion>              criteria                     = new HashSet<PrivacyCriterion>();
+    private Set<PrivacyCriterion>              criteria                              = new HashSet<PrivacyCriterion>();
 
     /** The metric. */
-    private Metric<?>                          metric                       = Metric.createLossMetric();
+    private Metric<?>                          metric                                = Metric.createLossMetric();
 
     /** Do we assume practical monotonicity. */
-    private boolean                            practicalMonotonicity        = false;
+    private boolean                            practicalMonotonicity                 = false;
 
-    /** Make sure that no information can be derived from associations between sensitive attributes. */
-    private boolean                            protectSensitiveAssociations = false;
+    /**
+     * Make sure that no information can be derived from associations between
+     * sensitive attributes.
+     */
+    private boolean                            protectSensitiveAssociations          = false;
 
     /** Relative tuple outliers. */
-    private double                             relMaxOutliers               = -1;
+    private double                             relMaxOutliers                        = -1;
 
     /** The requirements per equivalence class. */
-    private int                                requirements                 = 0x0;
+    private int                                requirements                          = 0x0;
 
     /** The snapshot length. */
     private int                                snapshotLength;
 
-    /** Defines values of which attribute type are to be replaced by the suppression string in suppressed tuples. */
-    private Integer                            suppressedAttributeTypes     = 1 << AttributeType.ATTR_TYPE_QI;
+    /**
+     * Defines values of which attribute type are to be replaced by the
+     * suppression string in suppressed tuples.
+     */
+    private Integer                            suppressedAttributeTypes              = 1 << AttributeType.ATTR_TYPE_QI;
 
     /** The string with which suppressed values are to be replaced. */
-    private String                             suppressionString            = "*";
+    private String                             suppressionString                     = "*";
 
-    /** Determines whether suppression is applied to the output of anonymous as well as non-anonymous transformations. */
-    private Boolean                            suppressionAlwaysEnabled     = true;
+    /**
+     * Determines whether suppression is applied to the output of anonymous as
+     * well as non-anonymous transformations.
+     */
+    private Boolean                            suppressionAlwaysEnabled              = true;
 
     /** TODO: This is a hack and should be removed in future releases. */
-    private transient ARXConfigurationInternal accessibleInstance           = null;
-    
+    private transient ARXConfigurationInternal accessibleInstance                    = null;
+
+    /** Are we performing optimal anonymization for sample-based criteria? */
+    private boolean                            heuristicSearchForSampleBasedCriteria = false;
+
     /**
      * Creates a new config without tuple suppression.
      */
@@ -356,7 +387,7 @@ public class ARXConfiguration implements Serializable, Cloneable {
         criteria.add(c);
         return this;
     }
-    
+
     /**
      * Clones this config.
      *
@@ -376,6 +407,7 @@ public class ARXConfiguration implements Serializable, Cloneable {
         result.suppressionString = this.suppressionString;
         result.suppressionAlwaysEnabled = this.suppressionAlwaysEnabled;
         result.suppressedAttributeTypes = this.suppressedAttributeTypes;
+        result.heuristicSearchForSampleBasedCriteria = this.heuristicSearchForSampleBasedCriteria;
         if (this.attributeWeights != null) {
             result.attributeWeights = new HashMap<String, Double>(this.attributeWeights);
         } else {
@@ -384,7 +416,7 @@ public class ARXConfiguration implements Serializable, Cloneable {
         return result;
 
     }
-    
+
     /**
      * Returns whether the configuration contains a criterion of the given class.
      *
@@ -430,7 +462,7 @@ public class ARXConfiguration implements Serializable, Cloneable {
         }
         return new HashMap<String, Double>(this.attributeWeights);
     }
-
+    
     /**
      * Returns all criteria.
      * @return
@@ -438,7 +470,7 @@ public class ARXConfiguration implements Serializable, Cloneable {
     public Set<PrivacyCriterion> getCriteria() {
         return this.criteria;
     }
-
+    
     /**
      * Returns all privacy criteria that are instances of the given class.
      *
@@ -575,6 +607,13 @@ public class ARXConfiguration implements Serializable, Cloneable {
     }
 
     /**
+     * Do we guarantee optimality for sample-based criteria?
+     */
+    public boolean isUseHeuristicSearchForSampleBasedCriteria() {
+        return heuristicSearchForSampleBasedCriteria;
+    }
+
+    /**
      * Removes the given criterion.
      *
      * @param <T>
@@ -669,7 +708,7 @@ public class ARXConfiguration implements Serializable, Cloneable {
     public void setProtectSensitiveAssociations(boolean protect) {
         this.protectSensitiveAssociations = protect;
     }
-    
+
     /**
      * Sets whether suppression is applied to the output of anonymous as well as non-anonymous transformations. If
      * this flag is set to <code>true</code>, suppression will be applied to the output of non-anonymous 
@@ -679,7 +718,7 @@ public class ARXConfiguration implements Serializable, Cloneable {
     public void setSuppressionAlwaysEnabled(boolean enabled){
     	this.suppressionAlwaysEnabled = enabled;
     }
-
+    
     /**
      * Sets the string with which suppressed values are to be replaced. Default is <code>*</code>.
      * @param suppressionString
@@ -687,6 +726,13 @@ public class ARXConfiguration implements Serializable, Cloneable {
     public void setSuppressionString(String suppressionString){
     	checkArgument(suppressionString);
         this.suppressionString = suppressionString;    	
+    }
+
+    /**
+     * Do we guarantee optimality for sample-based criteria?
+     */
+    public void setUseHeuristicSearchForSampleBasedCriteria(boolean value) {
+        this.heuristicSearchForSampleBasedCriteria = value;
     }
 
     /**
@@ -710,6 +756,15 @@ public class ARXConfiguration implements Serializable, Cloneable {
     }
     
     /**
+     * Returns all criteria (except k-anonymity) as an array. Only used internally. If k-anonymity is included the minimal
+     * group size should be obtained and enforced 
+     * @return
+     */
+    protected PrivacyCriterion[] getCriteriaAsArray() {
+        return this.aCriteria;
+    }
+    
+    /**
      * TODO: This is a hack and should be removed in future releases.
      *
      * @return
@@ -719,15 +774,6 @@ public class ARXConfiguration implements Serializable, Cloneable {
             this.accessibleInstance = new ARXConfigurationInternal(this);
         }
         return this.accessibleInstance;
-    }
-    
-    /**
-     * Returns all criteria (except k-anonymity) as an array. Only used internally. If k-anonymity is included the minimal
-     * group size should be obtained and enforced 
-     * @return
-     */
-    protected PrivacyCriterion[] getCriteriaAsArray() {
-        return this.aCriteria;
     }
 
     /**
@@ -764,6 +810,14 @@ public class ARXConfiguration implements Serializable, Cloneable {
     }
 
     /**
+     * Returns all sample-based criteria as an array. Only used internally.
+     * @return
+     */
+    protected SampleBasedCriterion[] getSampleBasedCriteriaAsArray() {
+        return this.bCriteria;
+    }
+
+    /**
      * Returns the specific length of each entry in a snapshot.
      *
      * @return
@@ -791,7 +845,9 @@ public class ARXConfiguration implements Serializable, Cloneable {
     protected void initialize(DataManager manager) {
 
         // Check
-        if (criteria.isEmpty()) { throw new RuntimeException("At least one privacy criterion must be specified!"); }
+        if (criteria.isEmpty()) { 
+            throw new RuntimeException("At least one privacy criterion must be specified!"); 
+        }
 
         // Compute requirements
         this.requirements = 0x0;
@@ -822,7 +878,6 @@ public class ARXConfiguration implements Serializable, Cloneable {
 
         // Compute optimized array with criteria, assuming complexities
         // dPresence <= lDiversity <= tCloseness and ignoring kAnonymity
-        // TODO: Configuration should not know anything about them
         List<PrivacyCriterion> list = new ArrayList<PrivacyCriterion>();
         if (this.containsCriterion(DPresence.class)) {
             list.add(this.getCriterion(DPresence.class));
@@ -834,6 +889,12 @@ public class ARXConfiguration implements Serializable, Cloneable {
             list.addAll(this.getCriteria(TCloseness.class));
         }
         this.aCriteria = list.toArray(new PrivacyCriterion[0]);
+        
+        // Compute array of sample-based criteria
+        this.bCriteria = new SampleBasedCriterion[0];
+        if (this.containsCriterion(SampleBasedCriterion.class)) {
+            this.bCriteria = this.getCriteria(SampleBasedCriterion.class).toArray(new SampleBasedCriterion[0]);
+        }
 
         // Compute snapshot length
         this.snapshotLength = 2;

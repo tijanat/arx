@@ -1,19 +1,18 @@
 /*
  * ARX: Powerful Data Anonymization
- * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
+ * Copyright 2012 - 2015 Florian Kohlmayer, Fabian Prasser
  * 
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.deidentifier.arx.gui.model;
@@ -81,9 +80,6 @@ public class ModelConfiguration implements Serializable, Cloneable {
         return config.addCriterion(c);
     }
     
-    /* (non-Javadoc)
-     * @see java.lang.Object#clone()
-     */
     @Override
     public ModelConfiguration clone() {
 
@@ -130,7 +126,7 @@ public class ModelConfiguration implements Serializable, Cloneable {
     public double getAttributeWeight(String attribute) {
         return config.getAttributeWeight(attribute);
     }
-    
+
     /**
      * Returns all weights.
      *
@@ -148,7 +144,7 @@ public class ModelConfiguration implements Serializable, Cloneable {
     public ARXConfiguration getConfig(){
     	return config;
     }
-
+    
     /**
      * Delegates to an instance of ARXConfiguration.
      *
@@ -179,7 +175,7 @@ public class ModelConfiguration implements Serializable, Cloneable {
     public <T extends PrivacyCriterion> T getCriterion(Class<T> clazz) {
         return config.getCriterion(clazz);
     }
-    
+
     /**
      * Returns the set of all assigned hierarchies.
      *
@@ -198,7 +194,7 @@ public class ModelConfiguration implements Serializable, Cloneable {
     public Hierarchy getHierarchy(String attribute){
         return this.hierarchies.get(attribute);
     }
-
+    
     /**
      * Returns the according builder.
      *
@@ -216,7 +212,7 @@ public class ModelConfiguration implements Serializable, Cloneable {
     public Data getInput() {
         return input;
     }
-    
+
     /**
      * Maximum generalization.
      *
@@ -229,7 +225,7 @@ public class ModelConfiguration implements Serializable, Cloneable {
         }
         return this.max.get(attribute);
     }
-    
+
     /**
      * Delegates to an instance of ARXConfiguration.
      *
@@ -251,7 +247,7 @@ public class ModelConfiguration implements Serializable, Cloneable {
         }
         return this.min.get(attribute);
     }
-
+    
     /**
      * Returns the current research subset.
      *
@@ -260,7 +256,7 @@ public class ModelConfiguration implements Serializable, Cloneable {
 	public RowSet getResearchSubset() {
 		return researchSubset;
 	}
-
+    
     /**
      * @return
      * @see org.deidentifier.arx.ARXConfiguration#getSuppressionString()
@@ -303,6 +299,14 @@ public class ModelConfiguration implements Serializable, Cloneable {
     }
 
     /**
+     * @return
+     * @see org.deidentifier.arx.ARXConfiguration#isUseHeuristicSearchForSampleBasedCriteria()
+     */
+    public boolean isHeuristicForSampleBasedCriteria() {
+        return config.isUseHeuristicSearchForSampleBasedCriteria();
+    }
+
+    /**
      * Has the config been modified.
      *
      * @return
@@ -310,7 +314,7 @@ public class ModelConfiguration implements Serializable, Cloneable {
     public boolean isModified() {
         return modified;
     }
-    
+
     /**
      * Delegates to an instance of ARXConfiguration.
      *
@@ -319,7 +323,7 @@ public class ModelConfiguration implements Serializable, Cloneable {
     public boolean isPracticalMonotonicity() {
         return config.isPracticalMonotonicity();
     }
-
+    
     /**
      * Protect sensitive associations.
      *
@@ -343,7 +347,7 @@ public class ModelConfiguration implements Serializable, Cloneable {
     public void removeAllCriteria() {
         this.getCriteria().clear();
     }
-    
+
     /**
      * Delegates to an instance of ARXConfiguration.
      *
@@ -355,7 +359,7 @@ public class ModelConfiguration implements Serializable, Cloneable {
         setModified();
         return config.removeCriterion(c);
     }
-
+    
     /**
      * Removes the builder for the given attribute.
      *
@@ -366,8 +370,8 @@ public class ModelConfiguration implements Serializable, Cloneable {
         setModified();
         hierarchyBuilders.remove(attr);
     }
-	
-	/**
+
+    /**
      * Delegates to an instance of ARXConfiguration.
      *
      * @param supp
@@ -376,7 +380,7 @@ public class ModelConfiguration implements Serializable, Cloneable {
         setModified();
         config.setMaxOutliers(supp);
     }
-
+	
 	/**
      * @param type
      * @param enabled
@@ -386,7 +390,7 @@ public class ModelConfiguration implements Serializable, Cloneable {
         setModified();
         config.setAttributeTypeSuppressed(type, enabled);
     }
-	
+
 	/**
      * Sets the according attribute weight.
      *
@@ -396,6 +400,14 @@ public class ModelConfiguration implements Serializable, Cloneable {
     public void setAttributeWeight(String attribute, Double weight) {
         setModified();
         config.setAttributeWeight(attribute, weight);
+    }
+	
+	/**
+     * @param value
+     * @see org.deidentifier.arx.ARXConfiguration#setUseHeuristicSearchForSampleBasedCriteria(boolean)
+     */
+    public void setHeuristicForSampleBasedCriteria(boolean value) {
+        config.setUseHeuristicSearchForSampleBasedCriteria(value);
     }
 
     /**

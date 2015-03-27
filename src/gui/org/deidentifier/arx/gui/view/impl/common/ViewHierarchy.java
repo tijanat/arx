@@ -1,19 +1,18 @@
 /*
  * ARX: Powerful Data Anonymization
- * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
+ * Copyright 2012 - 2015 Florian Kohlmayer, Fabian Prasser
  * 
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.deidentifier.arx.gui.view.impl.common;
@@ -27,6 +26,7 @@ import org.deidentifier.arx.AttributeType.Hierarchy;
 import org.deidentifier.arx.DataHandle;
 import org.deidentifier.arx.gui.Controller;
 import org.deidentifier.arx.gui.model.Model;
+import org.deidentifier.arx.gui.model.ModelAuditTrailEntry.AuditTrailEntryFindReplace;
 import org.deidentifier.arx.gui.model.ModelEvent;
 import org.deidentifier.arx.gui.model.ModelEvent.ModelPart;
 import org.deidentifier.arx.gui.resources.Resources;
@@ -67,25 +67,6 @@ public class ViewHierarchy implements IView {
      */
     private class HierarchyDataProvider implements IDataProvider {
 
-        /* (non-Javadoc)
-         * @see org.eclipse.nebula.widgets.nattable.data.IDataProvider#getDataValue(int, int)
-         */
-        @Override
-        public Object getDataValue(int columnIndex, int rowIndex) {
-            return hierarchy[rowIndex][columnIndex];
-        }
-
-        /* (non-Javadoc)
-         * @see org.eclipse.nebula.widgets.nattable.data.IDataProvider#setDataValue(int, int, java.lang.Object)
-         */
-        @Override
-        public void setDataValue(int columnIndex, int rowIndex, Object newValue) {
-            // Ignore
-        }
-
-        /* (non-Javadoc)
-         * @see org.eclipse.nebula.widgets.nattable.data.IDataProvider#getColumnCount()
-         */
         @Override
         public int getColumnCount() {
             if (hierarchy == null) return 0;
@@ -94,13 +75,20 @@ public class ViewHierarchy implements IView {
             else return hierarchy[0].length;
         }
 
-        /* (non-Javadoc)
-         * @see org.eclipse.nebula.widgets.nattable.data.IDataProvider#getRowCount()
-         */
+        @Override
+        public Object getDataValue(int columnIndex, int rowIndex) {
+            return hierarchy[rowIndex][columnIndex];
+        }
+
         @Override
         public int getRowCount() {
             if (hierarchy == null) return 0;
             else return hierarchy.length;
+        }
+
+        @Override
+        public void setDataValue(int columnIndex, int rowIndex, Object newValue) {
+            // Ignore
         }
     }
 
@@ -111,17 +99,11 @@ public class ViewHierarchy implements IView {
      */
     private class HierarchyHeaderDataProvider extends HierarchyDataProvider {
 
-        /* (non-Javadoc)
-         * @see org.deidentifier.arx.gui.view.impl.common.ViewHierarchy.HierarchyDataProvider#getDataValue(int, int)
-         */
         @Override
         public Object getDataValue(int columnIndex, int rowIndex) {
-            return "Level-"+columnIndex;
+            return Resources.getMessage("ViewHierarchy.0")+columnIndex; //$NON-NLS-1$
         }
 
-        /* (non-Javadoc)
-         * @see org.deidentifier.arx.gui.view.impl.common.ViewHierarchy.HierarchyDataProvider#getRowCount()
-         */
         @Override
         public int getRowCount() {
             return 1;
@@ -232,6 +214,7 @@ public class ViewHierarchy implements IView {
         // Register
         controller.addListener(ModelPart.HIERARCHY, this);
         controller.addListener(ModelPart.MODEL, this);
+        controller.addListener(ModelPart.ATTRIBUTE_VALUE, this);
 
         this.controller = controller;
         this.attribute = attribute;
@@ -241,9 +224,6 @@ public class ViewHierarchy implements IView {
         createTable(parent);
     }
 
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.gui.view.def.IView#dispose()
-     */
     @Override
     public void dispose() {
         controller.removeListener(this);
@@ -252,9 +232,6 @@ public class ViewHierarchy implements IView {
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.gui.view.def.IView#reset()
-     */
     @Override
     public void reset() {
         setHierarchy(null);
@@ -283,9 +260,6 @@ public class ViewHierarchy implements IView {
         base.setLayoutData(d);
     }
 
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.gui.view.def.IView#update(org.deidentifier.arx.gui.model.ModelEvent)
-     */
     @Override
     public void update(final ModelEvent event) {
 
@@ -298,6 +272,18 @@ public class ViewHierarchy implements IView {
             }
         } else if (event.part == ModelPart.MODEL) {
             model = (Model) event.data;
+        } else if (event.part == ModelPart.ATTRIBUTE_VALUE) {
+            AuditTrailEntryFindReplace entry = (AuditTrailEntryFindReplace) event.data;
+            if (entry.getAttribute().equals(this.attribute) && hierarchy != null) {
+                for (String[] array : hierarchy) {
+                    for (int i=0; i<array.length; i++) {
+                        if (array[i].equals(entry.getSearchString())) {
+                            array[i] = entry.getReplacementString();
+                        }
+                    }
+                }
+            }
+            table.refresh();
         } else if (event.part == ModelPart.INPUT) {
             Hierarchy h = model.getInputConfig().getHierarchy(attribute);
             if (h != null) {
@@ -465,7 +451,7 @@ public class ViewHierarchy implements IView {
             String[] row = new String[columns];
             System.arraycopy(hierarchy[i], 0, row, 0, selected+1);
             System.arraycopy(hierarchy[i], selected+1, row, selected+2, columns-selected-2);
-            row[selected+1]="";
+            row[selected+1]=""; //$NON-NLS-1$
             temp[i] = row;
         }
         
@@ -494,7 +480,7 @@ public class ViewHierarchy implements IView {
         System.arraycopy(hierarchy, 0, temp, 0, selected+1);
         System.arraycopy(hierarchy, selected+1, temp, selected+2, rows-selected-2);
         temp[selected+1] = new String[columns];
-        Arrays.fill(temp[selected+1], "");
+        Arrays.fill(temp[selected+1], ""); //$NON-NLS-1$
         
         this.hierarchy = temp;
         this.table.refresh();
@@ -588,49 +574,6 @@ public class ViewHierarchy implements IView {
         pushMax();
     }
 
-    /**
-     * Creates the control.
-     *
-     * @param parent
-     */
-    private void createTable(final Composite parent) {
-
-        // Create base composite
-        this.base = new Composite(parent, SWT.NONE);
-        GridData bottomLayoutData = SWTUtil.createFillGridData();
-        bottomLayoutData.grabExcessVerticalSpace = true;
-        GridLayout bottomLayout = new GridLayout();
-        bottomLayout.numColumns = 1;
-        this.base.setLayout(bottomLayout);
-        this.base.setLayoutData(bottomLayoutData);
-
-        // Create label
-        if (attribute != null) {
-            Label l = new Label(base, SWT.NONE);
-            l.setText(Resources.getMessage("HierarchyView.2") + attribute + //$NON-NLS-1$  
-                      Resources.getMessage("HierarchyView.3")); //$NON-NLS-2$
-        }
-
-        // Configure table
-        CTConfiguration config = new CTConfiguration(parent, CTConfiguration.STYLE_TABLE);
-        config.setHorizontalAlignment(SWT.LEFT);
-        config.setCellSelectionEnabled(true);
-        config.setColumnSelectionEnabled(true);
-        config.setRowSelectionEnabled(false);
-        config.setColumnHeaderLayout(CTConfiguration.COLUMN_HEADER_LAYOUT_FILL);
-        config.setRowHeaderLayout(CTConfiguration.ROW_HEADER_LAYOUT_FILL);
-
-        // Create table
-        this.table = new ComponentTable(base, SWT.BORDER, config);
-        this.table.getControl().setLayoutData(SWTUtil.createFillGridData());
-        this.table.setData(new HierarchyDataProvider(), new HierarchyHeaderDataProvider());
-
-        // Create the menu and editing controls
-        if (editable) {
-            createMenu();
-        }
-    }
-    
     /**
      * Creates all components required for making the table editable.
      */
@@ -801,6 +744,42 @@ public class ViewHierarchy implements IView {
             }
         });
 
+    }
+    
+    /**
+     * Creates the control.
+     *
+     * @param parent
+     */
+    private void createTable(final Composite parent) {
+
+        // Create base composite
+        this.base = new Composite(parent, SWT.NONE);
+        GridData bottomLayoutData = SWTUtil.createFillGridData();
+        bottomLayoutData.grabExcessVerticalSpace = true;
+        GridLayout bottomLayout = new GridLayout();
+        bottomLayout.numColumns = 1;
+        this.base.setLayout(bottomLayout);
+        this.base.setLayoutData(bottomLayoutData);
+
+        // Configure table
+        CTConfiguration config = new CTConfiguration(parent, CTConfiguration.STYLE_TABLE);
+        config.setHorizontalAlignment(SWT.LEFT);
+        config.setCellSelectionEnabled(true);
+        config.setColumnSelectionEnabled(true);
+        config.setRowSelectionEnabled(false);
+        config.setColumnHeaderLayout(CTConfiguration.COLUMN_HEADER_LAYOUT_FILL);
+        config.setRowHeaderLayout(CTConfiguration.ROW_HEADER_LAYOUT_FILL);
+
+        // Create table
+        this.table = new ComponentTable(base, SWT.BORDER, config);
+        this.table.getControl().setLayoutData(SWTUtil.createFillGridData());
+        this.table.setData(new HierarchyDataProvider(), new HierarchyHeaderDataProvider());
+
+        // Create the menu and editing controls
+        if (editable) {
+            createMenu();
+        }
     }
 
     /**

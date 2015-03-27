@@ -1,19 +1,18 @@
 /*
  * ARX: Powerful Data Anonymization
- * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
+ * Copyright 2012 - 2015 Florian Kohlmayer, Fabian Prasser
  * 
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.deidentifier.arx.test;
@@ -51,9 +50,6 @@ import org.junit.Test;
  */
 public class TestAnonymization extends AbstractTest {
 
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.test.AbstractTest#setUp()
-     */
     @Override
     @Before
     public void setUp() {
@@ -139,6 +135,102 @@ public class TestAnonymization extends AbstractTest {
             return;
         }
         Assert.fail();
+    }
+
+    /**
+     * 
+     *
+     * @throws IOException
+     */
+    @Test
+    public void testDPresenceWithoutOutliers() throws IOException {
+        // Example taken from the d-presence paper
+
+        // Define Public Data P
+        final DefaultData data = Data.create();
+        data.add("identifier", "name", "zip", "age", "nationality", "sen");
+        data.add("a", "Alice", "47906", "35", "USA", "0"); // 0
+        data.add("b", "Bob", "47903", "59", "Canada", "1"); // 1
+        data.add("c", "Christine", "47906", "42", "USA", "1"); // 2
+        data.add("d", "Dirk", "47630", "18", "Brazil", "0"); // 3
+        data.add("e", "Eunice", "47630", "22", "Brazil", "0"); // 4
+        data.add("f", "Frank", "47633", "63", "Peru", "1"); // 5
+        data.add("g", "Gail", "48973", "33", "Spain", "0"); // 6
+        data.add("h", "Harry", "48972", "47", "Bulgaria", "1"); // 7
+        data.add("i", "Iris", "48970", "52", "France", "1"); // 8
+
+        final HashSet<Integer> indices = new HashSet<Integer>();
+        indices.add(1);
+        indices.add(2);
+        indices.add(5);
+        indices.add(7);
+        indices.add(8);
+        final DataSubset subset = DataSubset.create(data, indices);
+
+        // Define hierarchies
+        final DefaultHierarchy age = Hierarchy.create();
+        age.add("18", "1*", "<=40", "*");
+        age.add("22", "2*", "<=40", "*");
+        age.add("33", "3*", "<=40", "*");
+        age.add("35", "3*", "<=40", "*");
+        age.add("42", "4*", ">40", "*");
+        age.add("47", "4*", ">40", "*");
+        age.add("52", "5*", ">40", "*");
+        age.add("59", "5*", ">40", "*");
+        age.add("63", "6*", ">40", "*");
+
+        final DefaultHierarchy nationality = Hierarchy.create();
+        nationality.add("Canada", "N. America", "America", "*");
+        nationality.add("USA", "N. America", "America", "*");
+        nationality.add("Peru", "S. America", "America", "*");
+        nationality.add("Brazil", "S. America", "America", "*");
+        nationality.add("Bulgaria", "E. Europe", "Europe", "*");
+        nationality.add("France", "W. Europe", "Europe", "*");
+        nationality.add("Spain", "W. Europe", "Europe", "*");
+
+        final DefaultHierarchy zip = Hierarchy.create();
+        zip.add("47630", "4763*", "476*", "47*", "4*", "*");
+        zip.add("47633", "4763*", "476*", "47*", "4*", "*");
+        zip.add("47903", "4790*", "479*", "47*", "4*", "*");
+        zip.add("47906", "4790*", "479*", "47*", "4*", "*");
+        zip.add("48970", "4897*", "489*", "48*", "4*", "*");
+        zip.add("48972", "4897*", "489*", "48*", "4*", "*");
+        zip.add("48973", "4897*", "489*", "48*", "4*", "*");
+
+        // Set data attribute types
+        data.getDefinition().setAttributeType("identifier", AttributeType.IDENTIFYING_ATTRIBUTE);
+        data.getDefinition().setAttributeType("name", AttributeType.IDENTIFYING_ATTRIBUTE);
+        data.getDefinition().setAttributeType("zip", zip);
+        data.getDefinition().setAttributeType("age", age);
+        data.getDefinition().setAttributeType("nationality", nationality);
+        data.getDefinition().setAttributeType("sen", AttributeType.INSENSITIVE_ATTRIBUTE);
+
+        // Create an instance of the anonymizer
+        final ARXAnonymizer anonymizer = new ARXAnonymizer();
+        final ARXConfiguration config = ARXConfiguration.create();
+        config.addCriterion(new KAnonymity(2));
+        config.addCriterion(new DPresence(1d / 2d, 2d / 3d, subset));
+        config.setMaxOutliers(0d);
+        config.setMetric(org.deidentifier.arx.metric.Metric.createPrecisionMetric());
+        final String[][] result = resultToArray(anonymizer.anonymize(data, config));
+
+        // TODO: check if result is correct!
+        final String[][] expected = {
+
+                { "identifier", "name", "zip", "age", "nationality", "sen" },
+                { "*", "*", "47*", "*", "America", "0" },
+                { "*", "*", "47*", "*", "America", "1" },
+                { "*", "*", "47*", "*", "America", "1" },
+                { "*", "*", "47*", "*", "America", "0" },
+                { "*", "*", "47*", "*", "America", "0" },
+                { "*", "*", "47*", "*", "America", "1" },
+                { "*", "*", "48*", "*", "Europe", "0" },
+                { "*", "*", "48*", "*", "Europe", "1" },
+                { "*", "*", "48*", "*", "Europe", "1" }
+
+        };
+
+        assertTrue(Arrays.deepEquals(result, expected));
     }
 
     /**
@@ -545,102 +637,6 @@ public class TestAnonymization extends AbstractTest {
                 { "4760*", "<=40", "bronchitis" },
                 { "4767*", "<=40", "pneumonia" },
                 { "4760*", "<=40", "stomach cancer" } };
-
-        assertTrue(Arrays.deepEquals(result, expected));
-    }
-
-    /**
-     * 
-     *
-     * @throws IOException
-     */
-    @Test
-    public void testDPresenceWithoutOutliers() throws IOException {
-        // Example taken from the d-presence paper
-
-        // Define Public Data P
-        final DefaultData data = Data.create();
-        data.add("identifier", "name", "zip", "age", "nationality", "sen");
-        data.add("a", "Alice", "47906", "35", "USA", "0"); // 0
-        data.add("b", "Bob", "47903", "59", "Canada", "1"); // 1
-        data.add("c", "Christine", "47906", "42", "USA", "1"); // 2
-        data.add("d", "Dirk", "47630", "18", "Brazil", "0"); // 3
-        data.add("e", "Eunice", "47630", "22", "Brazil", "0"); // 4
-        data.add("f", "Frank", "47633", "63", "Peru", "1"); // 5
-        data.add("g", "Gail", "48973", "33", "Spain", "0"); // 6
-        data.add("h", "Harry", "48972", "47", "Bulgaria", "1"); // 7
-        data.add("i", "Iris", "48970", "52", "France", "1"); // 8
-
-        final HashSet<Integer> indices = new HashSet<Integer>();
-        indices.add(1);
-        indices.add(2);
-        indices.add(5);
-        indices.add(7);
-        indices.add(8);
-        final DataSubset subset = DataSubset.create(data, indices);
-
-        // Define hierarchies
-        final DefaultHierarchy age = Hierarchy.create();
-        age.add("18", "1*", "<=40", "*");
-        age.add("22", "2*", "<=40", "*");
-        age.add("33", "3*", "<=40", "*");
-        age.add("35", "3*", "<=40", "*");
-        age.add("42", "4*", ">40", "*");
-        age.add("47", "4*", ">40", "*");
-        age.add("52", "5*", ">40", "*");
-        age.add("59", "5*", ">40", "*");
-        age.add("63", "6*", ">40", "*");
-
-        final DefaultHierarchy nationality = Hierarchy.create();
-        nationality.add("Canada", "N. America", "America", "*");
-        nationality.add("USA", "N. America", "America", "*");
-        nationality.add("Peru", "S. America", "America", "*");
-        nationality.add("Brazil", "S. America", "America", "*");
-        nationality.add("Bulgaria", "E. Europe", "Europe", "*");
-        nationality.add("France", "W. Europe", "Europe", "*");
-        nationality.add("Spain", "W. Europe", "Europe", "*");
-
-        final DefaultHierarchy zip = Hierarchy.create();
-        zip.add("47630", "4763*", "476*", "47*", "4*", "*");
-        zip.add("47633", "4763*", "476*", "47*", "4*", "*");
-        zip.add("47903", "4790*", "479*", "47*", "4*", "*");
-        zip.add("47906", "4790*", "479*", "47*", "4*", "*");
-        zip.add("48970", "4897*", "489*", "48*", "4*", "*");
-        zip.add("48972", "4897*", "489*", "48*", "4*", "*");
-        zip.add("48973", "4897*", "489*", "48*", "4*", "*");
-
-        // Set data attribute types
-        data.getDefinition().setAttributeType("identifier", AttributeType.IDENTIFYING_ATTRIBUTE);
-        data.getDefinition().setAttributeType("name", AttributeType.IDENTIFYING_ATTRIBUTE);
-        data.getDefinition().setAttributeType("zip", zip);
-        data.getDefinition().setAttributeType("age", age);
-        data.getDefinition().setAttributeType("nationality", nationality);
-        data.getDefinition().setAttributeType("sen", AttributeType.INSENSITIVE_ATTRIBUTE);
-
-        // Create an instance of the anonymizer
-        final ARXAnonymizer anonymizer = new ARXAnonymizer();
-        final ARXConfiguration config = ARXConfiguration.create();
-        config.addCriterion(new KAnonymity(2));
-        config.addCriterion(new DPresence(1d / 2d, 2d / 3d, subset));
-        config.setMaxOutliers(0d);
-        config.setMetric(org.deidentifier.arx.metric.Metric.createPrecisionMetric());
-        final String[][] result = resultToArray(anonymizer.anonymize(data, config));
-
-        // TODO: check if result is correct!
-        final String[][] expected = {
-
-                { "identifier", "name", "zip", "age", "nationality", "sen" },
-                { "*", "*", "47*", "*", "America", "0" },
-                { "*", "*", "47*", "*", "America", "1" },
-                { "*", "*", "47*", "*", "America", "1" },
-                { "*", "*", "47*", "*", "America", "0" },
-                { "*", "*", "47*", "*", "America", "0" },
-                { "*", "*", "47*", "*", "America", "1" },
-                { "*", "*", "48*", "*", "Europe", "0" },
-                { "*", "*", "48*", "*", "Europe", "1" },
-                { "*", "*", "48*", "*", "Europe", "1" }
-
-        };
 
         assertTrue(Arrays.deepEquals(result, expected));
     }

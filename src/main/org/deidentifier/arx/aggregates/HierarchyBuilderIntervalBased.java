@@ -1,19 +1,18 @@
 /*
  * ARX: Powerful Data Anonymization
- * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
+ * Copyright 2012 - 2015 Florian Kohlmayer, Fabian Prasser
  * 
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package org.deidentifier.arx.aggregates;
 
@@ -94,9 +93,6 @@ public class HierarchyBuilderIntervalBased<T> extends HierarchyBuilderGroupingBa
             this.isLeaf = true;
         }
         
-        /* (non-Javadoc)
-         * @see java.lang.Object#toString()
-         */
         @Override
         public String toString(){
             return toString("");
@@ -142,24 +138,38 @@ public class HierarchyBuilderIntervalBased<T> extends HierarchyBuilderGroupingBa
      * @param <T>
      */
     public static class Interval<T> extends AbstractGroup {
-        
-        /**  TODO */
-        private static final long serialVersionUID = 5985820929677249525L;
+
+        /** TODO */
+        private static final long                      serialVersionUID = 5985820929677249525L;
 
         /** The function. */
-        private final AggregateFunction<T> function;
-        
+        private final AggregateFunction<T>             function;
+
         /** Max is exclusive. */
-        private final T max;
-        
+        private final T                                max;
+
         /** Min is inclusive. */
-        private final T min;
-        
+        private final T                                min;
+
         /** The builder. */
         private final HierarchyBuilderGroupingBased<T> builder;
-        
+
         /** Null for normal intervals, true if <min, false if >max. */
-        private final Boolean lower;
+        private final Boolean                          lower;
+        
+        /**
+         * Constructor for creating label for null values
+         *
+         * @param builder
+         */
+        private Interval(HierarchyBuilderGroupingBased<T> builder) {
+            super(DataType.NULL_VALUE);
+            this.builder = builder;
+            this.min = null;
+            this.max = null;
+            this.function = null;
+            this.lower = null;
+        }
         
         /**
          * Constructor for creating out of bounds labels.
@@ -196,9 +206,6 @@ public class HierarchyBuilderIntervalBased<T> extends HierarchyBuilderGroupingBa
             this.lower = false;
         }
         
-        /* (non-Javadoc)
-         * @see java.lang.Object#equals(java.lang.Object)
-         */
         @Override
         @SuppressWarnings("unchecked")
         public boolean equals(Object obj) {
@@ -239,9 +246,6 @@ public class HierarchyBuilderIntervalBased<T> extends HierarchyBuilderGroupingBa
             return min;
         }
 
-        /* (non-Javadoc)
-         * @see java.lang.Object#hashCode()
-         */
         @Override
         public int hashCode() {
             final int prime = 31;
@@ -252,9 +256,33 @@ public class HierarchyBuilderIntervalBased<T> extends HierarchyBuilderGroupingBa
             return result;
         }
 
-        /* (non-Javadoc)
-         * @see java.lang.Object#toString()
+        /**
+         * Is this an interval for null values
+         * @return
          */
+        public boolean isNullInterval() {
+            return this.lower == null && this.min == null && this.max == null;
+        }
+        
+        /**
+         * Is this an interval representing values that are out of bounds
+         * @return
+         */
+        public boolean isOutOfBound() {
+            return lower != null;
+        }
+        
+        /**
+         * Is this an interval representing values that are out of the lower bound
+         * @return
+         */
+        public boolean isOutOfLowerBound() {
+            if (this.lower == null) {
+                throw new IllegalStateException("You may only call this on intervals that represent values that are out of bounds");
+            }
+            return lower;
+        }
+        
         @Override
         public String toString(){
             DataType<T> type = (DataType<T>)builder.getDataType();
@@ -264,7 +292,7 @@ public class HierarchyBuilderIntervalBased<T> extends HierarchyBuilderGroupingBa
     
     /**
      * For each direction, this class encapsulates three bounds. Intervals will be repeated until the
-     * repeat-bound is reached. The outmost intervals will than be exptended to the snap-bound. Values between
+     * repeat-bound is reached. The outmost intervals will than be extended to the snap-bound. Values between
      * the snap-bound and the label-bound will be replaced by an out-of-bounds-label. For values larger than
      * the label-bound exceptions will be raised.
      *
@@ -326,9 +354,6 @@ public class HierarchyBuilderIntervalBased<T> extends HierarchyBuilderGroupingBa
             return snapBound;
         }
 
-        /* (non-Javadoc)
-         * @see java.lang.Object#toString()
-         */
         @Override
         public String toString() {
             return "Range [repeat=" + repeatBound + ", snap=" +
@@ -358,10 +383,10 @@ public class HierarchyBuilderIntervalBased<T> extends HierarchyBuilderGroupingBa
     }
 
     /** TODO: Is this parameter OK?. */
-    private static final int  INDEX_FANOUT     = 2;
+    private static final int               INDEX_FANOUT     = 2;
 
     /** SVUID. */
-    private static final long serialVersionUID = 3663874945543082808L;
+    private static final long              serialVersionUID = 3663874945543082808L;
     
     /**
      * Creates a new instance. Snapping is disabled. Repetition is disabled. Bound is determined dynamically.
@@ -551,9 +576,6 @@ public class HierarchyBuilderIntervalBased<T> extends HierarchyBuilderGroupingBa
         return this.upperRange;
     }
     
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.aggregates.HierarchyBuilderGroupingBased#isValid()
-     */
     @Override
     @SuppressWarnings("unchecked")
     public String isValid() {
@@ -811,9 +833,6 @@ public class HierarchyBuilderIntervalBased<T> extends HierarchyBuilderGroupingBa
         return new Range[]{tempLower, tempUpper};
     }
     
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.aggregates.HierarchyBuilderGroupingBased#prepareGroups()
-     */
     @Override
     @SuppressWarnings("unchecked")
     protected AbstractGroup[][] prepareGroups() {
@@ -890,18 +909,20 @@ public class HierarchyBuilderIntervalBased<T> extends HierarchyBuilderGroupingBa
         AbstractGroup[] first = new AbstractGroup[data.length];
         for (int i=0; i<data.length; i++){
             T value = type.parse(data[i]);
-            Interval<T> interval = getInterval(index, type, value);
+            Interval<T> interval;
             
-            if (type.compare(value, tempLower.labelBound) < 0) {
+            if (value == null) {
+                interval = new Interval<T>(this);
+            } else if (type.compare(value, tempLower.labelBound) < 0) {
                 throw new IllegalArgumentException(type.format(value)+ " is < lower label bound");
             } else if (type.compare(value, tempLower.snapBound) < 0) {
                 interval = new Interval<T>(this, true, tempLower.snapBound);
-            } 
-            
-            if (type.compare(value, tempUpper.labelBound) >= 0) {
+            } else if (type.compare(value, tempUpper.labelBound) >= 0) {
                 throw new IllegalArgumentException(type.format(value)+ " is >= upper label bound");
             } else if (type.compare(value, tempUpper.snapBound) >= 0) {
                 interval = new Interval<T>(this, false, tempUpper.snapBound);
+            } else {
+                interval = getInterval(index, type, value);    
             }
             
             if (interval.min != null && interval.max != null){

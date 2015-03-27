@@ -1,19 +1,18 @@
 /*
  * ARX: Powerful Data Anonymization
- * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
+ * Copyright 2012 - 2015 Florian Kohlmayer, Fabian Prasser
  * 
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.deidentifier.arx.examples;
@@ -100,6 +99,45 @@ public class Example13 extends Example {
      *
      * @return
      */
+    private static Data getData() {
+        DefaultData data = Data.create();
+        data.add("zipcode", "disease1", "age", "disease2");
+        data.add("47677", "gastric ulcer", "29", "gastric ulcer");
+        data.add("47602", "gastritis", "22", "gastritis");
+        data.add("47678", "stomach cancer", "27", "stomach cancer");
+        data.add("47905", "gastritis", "43", "gastritis");
+        data.add("47909", "flu", "52", "flu");
+        data.add("47906", "bronchitis", "47", "bronchitis");
+        data.add("47605", "bronchitis", "30", "bronchitis");
+        data.add("47673", "pneumonia", "36", "pneumonia");
+        data.add("47607", "stomach cancer", "32", "stomach cancer");
+        return data;
+    }
+
+    /**
+     * 
+     *
+     * @return
+     */
+    private static Hierarchy getHierarchyAge() {
+        final DefaultHierarchy age = Hierarchy.create();
+        age.add("29", "<=40", "*");
+        age.add("22", "<=40", "*");
+        age.add("27", "<=40", "*");
+        age.add("43", ">40", "*");
+        age.add("52", ">40", "*");
+        age.add("47", ">40", "*");
+        age.add("30", "<=40", "*");
+        age.add("36", "<=40", "*");
+        age.add("32", "<=40", "*");
+        return age;
+    }
+
+    /**
+     * 
+     *
+     * @return
+     */
     private static Hierarchy getHierarchyDisease() {
         final DefaultHierarchy disease = Hierarchy.create();
         disease.add("flu",
@@ -162,44 +200,5 @@ public class Example13 extends Example {
         zipcode.add("47673", "4767*", "476**", "47***", "4****", "*****");
         zipcode.add("47607", "4760*", "476**", "47***", "4****", "*****");
         return zipcode;
-    }
-
-    /**
-     * 
-     *
-     * @return
-     */
-    private static Hierarchy getHierarchyAge() {
-        final DefaultHierarchy age = Hierarchy.create();
-        age.add("29", "<=40", "*");
-        age.add("22", "<=40", "*");
-        age.add("27", "<=40", "*");
-        age.add("43", ">40", "*");
-        age.add("52", ">40", "*");
-        age.add("47", ">40", "*");
-        age.add("30", "<=40", "*");
-        age.add("36", "<=40", "*");
-        age.add("32", "<=40", "*");
-        return age;
-    }
-
-    /**
-     * 
-     *
-     * @return
-     */
-    private static Data getData() {
-        DefaultData data = Data.create();
-        data.add("zipcode", "disease1", "age", "disease2");
-        data.add("47677", "gastric ulcer", "29", "gastric ulcer");
-        data.add("47602", "gastritis", "22", "gastritis");
-        data.add("47678", "stomach cancer", "27", "stomach cancer");
-        data.add("47905", "gastritis", "43", "gastritis");
-        data.add("47909", "flu", "52", "flu");
-        data.add("47906", "bronchitis", "47", "bronchitis");
-        data.add("47605", "bronchitis", "30", "bronchitis");
-        data.add("47673", "pneumonia", "36", "pneumonia");
-        data.add("47607", "stomach cancer", "32", "stomach cancer");
-        return data;
     }
 }

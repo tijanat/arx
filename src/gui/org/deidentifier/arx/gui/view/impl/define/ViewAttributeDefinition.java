@@ -1,19 +1,18 @@
 /*
  * ARX: Powerful Data Anonymization
- * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
+ * Copyright 2012 - 2015 Florian Kohlmayer, Fabian Prasser
  * 
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.deidentifier.arx.gui.view.impl.define;
@@ -35,6 +34,7 @@ import org.deidentifier.arx.gui.Controller;
 import org.deidentifier.arx.gui.model.Model;
 import org.deidentifier.arx.gui.model.ModelEvent;
 import org.deidentifier.arx.gui.model.ModelEvent.ModelPart;
+import org.deidentifier.arx.gui.model.ModelRiskBasedCriterion;
 import org.deidentifier.arx.gui.resources.Resources;
 import org.deidentifier.arx.gui.view.SWTUtil;
 import org.deidentifier.arx.gui.view.def.IView;
@@ -181,19 +181,13 @@ public class ViewAttributeDefinition implements IView {
                         boolean criteriaDisabled = false;
                         
                         // Enable/disable criteria for sensitive attributes
-                        if (type == AttributeType.SENSITIVE_ATTRIBUTE) {
-                        	model.getLDiversityModel().get(attribute).setActive(true);
-                        	model.getTClosenessModel().get(attribute).setActive(true);
-                        } else {
-                            
+                        if (type != AttributeType.SENSITIVE_ATTRIBUTE) {
+                        	
                             if (model.getLDiversityModel().get(attribute).isEnabled() ||
                                 model.getTClosenessModel().get(attribute).isEnabled()){
                                 criteriaDisabled = true;
                             }
-                            
-                        	model.getLDiversityModel().get(attribute).setActive(false);
-                        	model.getTClosenessModel().get(attribute).setActive(false);
-                        	
+
                         	model.getTClosenessModel().get(attribute).setEnabled(false);
                         	model.getLDiversityModel().get(attribute).setEnabled(false);
                         }
@@ -206,15 +200,16 @@ public class ViewAttributeDefinition implements IView {
                                 criteriaDisabled = true;
                             }
                             
-                            model.getKAnonymityModel().setActive(false);
-                            model.getDPresenceModel().setActive(false);
                             model.getKAnonymityModel().setEnabled(false);
                             model.getDPresenceModel().setEnabled(false);
+                            for (ModelRiskBasedCriterion c : model.getRiskBasedModel()) {
+                                if (c.isEnabled()) {
+                                    criteriaDisabled = true;
+                                }
+                                c.setEnabled(false);
+                            }
 
-                        } else {
-                            model.getKAnonymityModel().setActive(true);
-                            model.getDPresenceModel().setActive(true);
-                        }
+                        } 
 
                         // Update icon
                         updateIcon();
@@ -255,7 +250,7 @@ public class ViewAttributeDefinition implements IView {
                         DataType<?> type;
 
                         // Open format dialog
-                        if (description.getLabel().equals("OrderedString")) {
+                        if (description.getLabel().equals("OrderedString")) { //$NON-NLS-1$
                             final String text1 = Resources.getMessage("AttributeDefinitionView.9"); //$NON-NLS-1$
                             final String text2 = Resources.getMessage("AttributeDefinitionView.10"); //$NON-NLS-1$
                             String[] array = controller.actionShowOrderValuesDialog(controller.getResources().getShell(),
@@ -271,7 +266,7 @@ public class ViewAttributeDefinition implements IView {
                                     }
                                 } catch (Exception e){
                                     controller.actionShowInfoDialog(controller.getResources().getShell(),
-                                                                    "Error", "Cannot create data type: "+e.getMessage());
+                                                                    Resources.getMessage("ViewAttributeDefinition.1"), Resources.getMessage("ViewAttributeDefinition.2")+e.getMessage()); //$NON-NLS-1$ //$NON-NLS-2$
                                     type = DataType.STRING;
                                 }
                             }
@@ -306,7 +301,7 @@ public class ViewAttributeDefinition implements IView {
         dataTypeText = new Text(type, SWT.READ_ONLY | SWT.BORDER);
         dataTypeText.setLayoutData(SWTUtil.createFillGridData());
         dataTypeText.setEditable(false);
-        dataTypeText.setText("");
+        dataTypeText.setText(""); //$NON-NLS-1$
 
         // Editor hierarchy
         editor = new ViewHierarchy(group, attribute, controller);
@@ -315,9 +310,6 @@ public class ViewAttributeDefinition implements IView {
         tab.setControl(group);
     }
 
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.gui.view.def.IView#dispose()
-     */
     @Override
     public void dispose() {
         
@@ -332,17 +324,11 @@ public class ViewAttributeDefinition implements IView {
         IMAGE_IDENTIFYING.dispose();
     }
 
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.gui.view.def.IView#reset()
-     */
     @Override
     public void reset() {
-        dataTypeText.setText("");
+        dataTypeText.setText(""); //$NON-NLS-1$
     }
 
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.gui.view.def.IView#update(org.deidentifier.arx.gui.model.ModelEvent)
-     */
     @Override
     public void update(final ModelEvent event) {
         if (event.part == ModelPart.MODEL) {
@@ -374,7 +360,7 @@ public class ViewAttributeDefinition implements IView {
                 return desc;
             }
         }
-        throw new RuntimeException("Unknown data type: "+label);
+        throw new RuntimeException(Resources.getMessage("ViewAttributeDefinition.5")+label); //$NON-NLS-1$
     }
     
     /**
@@ -404,7 +390,7 @@ public class ViewAttributeDefinition implements IView {
             }
             idx++;
         }
-        throw new RuntimeException("Unknown data type: "+type.getDescription().getLabel());
+        throw new RuntimeException(Resources.getMessage("ViewAttributeDefinition.6")+type.getDescription().getLabel()); //$NON-NLS-1$
     }
     
     /**
@@ -476,12 +462,12 @@ public class ViewAttributeDefinition implements IView {
             DataTypeWithFormat dtwf = (DataTypeWithFormat)dtype;
             String format = dtwf.getFormat();
             if (format==null) {
-                dataTypeText.setText("Default");
+                dataTypeText.setText(Resources.getMessage("ViewAttributeDefinition.7")); //$NON-NLS-1$
             } else {
                 dataTypeText.setText(format);
             }
         } else {
-            dataTypeText.setText("Default");
+            dataTypeText.setText(Resources.getMessage("ViewAttributeDefinition.8")); //$NON-NLS-1$
         }
     }
 

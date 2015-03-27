@@ -1,19 +1,18 @@
 /*
  * ARX: Powerful Data Anonymization
- * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
+ * Copyright 2012 - 2015 Florian Kohlmayer, Fabian Prasser
  * 
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.deidentifier.arx.gui.view.impl.common;
@@ -31,9 +30,11 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 
@@ -92,12 +93,32 @@ public class ComponentTitledFolder implements IComponent {
     }
     
     /**
+     * @param arg0
+     * @param arg1
+     * @see org.eclipse.swt.widgets.Widget#addListener(int, org.eclipse.swt.widgets.Listener)
+     */
+    public void addListener(int arg0, Listener arg1) {
+        folder.addListener(arg0, arg1);
+    }
+
+    /**
      * Adds a selection listener.
      *
      * @param listener
      */
     public void addSelectionListener(SelectionListener listener) {
         folder.addSelectionListener(listener);
+    }
+
+    /**
+     * Creates a new entry in the folder.
+     *
+     * @param title
+     * @param image
+     * @return
+     */
+    public Composite createItem(String title, Image image){
+        return createItem(title, image, getItemCount());
     }
 
     /**
@@ -121,18 +142,7 @@ public class ComponentTitledFolder implements IComponent {
         
         return composite;
     }
-
-    /**
-     * Creates a new entry in the folder.
-     *
-     * @param title
-     * @param image
-     * @return
-     */
-    public Composite createItem(String title, Image image){
-        return createItem(title, image, getItemCount());
-    }
-
+    
     /**
      * Disposes the given item.
      *
@@ -145,7 +155,7 @@ public class ComponentTitledFolder implements IComponent {
             }
         }
     }
-    
+
     /**
      * Returns the button item for the given text.
      *
@@ -179,6 +189,14 @@ public class ComponentTitledFolder implements IComponent {
      */
     public int getSelectionIndex() {
         return folder.getSelectionIndex();
+    }
+
+    /**
+     * @return
+     * @see org.eclipse.swt.widgets.Control#getSize()
+     */
+    public Point getSize() {
+        return folder.getSize();
     }
 
     /**
@@ -224,6 +242,15 @@ public class ComponentTitledFolder implements IComponent {
     }
 
     /**
+     * @param arg0
+     * @param arg1
+     * @see org.eclipse.swt.widgets.Control#setSize(int, int)
+     */
+    public void setSize(int arg0, int arg1) {
+        folder.setSize(arg0, arg1);
+    }
+
+    /**
      * Creates the bar .
      *
      * @param controller
@@ -242,6 +269,7 @@ public class ComponentTitledFolder implements IComponent {
             else item = new ToolItem( toolbar, SWT.PUSH);
             item.setImage(bar.getImage(key));
             item.setToolTipText(title);
+            SWTUtil.createDisabledImage(item);
             item.addSelectionListener(new SelectionAdapter(){
                 @Override
                 public void widgetSelected(SelectionEvent arg0) {
@@ -253,6 +281,7 @@ public class ComponentTitledFolder implements IComponent {
         ToolItem item = new ToolItem( toolbar, SWT.PUSH );
         item.setImage(controller.getResources().getImage("help.png"));  //$NON-NLS-1$
         item.setToolTipText(Resources.getMessage("General.0")); //$NON-NLS-1$
+        SWTUtil.createDisabledImage(item);
         item.addSelectionListener(new SelectionAdapter(){
             @Override
             public void widgetSelected(SelectionEvent arg0) {

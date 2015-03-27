@@ -1,3 +1,19 @@
+/*
+ * ARX: Powerful Data Anonymization
+ * Copyright 2012 - 2015 Florian Kohlmayer, Fabian Prasser
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.deidentifier.arx.gui.view.impl.common.datatable;
 
 import java.util.List;
@@ -73,25 +89,6 @@ public class DataTableDecorator extends CellPainterWrapper {
         this.defaultBorderStyle = defaultBorderStyle;
     }
 
-    /**
-     * 
-     *
-     * @param cell
-     * @param configRegistry
-     * @return
-     */
-    private BorderStyle getBorderStyle(ILayerCell cell, IConfigRegistry configRegistry) {
-        IStyle cellStyle = CellStyleUtil.getCellStyle(cell, configRegistry);
-        BorderStyle borderStyle = cellStyle.getAttributeValue(CellStyleAttributes.BORDER_STYLE);
-        if (borderStyle == null) {
-            borderStyle = this.defaultBorderStyle;
-        }
-        return borderStyle;
-    }
-
-    /* (non-Javadoc)
-     * @see org.eclipse.nebula.widgets.nattable.painter.cell.CellPainterWrapper#getPreferredHeight(org.eclipse.nebula.widgets.nattable.layer.cell.ILayerCell, org.eclipse.swt.graphics.GC, org.eclipse.nebula.widgets.nattable.config.IConfigRegistry)
-     */
     @Override
     public int getPreferredHeight(ILayerCell cell, GC gc, IConfigRegistry configRegistry) {
         BorderStyle borderStyle = getBorderStyle(cell, configRegistry);
@@ -106,9 +103,6 @@ public class DataTableDecorator extends CellPainterWrapper {
         return super.getPreferredHeight(cell, gc, configRegistry) + (borderThickness * borderLineCount);
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.nebula.widgets.nattable.painter.cell.CellPainterWrapper#getPreferredWidth(org.eclipse.nebula.widgets.nattable.layer.cell.ILayerCell, org.eclipse.swt.graphics.GC, org.eclipse.nebula.widgets.nattable.config.IConfigRegistry)
-     */
     @Override
     public int getPreferredWidth(ILayerCell cell, GC gc, IConfigRegistry configRegistry) {
         BorderStyle borderStyle = getBorderStyle(cell, configRegistry);
@@ -123,9 +117,6 @@ public class DataTableDecorator extends CellPainterWrapper {
         return super.getPreferredWidth(cell, gc, configRegistry) + (borderThickness * borderLineCount);
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.nebula.widgets.nattable.painter.cell.CellPainterWrapper#paintCell(org.eclipse.nebula.widgets.nattable.layer.cell.ILayerCell, org.eclipse.swt.graphics.GC, org.eclipse.swt.graphics.Rectangle, org.eclipse.nebula.widgets.nattable.config.IConfigRegistry)
-     */
     @Override
     public void paintCell(ILayerCell cell, GC gc, Rectangle rectangle, IConfigRegistry configRegistry) {
         BorderStyle borderStyle = getBorderStyle(cell, configRegistry);
@@ -224,6 +215,22 @@ public class DataTableDecorator extends CellPainterWrapper {
         gc.setForeground(originalForeground);
         gc.setLineWidth(originalLineWidth);
         gc.setLineStyle(originalLineStyle);
+    }
+
+    /**
+     * 
+     *
+     * @param cell
+     * @param configRegistry
+     * @return
+     */
+    private BorderStyle getBorderStyle(ILayerCell cell, IConfigRegistry configRegistry) {
+        IStyle cellStyle = CellStyleUtil.getCellStyle(cell, configRegistry);
+        BorderStyle borderStyle = cellStyle.getAttributeValue(CellStyleAttributes.BORDER_STYLE);
+        if (borderStyle == null) {
+            borderStyle = this.defaultBorderStyle;
+        }
+        return borderStyle;
     }
 
 }

@@ -1,19 +1,18 @@
 /*
  * ARX: Powerful Data Anonymization
- * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
+ * Copyright 2012 - 2015 Florian Kohlmayer, Fabian Prasser
  * 
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.deidentifier.arx.gui.worker;
@@ -104,9 +103,6 @@ public class WorkerLoad extends Worker<Model> {
         this.zipfile = new ZipFile(path);
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.jface.operation.IRunnableWithProgress#run(org.eclipse.core.runtime.IProgressMonitor)
-     */
     @Override
     public void run(final IProgressMonitor arg0) throws InvocationTargetException,
                                                         InterruptedException {
@@ -131,7 +127,6 @@ public class WorkerLoad extends Worker<Model> {
             zip.close();
             arg0.worked(1);
         } catch (final Exception e) {
-            e.printStackTrace();
             error = e;
             arg0.done();
             return;
@@ -171,6 +166,7 @@ public class WorkerLoad extends Worker<Model> {
                 if (vocabulary.isClipboard(localName)) {
                     return true;
                 } else if (vocabulary.isNode(localName)) {
+                    if (payload == null || map == null) return true;
                     final ARXNode node = map.get(payload.trim());
                     model.getClipboard().addToClipboard(node);
                     return true;
@@ -349,7 +345,7 @@ public class WorkerLoad extends Worker<Model> {
                     if (attr == null) { throw new SAXException(Resources.getMessage("WorkerLoad.3")); } //$NON-NLS-1$
                     
                     // TODO: For backwards compatibility only
-                    if (vocabulary.getVocabularyVersion().equals("1.0")) {
+                    if (vocabulary.getVocabularyVersion().equals("1.0")) { //$NON-NLS-1$
                         
                         // Data type
                         if (dtype.equals(DataType.STRING.toString())) {
@@ -359,7 +355,7 @@ public class WorkerLoad extends Worker<Model> {
                         } else {
                             definition.setDataType(attr, DataType.createDate(dtype));
                         }
-                    } else if (vocabulary.getVocabularyVersion().equals("2.0")) {
+                    } else if (vocabulary.getVocabularyVersion().equals("2.0")) { //$NON-NLS-1$
                         
                         // Find matching data type
                         DataType<?> datatype = null;
@@ -369,7 +365,7 @@ public class WorkerLoad extends Worker<Model> {
                                 // Check format
                                 if (format != null){
                                     if (!description.hasFormat()) {
-                                        throw new RuntimeException("Invalid format specified for data type");
+                                        throw new RuntimeException(Resources.getMessage("WorkerLoad.14")); //$NON-NLS-1$
                                     }
                                     datatype = description.newInstance(format);
                                 } else {
@@ -381,7 +377,7 @@ public class WorkerLoad extends Worker<Model> {
                         
                         // Check if found
                         if (datatype == null){
-                            throw new RuntimeException("No data type specified for attribute: "+attr);
+                            throw new RuntimeException(Resources.getMessage("WorkerLoad.15")+attr); //$NON-NLS-1$
                         }
                         
                         // Store
@@ -421,14 +417,14 @@ public class WorkerLoad extends Worker<Model> {
                         
                         int height = hierarchy.getHierarchy().length>0 ?
                                      hierarchy.getHierarchy()[0].length : 0;
-                        if (min.equals("All")) {
+                        if (min.equals("All")) { //$NON-NLS-1$
                             config.setMinimumGeneralization(attr, null);
                             definition.setMinimumGeneralization(attr, 0);
                         } else {
                             config.setMinimumGeneralization(attr, Integer.valueOf(min));
                             definition.setMinimumGeneralization(attr, Integer.valueOf(min));
                         }
-                        if (max.equals("All")) {
+                        if (max.equals("All")) { //$NON-NLS-1$
                             config.setMaximumGeneralization(attr, null);
                             definition.setMaximumGeneralization(attr, height-1);
                         } else {
@@ -437,7 +433,7 @@ public class WorkerLoad extends Worker<Model> {
                         }
 
                         // TODO: For backwards compatibility only
-                        if (vocabulary.getVocabularyVersion().equals("1.0")) {
+                        if (vocabulary.getVocabularyVersion().equals("1.0")) { //$NON-NLS-1$
                             if (config.getMinimumGeneralization(attr) != null &&
                                 config.getMinimumGeneralization(attr).equals(0)){
                                 config.setMinimumGeneralization(attr, null);
@@ -555,7 +551,9 @@ public class WorkerLoad extends Worker<Model> {
         final ZipEntry entry = zip.getEntry(prefix + ref);
         if (entry == null) { throw new IOException(Resources.getMessage("WorkerLoad.5")); } //$NON-NLS-1$
         final InputStream is = new BufferedInputStream(zip.getInputStream(entry));
-        return Hierarchy.create(is, model.getSeparator());
+        
+        // Use project delimiter for backwards compatibility
+        return Hierarchy.create(is, model.getCSVSyntax().getDelimiter());
     }
 
     /**
@@ -571,8 +569,9 @@ public class WorkerLoad extends Worker<Model> {
         if (entry == null) { return; }
 
         // Read input
+        // Use project delimiter for backwards compatibility
         config.setInput(Data.create(new BufferedInputStream(zip.getInputStream(entry)),
-                                    model.getSeparator()));
+                                    model.getCSVSyntax().getDelimiter()));
         
         // Disable visualization
         if (model.getMaximalSizeForComplexOperations() > 0 &&

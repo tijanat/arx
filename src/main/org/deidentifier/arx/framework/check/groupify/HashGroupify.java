@@ -1,19 +1,18 @@
 /*
  * ARX: Powerful Data Anonymization
- * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
+ * Copyright 2012 - 2015 Florian Kohlmayer, Fabian Prasser
  * 
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.deidentifier.arx.framework.check.groupify;
@@ -23,8 +22,11 @@ import org.deidentifier.arx.RowSet;
 import org.deidentifier.arx.criteria.DPresence;
 import org.deidentifier.arx.criteria.Inclusion;
 import org.deidentifier.arx.criteria.PrivacyCriterion;
+import org.deidentifier.arx.criteria.SampleBasedCriterion;
 import org.deidentifier.arx.framework.check.distribution.Distribution;
 import org.deidentifier.arx.framework.data.Data;
+import org.deidentifier.arx.framework.lattice.Node;
+import org.deidentifier.arx.metric.Metric;
 
 /**
  * A hash groupify operator. It implements a hash table with chaining and keeps
@@ -188,46 +190,55 @@ public class HashGroupify implements IHashGroupify {
     }
 
     /** Is the result k-anonymous?. */
-    private boolean                  kAnonymous;
+    private boolean                             kAnonymous;
 
     /** Is the result anonymous. */
-   private boolean                   anonymous;
+    private boolean                             anonymous;
 
     /** The current outliers. */
-    private int                      currentOutliers;
+    private int                                 currentOutliers;
 
     /** Current number of elements. */
-    private int                      elementCount;
+    private int                                 elementCount;
 
     /** The entry array. */
-    private HashGroupifyEntry[]      buckets;
+    private HashGroupifyEntry[]                 buckets;
 
     /** The first entry. */
-    private HashGroupifyEntry        firstEntry;
+    private HashGroupifyEntry                   firstEntry;
 
     /** The last entry. */
-    private HashGroupifyEntry        lastEntry;
+    private HashGroupifyEntry                   lastEntry;
 
     /** Load factor. */
-    private final float              loadFactor = 0.75f;
+    private final float                         loadFactor = 0.75f;
 
     /** Maximum number of elements that can be put in this map before having to rehash. */
-    private int                      threshold;
+    private int                                 threshold;
 
     /** Allowed tuple outliers. */
-    private final int                absoluteMaxOutliers;
+    private final int                           absoluteMaxOutliers;
 
     /** The parameter k, if k-anonymity is contained in the set of criteria. */
-    private final int                k;
+    private final int                           k;
 
     /** The research subset, if d-presence is contained in the set of criteria. */
-    private final RowSet             subset;
+    private final RowSet                        subset;
 
     /** True, if the contained d-presence criterion is not inclusion. */
-    private final boolean            dpresence;
+    private final boolean                       dpresence;
 
     /** Criteria. */
-    private final PrivacyCriterion[] criteria;
+    private final PrivacyCriterion[]            classBasedCriteria;
+
+    /** Criteria. */
+    private final SampleBasedCriterion[]        sampleBasedCriteria;
+
+    /** Metric */
+    private final Metric<?>                     metric;
+
+    /** Do we ensure optimality for sample-based criteria */
+    private final boolean                       heuristicForSampleBasedCriteria;
 
     /**
      * Constructs a new hash groupify operator.
@@ -245,7 +256,9 @@ public class HashGroupify implements IHashGroupify {
 
         this.currentOutliers = 0;
         this.absoluteMaxOutliers = config.getAbsoluteMaxOutliers();
-
+        this.metric = config.getMetric();
+        this.heuristicForSampleBasedCriteria = config.isUseHeuristicForSampleBasedCriteria();
+        
         // Extract research subset
         if (config.containsCriterion(DPresence.class)) {
             this.subset = config.getCriterion(DPresence.class).getSubset().getSet();
@@ -254,24 +267,22 @@ public class HashGroupify implements IHashGroupify {
         }
 
         // Extract criteria
-        this.criteria = config.getCriteriaAsArray();
+        this.classBasedCriteria = config.getClassBasedCriteriaAsArray();
+        this.sampleBasedCriteria = config.getSampleBasedCriteriaAsArray();
         this.k = config.getMinimalGroupSize();
         
         // Sanity check: by convention, d-presence must be the first criterion 
         // See analyze() and isAnonymous(Entry) for more details
-        for (int i=1; i<criteria.length; i++) {
-            if (criteria[i] instanceof DPresence) {
+        for (int i=1; i<classBasedCriteria.length; i++) {
+            if (classBasedCriteria[i] instanceof DPresence) {
                 throw new RuntimeException("D-Presence must be the first criterion in the array");
             }
         }
         
         // Remember, if (real) d-presence is part of the criteria that must be enforced
-        dpresence = (criteria.length > 0 && (criteria[0] instanceof DPresence) && !(criteria[0] instanceof Inclusion));
+        dpresence = (classBasedCriteria.length > 0 && (classBasedCriteria[0] instanceof DPresence) && !(classBasedCriteria[0] instanceof Inclusion));
     }
     
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.framework.check.groupify.IHashGroupify#addAll(int[], int, int, int[], int)
-     */
     @Override
     public void addAll(int[] key, int representant, int count, int[] sensitive, int pcount) {
 
@@ -301,9 +312,6 @@ public class HashGroupify implements IHashGroupify {
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.framework.check.groupify.IHashGroupify#addGroupify(int[], int, int, org.deidentifier.arx.framework.check.distribution.Distribution[], int)
-     */
     @Override
     public void addGroupify(int[] key, int representant, int count, Distribution[] distributions, int pcount) {
 
@@ -325,9 +333,6 @@ public class HashGroupify implements IHashGroupify {
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.framework.check.groupify.IHashGroupify#addSnapshot(int[], int, int, int[][], int[][], int)
-     */
     @Override
     public void addSnapshot(int[] key, int representant, int count, int[][] elements, int[][] frequencies, int pcount) {
 
@@ -355,20 +360,12 @@ public class HashGroupify implements IHashGroupify {
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.framework.check.groupify.IHashGroupify#analyze(boolean)
-     */
     @Override
-    public void analyze(boolean force){
-        if (force) analyzeAll();
-        else analyzeWithEarlyAbort();
+    public void analyze(Node transformation, boolean force){
+        if (force) analyzeAll(transformation);
+        else analyzeWithEarlyAbort(transformation);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.deidentifier.ARX.framework.check.groupify.IHashGroupify#clear()
-     */
     @Override
     public void clear() {
         if (elementCount > 0) {
@@ -380,21 +377,11 @@ public class HashGroupify implements IHashGroupify {
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.deidentifier.ARX.framework.check.groupify.IHashGroupify#getFirstEntry
-     * ()
-     */
     @Override
     public HashGroupifyEntry getFirstEntry() {
         return firstEntry;
     }
 
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.framework.check.groupify.IHashGroupify#getGroupStatistics()
-     */
     @Override
     public GroupStatistics getGroupStatistics() {
 
@@ -466,25 +453,16 @@ public class HashGroupify implements IHashGroupify {
                                     numberOfOutlyingTuples);
     }
 
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.framework.check.groupify.IHashGroupify#isAnonymous()
-     */
     @Override
     public boolean isAnonymous() {
         return anonymous;
     }
 
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.framework.check.groupify.IHashGroupify#isKAnonymous()
-     */
     @Override
     public boolean isKAnonymous() {
-        return kAnonymous;
+        return k != Integer.MAX_VALUE && kAnonymous;
     }
     
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.framework.check.groupify.IHashGroupify#markOutliers(int[][])
-     */
     @Override
     public void markOutliers(final int[][] data) {
         
@@ -517,11 +495,6 @@ public class HashGroupify implements IHashGroupify {
         this.currentOutliers = 0;
     }
     
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.deidentifier.ARX.framework.check.groupify.IHashGroupify#size()
-     */
     @Override
     public int size() {
         return elementCount;
@@ -539,12 +512,7 @@ public class HashGroupify implements IHashGroupify {
      */
     private final HashGroupifyEntry addInternal(final int[] key, final int hash, final int representant, int count, final int pcount) {
 
-        // Is the line contained in the research subset
-        if (subset != null && !subset.contains(representant)) {
-            count = 0;
-        }
-
-        // Add entry
+        // Find or create entry
         int index = hash & (buckets.length - 1);
         HashGroupifyEntry entry = findEntry(key, index, hash);
         if (entry == null) {
@@ -554,19 +522,44 @@ public class HashGroupify implements IHashGroupify {
             }
             entry = createEntry(key, index, hash, representant);
         }
+
+        // If we enforce d-presence and the tuple is not contained in the research subset: set its count to zero
+        count = (subset != null && !subset.contains(representant)) ? 0 : count;
+
+        // Track size: private table for d-presence, overall table, else
         entry.count += count;
 
-        // indirectly check if we are in d-presence mode
+        // Indirectly check if we enforce d-presence
         if (subset != null) {
+            
+            // Increase size of tuples from public table
             entry.pcount += pcount;
-            if (count > 0) {
-                // this is a tuple from the research subset: Reset its representative, necessary for rollup / history
-                // (otherwise subset.contains(tupleID) could potentially return false)
-                entry.representant = representant;
-            }
+            
+            // This is a tuple from the research subset, but the class is not represented by a tuple from the subset.
+            // Or this is a tuple from the subset with a representant that is smaller than the current representant of the tuple (which is also from the subset)
+            // Reset its representative, which is necessary for rollup / history, because
+            // otherwise subset.contains(tupleID) could potentially return false.
+            // Moreover, we *must* always represent classes by its minimal representant to ensure that roll-ups and snapshots can be
+            // utilized correctly. This is guaranteed, if there is no research subset, and needs to be enforced explicitly, if there is one.
+            //
+            // Consider the following scenario
+            //
+            // 1. Tuple from G1 (Not in subset)
+            // 2. Tuple from G2 (Not in subset)
+            // 3. Tuple from G2 <-Representant
+            // 4. Tuple from G1 <-Representant
+            //
+            // We assume that G1 and G2 collapse in the next grouping operation.
+            //
+            // If we iterate over the whole dataset and always choose the last element, the group is represented by tuple 4
+            // If we iterate over a snapshot, G1 will be iterated over before G2 (although it has the larger representant), resetting the representative index 3
+            //
+            // To prevent this, we always choose the smallest index:
+            entry.representant = (count > 0 && (entry.count == count || entry.representant < representant)) ? representant : entry.representant;
         }
 
-        // Compute current outliers, if k-anonymity is part of the criteria
+        // Compute current total number of outliers, if k-anonymity is contained in the set of criteria
+        // TODO: Replace with conditional moves
         if (entry.count >= k) {
             if (!entry.isNotOutlier) {
                 entry.isNotOutlier = true;
@@ -575,14 +568,16 @@ public class HashGroupify implements IHashGroupify {
         } else {
             currentOutliers += count;
         }
-
+        
+        // Return
         return entry;
     }
 
     /**
-     * Analyze.
+     * Analyzes the content of the hash table. Checks the privacy criteria against each class.
+     * @param transformation
      */
-    private void analyzeAll(){
+    private void analyzeAll(Node transformation){
 
         // We have only checked k-anonymity so far
         kAnonymous = (currentOutliers <= absoluteMaxOutliers);
@@ -618,19 +613,53 @@ public class HashGroupify implements IHashGroupify {
             entry = entry.nextOrdered;
         }
         
+        this.analyzeSampleBasedCriteria(transformation, false);
         this.anonymous = (currentOutliers <= absoluteMaxOutliers) && dpresent;
     }
 
     /**
-     * Analyze.
+     * Analyze sample-based criteria
+     * @param transformation
+     * @param earlyAbort May we perform an early abort, if we reach the threshold
+     * @return
      */
-    private void analyzeWithEarlyAbort(){
+    private void analyzeSampleBasedCriteria(Node transformation, boolean earlyAbort) {
+        
+        // Nothing to do
+        if (this.sampleBasedCriteria.length == 0) {
+            return;
+        }
+        
+        // Build a distribution
+        HashGroupifyDistribution distribution = new HashGroupifyDistribution(heuristicForSampleBasedCriteria ? null : metric, 
+                                                                             transformation, 
+                                                                             this.firstEntry);
+        
+        // For each criterion
+        for (SampleBasedCriterion criterion : this.sampleBasedCriteria) {
+            
+            // Enforce
+            criterion.enforce(distribution, earlyAbort ? this.absoluteMaxOutliers : Integer.MAX_VALUE);
+            
+            // Early abort
+            this.currentOutliers = distribution.getNumOfSuppressedTuples();
+            if (earlyAbort && currentOutliers > absoluteMaxOutliers) {
+                return;
+            }
+        }
+    }
+
+    /**
+     * Analyzes the content of the hash table. Checks the privacy criteria against each class.
+     * @param transformation
+     */
+    private void analyzeWithEarlyAbort(Node transformation){
         
         // We have only checked k-anonymity so far
         kAnonymous = (currentOutliers <= absoluteMaxOutliers);
         
         // Abort early, if only k-anonymity was specified
-        if (criteria.length == 0) { 
+        if (classBasedCriteria.length == 0 && sampleBasedCriteria.length == 0) { 
             anonymous = kAnonymous;
             return;
         }
@@ -683,7 +712,8 @@ public class HashGroupify implements IHashGroupify {
             entry = entry.nextOrdered;
         }
         
-        this.anonymous = true;
+        this.analyzeSampleBasedCriteria(transformation, true);
+        this.anonymous = (currentOutliers <= absoluteMaxOutliers);
     }
 
     /**
@@ -764,8 +794,8 @@ public class HashGroupify implements IHashGroupify {
         // Check other criteria
         // Note: The d-presence criterion must be checked first to ensure correct handling of d-presence with tuple suppression.
         //       This is currently ensured by convention. See ARXConfiguration.getCriteriaAsArray();
-        for (int i = 0; i < criteria.length; i++) {
-            if (!criteria[i].isAnonymous(entry)) {
+        for (int i = 0; i < classBasedCriteria.length; i++) {
+            if (!classBasedCriteria[i].isAnonymous(entry)) {
                 return i + 1;
             }
         }

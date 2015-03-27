@@ -1,19 +1,18 @@
 /*
  * ARX: Powerful Data Anonymization
- * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
+ * Copyright 2012 - 2015 Florian Kohlmayer, Fabian Prasser
  * 
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package org.deidentifier.arx.gui.view.impl;
 
@@ -72,19 +71,21 @@ public class MainSplash {
     }
 
     /**
-     * Paint.
-     *
-     * @param gc
+     * Disposes the shell.
      */
-    private void paint(GC gc) {
-    	Point size = shell.getSize();
-        Point offsets = gc.textExtent(version);
-        gc.setAdvanced(true);
-        gc.setAntialias(SWT.ON);
-        gc.setInterpolation(SWT.ON);
-        gc.drawImage(splash, 0,  0, splash.getBounds().width, splash.getBounds().height, 0, 0, size.x,  size.y);
-        gc.setForeground(GUIHelper.COLOR_BLACK);
-        gc.drawString(version, size.x - (int)offsets.x - 10, size.y - (int)offsets.y - 10, true);
+    public void hide() {
+        if (shell != null && !shell.isDisposed()) {
+            shell.dispose();
+        }
+    }
+
+    /**
+     * Is this shell disposed.
+     *
+     * @return
+     */
+    public boolean isDisposed() {
+        return this.shell == null || this.shell.isDisposed();
     }
 
     /**
@@ -109,29 +110,27 @@ public class MainSplash {
     }
 
     /**
-     * Is this shell disposed.
-     *
-     * @return
-     */
-    public boolean isDisposed() {
-        return this.shell == null || this.shell.isDisposed();
-    }
-
-    /**
-     * Disposes the shell.
-     */
-    public void hide() {
-        if (shell != null && !shell.isDisposed()) {
-            shell.dispose();
-        }
-    }
-
-    /**
      * Detect os x.
      *
      * @return
      */
     private boolean isMac() {
-        return (System.getProperty("os.name").toLowerCase().indexOf("mac") >= 0);
+        return (System.getProperty("os.name").toLowerCase().indexOf("mac") >= 0); //$NON-NLS-1$ //$NON-NLS-2$
+    }
+
+    /**
+     * Paint.
+     *
+     * @param gc
+     */
+    private void paint(GC gc) {
+    	Point size = shell.getSize();
+        Point offsets = gc.textExtent(version);
+        gc.setAdvanced(true);
+        gc.setAntialias(SWT.ON);
+        gc.setInterpolation(SWT.ON);
+        gc.drawImage(splash, 0,  0, splash.getBounds().width, splash.getBounds().height, 0, 0, size.x,  size.y);
+        gc.setForeground(GUIHelper.COLOR_BLACK);
+        gc.drawString(version, size.x - (int)offsets.x - 10, size.y - (int)offsets.y - 10, true);
     }
 }

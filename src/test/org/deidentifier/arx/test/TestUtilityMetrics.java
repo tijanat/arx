@@ -1,19 +1,18 @@
 /*
  * ARX: Powerful Data Anonymization
- * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
+ * Copyright 2012 - 2015 Florian Kohlmayer, Fabian Prasser
  * 
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.deidentifier.arx.test;
@@ -106,7 +105,7 @@ public class TestUtilityMetrics extends TestUtilityMetricsAbstract {
                 /* 50 */{ new ARXUtilityMetricsTestCase(ARXConfiguration.create(0.05d, Metric.createDiscernabilityMetric(false)).addCriterion(new KAnonymity(5)), "Highest level of school completed", "../arx-data/data-junit/atus.csv", "[0, 0, 0, 0, 0, 0, 0, 0]", "3.2756856071E10", "[0, 1, 0, 1, 1, 0, 0, 0]", "1.8309261099E10", "[0, 1, 0, 1, 1, 0, 0, 1]", "1.7413624699E10", "[0, 0, 0, 0, 1, 2, 2, 0]", "1.3879649691E10", "[0, 0, 1, 0, 1, 1, 0, 2]", "1.8970099543E10", "[0, 0, 0, 1, 0, 2, 0, 2]", "1.9759014883E10", "[0, 4, 0, 0, 0, 2, 1, 0]", "6.703138111E9", "[2, 1, 0, 2, 1, 1, 1, 0]", "1.6201432191E10", "[1, 2, 0, 1, 1, 1, 0, 2]", "1.3457931051E10", "[2, 5, 1, 2, 2, 2, 2, 2]", "2.90793798009E11") },
                 { new ARXUtilityMetricsTestCase(ARXConfiguration.create(0.05d, Metric.createDiscernabilityMetric(false)).addCriterion(new KAnonymity(5)), "EDUC", "../arx-data/data-junit/ihis.csv", "[0, 0, 0, 0, 0, 0, 0, 0]", "6.0229370151E11", "[1, 0, 0, 0, 2, 0, 0, 0]", "8.9751254021E10", "[1, 2, 1, 0, 0, 0, 0, 0]", "9.84448153E10", "[0, 2, 0, 1, 0, 0, 0, 1]", "8.6775063078E10", "[0, 1, 0, 1, 1, 2, 0, 0]", "6.79066454E10", "[0, 1, 0, 1, 0, 2, 1, 0]", "1.20773461676E11", "[2, 0, 1, 0, 0, 0, 1, 1]", "3.8433249494E10", "[1, 1, 0, 1, 0, 0, 1, 1]", "2.9865741737E10", "[0, 2, 1, 2, 0, 2, 0, 1]", "7.552215892E9", "[5, 2, 2, 3, 4, 2, 1, 1]", "1.424451798016E12") },
                 { new ARXUtilityMetricsTestCase(ARXConfiguration.create(0.05d, Metric.createDiscernabilityMetric(false)).addCriterion(new KAnonymity(5)).addCriterion(new DPresence(0.05, 0.15, DataSubset.create(Data.create("../arx-data/data-junit/adult.csv", ';'), Data.create("../arx-data/data-junit/adult_subset.csv", ';')))), "occupation", "../arx-data/data-junit/adult.csv", "[0, 0, 0, 0, 0, 0, 0, 0]", "8425679.0", "[0, 2, 0, 0, 2, 0, 1, 1]", "2529631.0", "[0, 4, 1, 0, 0, 2, 1, 1]", "1309104.0", "[1, 2, 1, 0, 1, 1, 2, 1]", "1098972.0", "[0, 3, 1, 1, 3, 1, 1, 0]", "1012071.0", "[1, 2, 1, 2, 1, 2, 0, 1]", "1073238.0", "[1, 4, 0, 2, 3, 2, 2, 0]", "4168425.0", "[1, 4, 1, 2, 3, 2, 2, 1]", "9096256.0") },
-                { new ARXUtilityMetricsTestCase(ARXConfiguration.create(0.05d, Metric.createDiscernabilityMetric(false)).addCriterion(new KAnonymity(5)).addCriterion(new HierarchicalDistanceTCloseness("occupation", 0.2, Hierarchy.create("../arx-data/data-junit/adult_hierarchy_occupation.csv", ';'))).addCriterion(new DPresence(0.05, 0.15, DataSubset.create(Data.create("../arx-data/data-junit/adult.csv", ';'), Data.create("../arx-data/data-junit/adult_subset.csv", ';')))), "occupation", "../arx-data/data-junit/adult.csv", "[0, 0, 0, 0, 0, 0, 0, 0]", "9096256.0", "[1, 1, 0, 0, 2, 2, 2, 0]", "6456349.0", "[0, 3, 1, 1, 0, 2, 2, 0]", "7102183.0", "[1, 3, 0, 0, 2, 1, 1, 1]", "5832609.0", "[1, 2, 1, 2, 2, 1, 2, 0]", "4210607.0", "[1, 4, 0, 1, 3, 2, 2, 1]", "2776871.0", "[1, 4, 1, 2, 3, 2, 2, 1]", "9096256.0") },
+                { new ARXUtilityMetricsTestCase(ARXConfiguration.create(0.05d, Metric.createDiscernabilityMetric(false)).addCriterion(new KAnonymity(5)).addCriterion(new HierarchicalDistanceTCloseness("occupation", 0.2, Hierarchy.create("../arx-data/data-junit/adult_hierarchy_occupation.csv", ';'))).addCriterion(new DPresence(0.05, 0.15, DataSubset.create(Data.create("../arx-data/data-junit/adult.csv", ';'), Data.create("../arx-data/data-junit/adult_subset.csv", ';')))), "occupation", "../arx-data/data-junit/adult.csv", "[0, 0, 0, 0, 0, 0, 0, 0]", "9096256.0", "[1, 1, 0, 0, 2, 2, 2, 0]", "6456349.0", "[0, 3, 1, 1, 0, 2, 2, 0]", "7102183.0", "[1, 3, 0, 0, 2, 1, 1, 1]", "5832609.0", "[1, 2, 1, 2, 2, 1, 2, 0]", "4210607.0", "[1, 4, 0, 1, 3, 2, 2, 1]", "3618711.0", "[1, 4, 1, 2, 3, 2, 2, 1]", "9096256.0") },
                 { new ARXUtilityMetricsTestCase(ARXConfiguration.create(0.05d, Metric.createDiscernabilityMetric(false)).addCriterion(new KAnonymity(5)).addCriterion(new HierarchicalDistanceTCloseness("occupation", 0.2, Hierarchy.create("../arx-data/data-junit/adult_hierarchy_occupation.csv", ';'))), "occupation", "../arx-data/data-junit/adult.csv", "[0, 0, 0, 0, 0, 0, 0, 0]", "8.91711567E8", "[1, 0, 1, 0, 0, 1, 1, 1]", "7.52467594E8", "[0, 1, 1, 2, 2, 0, 1, 1]", "7.30323768E8", "[1, 3, 0, 1, 2, 0, 1, 1]", "5.68438002E8", "[1, 1, 1, 1, 0, 2, 2, 1]", "4.76568155E8", "[1, 4, 0, 2, 3, 1, 2, 1]", "6.51069629E8", "[1, 4, 1, 1, 3, 2, 2, 1]", "4.56853172E8", "[1, 4, 1, 2, 3, 2, 2, 1]", "9.09746244E8") },
                 { new ARXUtilityMetricsTestCase(ARXConfiguration.create(0.05d, Metric.createDiscernabilityMetric(false)).addCriterion(new RecursiveCLDiversity("occupation", 4.0, 5)).addCriterion(new DPresence(0.05, 0.15, DataSubset.create(Data.create("../arx-data/data-junit/adult.csv", ';'), Data.create("../arx-data/data-junit/adult_subset.csv", ';')))), "occupation", "../arx-data/data-junit/adult.csv", "[0, 0, 0, 0, 0, 0, 0, 0]", "8705518.0", "[0, 1, 0, 2, 1, 0, 1, 1]", "3544067.0", "[1, 1, 0, 1, 3, 0, 0, 1]", "2798834.0", "[0, 1, 1, 1, 3, 2, 2, 0]", "818055.0", "[1, 1, 1, 2, 3, 1, 1, 1]", "1103295.0", "[1, 4, 1, 1, 2, 1, 2, 0]", "1965745.0", "[0, 4, 1, 2, 3, 1, 2, 0]", "3022313.0", "[1, 4, 1, 2, 3, 2, 2, 1]", "9096256.0") },
                 { new ARXUtilityMetricsTestCase(ARXConfiguration.create(0.05d, Metric.createDiscernabilityMetric(false)).addCriterion(new RecursiveCLDiversity("occupation", 4.0, 5)), "occupation", "../arx-data/data-junit/adult.csv", "[0, 0, 0, 0, 0, 0, 0, 0]", "6.05615358E8", "[1, 1, 1, 1, 0, 0, 1, 0]", "2.32827528E8", "[1, 0, 1, 0, 1, 2, 0, 1]", "2.66210213E8", "[1, 0, 1, 1, 3, 1, 1, 0]", "7.8123768E7", "[0, 2, 1, 1, 2, 2, 0, 1]", "1.11508216E8", "[0, 1, 0, 0, 3, 2, 2, 1]", "5.1815769E7", "[1, 3, 0, 1, 3, 1, 0, 1]", "1.05961387E8", "[1, 4, 1, 2, 3, 2, 2, 1]", "9.09746244E8") },

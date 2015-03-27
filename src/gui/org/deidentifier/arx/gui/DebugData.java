@@ -1,19 +1,18 @@
 /*
  * ARX: Powerful Data Anonymization
- * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
+ * Copyright 2012 - 2015 Florian Kohlmayer, Fabian Prasser
  * 
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.deidentifier.arx.gui;
@@ -42,6 +41,76 @@ public class DebugData {
     private List<String> eventBuffer = new ArrayList<String>();
     
     /**
+     * Adds an event to the buffer.
+     *
+     * @param event
+     */
+    public void addEvent(ModelEvent event) {
+        this.eventBuffer.add(event.toString());
+        if (this.eventBuffer.size() > MAX_BUFFER_SIZE) {
+            this.eventBuffer.remove(0);
+        }
+    }
+    
+    /**
+     * Clears the event log.
+     */
+    public void clearEventLog() {
+        this.eventBuffer.clear();
+    }
+
+    /**
+     * Returns a string representation of a definition.
+     *
+     * @param definition
+     * @return
+     */
+    private String getDebugData(DataDefinition definition){
+        
+        StringBuilder builder = new StringBuilder();
+        builder.append("DataDefinition@").append(definition.hashCode()); //$NON-NLS-1$
+        builder.append(definition.isLocked() ? " [Locked]\n" : "\n"); //$NON-NLS-1$ //$NON-NLS-2$
+        return builder.toString();
+    }
+    
+    /**
+     * Returns a string representation of a hierarchy.
+     *
+     * @param hierarchy
+     * @return
+     */
+    private String getDebugData(Hierarchy hierarchy){
+        
+        if (hierarchy==null || hierarchy.getHierarchy()==null || hierarchy.getHierarchy().length==0) return "empty"; //$NON-NLS-1$
+        else return "height="+hierarchy.getHierarchy()[0].length; //$NON-NLS-1$
+    }
+
+    /**
+     * Returns a string representation of a handle.
+     *
+     * @param prefix
+     * @param handle
+     * @param view
+     * @return
+     */
+    private String getDebugData(String prefix, DataHandle handle, boolean view){
+        
+        StringBuilder builder = new StringBuilder();
+        builder.append("DataHandle@").append(handle.hashCode()); //$NON-NLS-1$
+        if (handle.isOrphaned()) {
+            builder.append(" [Orphaned]\n"); //$NON-NLS-1$
+        } else {
+            builder.append("\n"); //$NON-NLS-1$
+            builder.append(prefix).append("DataDefinition@").append(handle.getDefinition().hashCode()); //$NON-NLS-1$
+            builder.append(handle.getDefinition().isLocked() ? " [Locked]\n" : "\n"); //$NON-NLS-1$ //$NON-NLS-2$
+            if (!view) {
+                builder.append(prefix).append("View").append(getDebugData(prefix+"View", handle.getView(), true)); //$NON-NLS-1$ //$NON-NLS-2$
+            }
+        }  
+        return builder.toString();
+    }
+
+    /**
      * Returns some debug data.
      *
      * @param model
@@ -56,118 +125,48 @@ public class DebugData {
         }
         
         StringBuilder builder = new StringBuilder();
-        builder.append("Handles\n");
-        builder.append(" - Definitions\n");
-        builder.append("   * Input : ").append(getDebugData(model.getInputDefinition()));
-        builder.append("   * Output: ").append(getDebugData(model.getOutputDefinition()));
-        builder.append(" - Input\n");
-        builder.append("   * Input : ").append(getDebugData("             ", model.getInputConfig().getInput().getHandle(), false));
+        builder.append("Handles\n"); //$NON-NLS-1$
+        builder.append(" - Definitions\n"); //$NON-NLS-1$
+        builder.append("   * Input : ").append(getDebugData(model.getInputDefinition())); //$NON-NLS-1$
+        builder.append("   * Output: ").append(getDebugData(model.getOutputDefinition())); //$NON-NLS-1$
+        builder.append(" - Input\n"); //$NON-NLS-1$
+        builder.append("   * Input : ").append(getDebugData("             ", model.getInputConfig().getInput().getHandle(), false)); //$NON-NLS-1$ //$NON-NLS-2$
         if (model.getOutput() != null) {
-            builder.append(" - Output\n");
-            builder.append("   * Input : ").append(getDebugData("             ", model.getOutputConfig().getInput().getHandle(), false));
-            builder.append("   * Output: ").append(getDebugData("             ", model.getOutput(), false));
+            builder.append(" - Output\n"); //$NON-NLS-1$
+            builder.append("   * Input : ").append(getDebugData("             ", model.getOutputConfig().getInput().getHandle(), false)); //$NON-NLS-1$ //$NON-NLS-2$
+            builder.append("   * Output: ").append(getDebugData("             ", model.getOutput(), false)); //$NON-NLS-1$ //$NON-NLS-2$
         }
-        builder.append("\n");
+        builder.append("\n"); //$NON-NLS-1$
         if (model.getInputConfig() != null || model.getOutputConfig() != null){
-            builder.append("Hierarchies\n");
+            builder.append("Hierarchies\n"); //$NON-NLS-1$
             if (model.getInputConfig() != null){
-                builder.append(" - Input\n");
+                builder.append(" - Input\n"); //$NON-NLS-1$
                 for (Entry<String, Hierarchy> entry : model.getInputConfig().getHierarchies().entrySet()) {
-                    builder.append("   * ").append(entry.getKey()).append(": ").append(getDebugData(entry.getValue())).append("\n");
+                    builder.append("   * ").append(entry.getKey()).append(": ").append(getDebugData(entry.getValue())).append("\n"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                 }    
             }
             if (model.getOutputConfig() != null){
-                builder.append(" - Input\n");
+                builder.append(" - Input\n"); //$NON-NLS-1$
                 for (Entry<String, Hierarchy> entry : model.getOutputConfig().getHierarchies().entrySet()) {
-                    builder.append("   * ").append(entry.getKey()).append(": ").append(getDebugData(entry.getValue())).append("\n");
+                    builder.append("   * ").append(entry.getKey()).append(": ").append(getDebugData(entry.getValue())).append("\n"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                 }    
             }
-            builder.append("\n");
+            builder.append("\n"); //$NON-NLS-1$
         }
         
-        builder.append("Visualization\n");
-        builder.append(" - Hidden   : ").append(!model.isVisualizationEnabled()).append("\n");
-        builder.append(" - Hidden at: ").append(model.getMaximalSizeForComplexOperations()).append("\n");
-        builder.append("\n");
-        builder.append("Event log\n");
+        builder.append("Visualization\n"); //$NON-NLS-1$
+        builder.append(" - Hidden   : ").append(!model.isVisualizationEnabled()).append("\n"); //$NON-NLS-1$ //$NON-NLS-2$
+        builder.append(" - Hidden at: ").append(model.getMaximalSizeForComplexOperations()).append("\n"); //$NON-NLS-1$ //$NON-NLS-2$
+        builder.append("\n"); //$NON-NLS-1$
+        builder.append("Event log\n"); //$NON-NLS-1$
         if (eventBuffer.isEmpty()) {
-            builder.append(" - Empty\n");
+            builder.append(" - Empty\n"); //$NON-NLS-1$
         } else {
             for (String s : eventBuffer){
-                builder.append(s).append("\n");
+                builder.append(s).append("\n"); //$NON-NLS-1$
             }
         }
         
         return builder.toString();
-    }
-    
-    /**
-     * Returns a string representation of a handle.
-     *
-     * @param prefix
-     * @param handle
-     * @param view
-     * @return
-     */
-    private String getDebugData(String prefix, DataHandle handle, boolean view){
-        
-        StringBuilder builder = new StringBuilder();
-        builder.append("DataHandle@").append(handle.hashCode());
-        if (handle.isOrphaned()) {
-            builder.append(" [Orphaned]\n");
-        } else {
-            builder.append("\n");
-            builder.append(prefix).append("DataDefinition@").append(handle.getDefinition().hashCode());
-            builder.append(handle.getDefinition().isLocked() ? " [Locked]\n" : "\n");
-            if (!view) {
-                builder.append(prefix).append("View").append(getDebugData(prefix+"View", handle.getView(), true));
-            }
-        }  
-        return builder.toString();
-    }
-
-    /**
-     * Returns a string representation of a definition.
-     *
-     * @param definition
-     * @return
-     */
-    private String getDebugData(DataDefinition definition){
-        
-        StringBuilder builder = new StringBuilder();
-        builder.append("DataDefinition@").append(definition.hashCode());
-        builder.append(definition.isLocked() ? " [Locked]\n" : "\n");
-        return builder.toString();
-    }
-    
-    /**
-     * Returns a string representation of a hierarchy.
-     *
-     * @param hierarchy
-     * @return
-     */
-    private String getDebugData(Hierarchy hierarchy){
-        
-        if (hierarchy==null || hierarchy.getHierarchy()==null || hierarchy.getHierarchy().length==0) return "empty";
-        else return "height="+hierarchy.getHierarchy()[0].length;
-    }
-
-    /**
-     * Adds an event to the buffer.
-     *
-     * @param event
-     */
-    public void addEvent(ModelEvent event) {
-        this.eventBuffer.add(event.toString());
-        if (this.eventBuffer.size() > MAX_BUFFER_SIZE) {
-            this.eventBuffer.remove(0);
-        }
-    }
-
-    /**
-     * Clears the event log.
-     */
-    public void clearEventLog() {
-        this.eventBuffer.clear();
     }    
 }

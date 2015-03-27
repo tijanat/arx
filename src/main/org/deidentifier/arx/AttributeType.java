@@ -1,19 +1,18 @@
 /*
  * ARX: Powerful Data Anonymization
- * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
+ * Copyright 2012 - 2015 Florian Kohlmayer, Fabian Prasser
  * 
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.deidentifier.arx;
@@ -29,6 +28,7 @@ import java.util.List;
 
 import org.deidentifier.arx.io.CSVDataOutput;
 import org.deidentifier.arx.io.CSVHierarchyInput;
+import org.deidentifier.arx.io.CSVSyntax;
 
 /**
  * Represents an attribute type.
@@ -37,7 +37,7 @@ import org.deidentifier.arx.io.CSVHierarchyInput;
  * @author Florian Kohlmayer
  */
 public class AttributeType implements Serializable, Cloneable {
-    
+
     /**
      * This class implements a generalization hierarchy.
      *
@@ -46,65 +46,59 @@ public class AttributeType implements Serializable, Cloneable {
      */
     public static abstract class Hierarchy extends AttributeType implements Serializable {
 
-		/**
+        /**
          * The default implementation of a generalization hierarchy. It allows
          * the user to programmatically define its content.
          * 
          * @author Fabian Prasser
- * @author Florian Kohlmayer
+         * @author Florian Kohlmayer
          */
         public static class DefaultHierarchy extends Hierarchy {
 
-			/**  TODO */
-			private static final long serialVersionUID = 7493568420925738049L;
+            /** TODO. */
+            private static final long    serialVersionUID = 7493568420925738049L;
 
-			/** The raw data. */
+            /** The raw data. */
             private final List<String[]> hierarchy;
 
             /** The array. */
-            private String[][]           array = null;
+            private String[][]           array            = null;
 
             /**
-             * 
+             * Instantiates a new default hierarchy.
              */
             public DefaultHierarchy() {
-                this.hierarchy = new ArrayList<String[]>();
+                hierarchy = new ArrayList<String[]>();
             }
 
             /**
-             * 
+             * Instantiates a new default hierarchy.
              *
-             * @param array
+             * @param array the array
              */
             private DefaultHierarchy(final String[][] array) {
                 this.array = array;
-                this.hierarchy = null;
+                hierarchy = null;
             }
 
             /**
              * Adds a row to the tabular representation of this hierarchy.
              *
-             * @param row
+             * @param row the row
              */
             public void add(final String... row) {
                 hierarchy.add(row);
             }
 
-            /* (non-Javadoc)
-             * @see org.deidentifier.arx.AttributeType.Hierarchy#clone()
-             */
             @Override
             public Hierarchy clone() {
-                if (array != null){
+                if (array != null) {
                     return new DefaultHierarchy(array);
                 } else {
                     return new DefaultHierarchy(getHierarchy());
                 }
             }
 
-            /* (non-Javadoc)
-             * @see org.deidentifier.arx.AttributeType.Hierarchy#getHierarchy()
-             */
             @Override
             public String[][] getHierarchy() {
                 if (array == null) {
@@ -117,8 +111,8 @@ public class AttributeType implements Serializable, Cloneable {
                 return array;
             }
         }
-		
-		/**
+
+        /**
          * The implementation for arrays.
          *
          * @author Fabian Prasser
@@ -126,32 +120,26 @@ public class AttributeType implements Serializable, Cloneable {
          */
         static class ArrayHierarchy extends Hierarchy {
 
-			/**  TODO */
-			private static final long serialVersionUID = 8966189950800782892L;
-			
-			/**  TODO */
-			private final String[][] hierarchy;
-			
+            /** TODO. */
+            private static final long serialVersionUID = 8966189950800782892L;
+
+            /** TODO. */
+            private final String[][]  hierarchy;
+
             /**
-             * 
+             * Instantiates a new array hierarchy.
              *
-             * @param hierarchy
+             * @param hierarchy the hierarchy
              */
             private ArrayHierarchy(final String[][] hierarchy) {
                 this.hierarchy = hierarchy;
             }
 
-            /* (non-Javadoc)
-             * @see org.deidentifier.arx.AttributeType.Hierarchy#clone()
-             */
             @Override
             public Hierarchy clone() {
                 return new DefaultHierarchy(getHierarchy());
             }
 
-            /* (non-Javadoc)
-             * @see org.deidentifier.arx.AttributeType.Hierarchy#getHierarchy()
-             */
             @Override
             public String[][] getHierarchy() {
                 return hierarchy;
@@ -166,39 +154,33 @@ public class AttributeType implements Serializable, Cloneable {
          */
         static class IterableHierarchy extends Hierarchy {
 
-			/**  TODO */
-			private static final long serialVersionUID = 5734204406574324342L;
+            /** TODO. */
+            private static final long  serialVersionUID = 5734204406574324342L;
 
-			/**  TODO */
-			private Iterator<String[]> iterator;
+            /** TODO. */
+            private Iterator<String[]> iterator;
 
             /** The array. */
-            private String[][]         array = null;
+            private String[][]         array            = null;
 
             /**
-             * 
+             * Instantiates a new iterable hierarchy.
              *
-             * @param iterator
+             * @param iterator the iterator
              */
             public IterableHierarchy(final Iterator<String[]> iterator) {
                 this.iterator = iterator;
             }
 
-            /* (non-Javadoc)
-             * @see org.deidentifier.arx.AttributeType.Hierarchy#clone()
-             */
             @Override
             public Hierarchy clone() {
-                if (array != null){
+                if (array != null) {
                     return new DefaultHierarchy(array);
                 } else {
                     return new DefaultHierarchy(getHierarchy());
                 }
             }
 
-            /* (non-Javadoc)
-             * @see org.deidentifier.arx.AttributeType.Hierarchy#getHierarchy()
-             */
             @Override
             public String[][] getHierarchy() {
                 if (array == null) {
@@ -216,7 +198,7 @@ public class AttributeType implements Serializable, Cloneable {
             }
         }
 
-        /**  TODO */
+        /** TODO. */
         private static final long serialVersionUID = -4721439386792383385L;
 
         /**
@@ -231,27 +213,154 @@ public class AttributeType implements Serializable, Cloneable {
         /**
          * Creates a new hierarchy from a CSV file.
          *
+         * @param file the file
+         * @return the hierarchy
+         * @throws IOException Signals that an I/O exception has occurred.
+         */
+        public static Hierarchy create(final File file) throws IOException {
+            return new ArrayHierarchy(new CSVHierarchyInput(file).getHierarchy());
+        }
+
+        /**
+         * Creates a new hierarchy from a CSV file.
+         *
          * @param file A file
-         * @param separator The utilized separator character
+         * @param delimiter The utilized separator character
          * @return A Hierarchy
+         * @throws IOException Signals that an I/O exception has occurred.
+         */
+        public static Hierarchy create(final File file, final char delimiter) throws IOException {
+            return new ArrayHierarchy(new CSVHierarchyInput(file, delimiter).getHierarchy());
+        }
+
+        /**
+         * Creates a new hierarchy from a CSV file.
+         *
+         * @param file the file
+         * @param delimiter the delimiter
+         * @param quote the quote
+         * @return the hierarchy
+         * @throws IOException Signals that an I/O exception has occurred.
+         */
+        public static Hierarchy create(final File file, final char delimiter, final char quote) throws IOException {
+            return new ArrayHierarchy(new CSVHierarchyInput(file, delimiter, quote).getHierarchy());
+        }
+
+        /**
+         * Creates a new hierarchy from a CSV file.
+         *
+         * @param file the file
+         * @param delimiter the delimiter
+         * @param quote the quote
+         * @param escape the escape
+         * @return the hierarchy
+         * @throws IOException Signals that an I/O exception has occurred.
+         */
+        public static Hierarchy create(final File file, final char delimiter, final char quote, final char escape) throws IOException {
+            return new ArrayHierarchy(new CSVHierarchyInput(file, delimiter, quote, escape).getHierarchy());
+        }
+
+        /**
+         * Creates a new hierarchy from a CSV file.
+         *
+         * @param file the file
+         * @param delimiter the delimiter
+         * @param quote the quote
+         * @param escape the escape
+         * @param linebreak the linebreak
+         * @return the hierarchy
+         * @throws IOException Signals that an I/O exception has occurred.
+         */
+        public static Hierarchy create(final File file, final char delimiter, final char quote, final char escape, final char[] linebreak) throws IOException {
+            return new ArrayHierarchy(new CSVHierarchyInput(file, delimiter, quote, escape, linebreak).getHierarchy());
+        }
+
+        /**
+         * Creates a new hierarchy from a CSV file.
+         * 
+         * @param file
+         * @param config
+         * @return
          * @throws IOException
          */
-        public static Hierarchy
-                create(final File file, final char separator) throws IOException {
-            return new ArrayHierarchy(new CSVHierarchyInput(file, separator).getHierarchy());
+        public static Hierarchy create(final File file, final CSVSyntax config) throws IOException {
+            return new ArrayHierarchy(new CSVHierarchyInput(file, config).getHierarchy());
+        }
+
+        /**
+         * Creates a new hierarchy from a CSV file.
+         *
+         * @param stream the stream
+         * @return the hierarchy
+         * @throws IOException Signals that an I/O exception has occurred.
+         */
+        public static Hierarchy create(final InputStream stream) throws IOException {
+            return new ArrayHierarchy(new CSVHierarchyInput(stream).getHierarchy());
         }
 
         /**
          * Creates a new hierarchy from a CSV file.
          *
          * @param stream An input stream
-         * @param separator The utilized separator character
+         * @param delimiter The utilized separator character
          * @return A Hierarchy
+         * @throws IOException Signals that an I/O exception has occurred.
+         */
+        public static Hierarchy create(final InputStream stream, final char delimiter) throws IOException {
+            return new ArrayHierarchy(new CSVHierarchyInput(stream, delimiter).getHierarchy());
+        }
+
+        /**
+         * Creates a new hierarchy from a CSV file.
+         *
+         * @param stream the stream
+         * @param delimiter the delimiter
+         * @param quote the quote
+         * @return the hierarchy
+         * @throws IOException Signals that an I/O exception has occurred.
+         */
+        public static Hierarchy create(final InputStream stream, final char delimiter, final char quote) throws IOException {
+            return new ArrayHierarchy(new CSVHierarchyInput(stream, delimiter, quote).getHierarchy());
+        }
+
+        /**
+         * Creates a new hierarchy from a CSV file.
+         *
+         * @param stream the stream
+         * @param delimiter the delimiter
+         * @param quote the quote
+         * @param escape the escape
+         * @return the hierarchy
+         * @throws IOException Signals that an I/O exception has occurred.
+         */
+        public static Hierarchy create(final InputStream stream, final char delimiter, final char quote, final char escape) throws IOException {
+            return new ArrayHierarchy(new CSVHierarchyInput(stream, delimiter, quote, escape).getHierarchy());
+        }
+
+        /**
+         * Creates a new hierarchy from a CSV file.
+         *
+         * @param stream the stream
+         * @param delimiter the delimiter
+         * @param quote the quote
+         * @param escape the escape
+         * @param linebreak the linebreak
+         * @return the hierarchy
+         * @throws IOException Signals that an I/O exception has occurred.
+         */
+        public static Hierarchy create(final InputStream stream, final char delimiter, final char quote, final char escape, final char[] linebreak) throws IOException {
+            return new ArrayHierarchy(new CSVHierarchyInput(stream, delimiter, quote, escape, linebreak).getHierarchy());
+        }
+
+        /**
+         * Creates a new hierarchy from a CSV file.
+         * @param stream
+         * @param config
+         * @return
          * @throws IOException
          */
-        public static Hierarchy create(final InputStream stream,
-                                       final char separator) throws IOException {
-            return new ArrayHierarchy(new CSVHierarchyInput(stream, separator).getHierarchy());
+        public static Hierarchy create(final InputStream stream, final CSVSyntax config) throws IOException {
+            return new ArrayHierarchy(new CSVHierarchyInput(stream, config).getHierarchy());
         }
 
         /**
@@ -280,11 +389,21 @@ public class AttributeType implements Serializable, Cloneable {
          * @param path A path to the file
          * @param separator The utilized separator character
          * @return A Hierarchy
+         * @throws IOException Signals that an I/O exception has occurred.
+         */
+        public static Hierarchy create(final String path, final char separator) throws IOException {
+            return new ArrayHierarchy(new CSVHierarchyInput(path, separator).getHierarchy());
+        }
+
+        /**
+         * Creates a new hierarchy from a CSV file.
+         * @param path
+         * @param config
+         * @return
          * @throws IOException
          */
-        public static Hierarchy
-                create(final String path, final char separator) throws IOException {
-            return new ArrayHierarchy(new CSVHierarchyInput(path, separator).getHierarchy());
+        public static Hierarchy create(final String path, final CSVSyntax config) throws IOException {
+            return new ArrayHierarchy(new CSVHierarchyInput(path, config).getHierarchy());
         }
 
         /**
@@ -298,35 +417,65 @@ public class AttributeType implements Serializable, Cloneable {
         }
 
         /**
-         * 
+         * Instantiates a new hierarchy.
          */
         public Hierarchy() {
             super(ATTR_TYPE_QI);
         }
 
-        /* (non-Javadoc)
-         * @see org.deidentifier.arx.AttributeType#clone()
-         */
         @Override
         public abstract Hierarchy clone();
 
         /**
          * Returns the hierarchy as a two-dimensional string array.
          *
-         * @return
+         * @return the hierarchy
          */
         public abstract String[][] getHierarchy();
 
         /**
          * Writes the hierarchy to a CSV file.
          *
-         * @param file A file
-         * @param separator The utilized separator character
-         * @throws IOException
+         * @param file the file
+         * @throws IOException Signals that an I/O exception has occurred.
          */
-        public void
-                save(final File file, final char separator) throws IOException {
-            final CSVDataOutput output = new CSVDataOutput(file, separator);
+        public void save(final File file) throws IOException {
+            final CSVDataOutput output = new CSVDataOutput(file);
+            output.write(getHierarchy());
+        }
+
+        /**
+         * Writes the hierarchy to a CSV file.
+         *
+         * @param file A file
+         * @param delimiter The utilized separator character
+         * @throws IOException Signals that an I/O exception has occurred.
+         */
+        public void save(final File file, final char delimiter) throws IOException {
+            final CSVDataOutput output = new CSVDataOutput(file, delimiter);
+            output.write(getHierarchy());
+        }
+
+        /**
+         * Writes the hierarchy to a CSV file.
+         *
+         * @param file the file
+         * @param config the config
+         * @throws IOException Signals that an I/O exception has occurred.
+         */
+        public void save(final File file, final CSVSyntax config) throws IOException {
+            final CSVDataOutput output = new CSVDataOutput(file, config);
+            output.write(getHierarchy());
+        }
+
+        /**
+         * Writes the hierarchy to a CSV file.
+         *
+         * @param out the out
+         * @throws IOException Signals that an I/O exception has occurred.
+         */
+        public void save(final OutputStream out) throws IOException {
+            final CSVDataOutput output = new CSVDataOutput(out);
             output.write(getHierarchy());
         }
 
@@ -334,12 +483,34 @@ public class AttributeType implements Serializable, Cloneable {
          * Writes the hierarchy to a CSV file.
          *
          * @param out A output stream
-         * @param separator The utilized separator character
-         * @throws IOException
+         * @param delimiter The utilized separator character
+         * @throws IOException Signals that an I/O exception has occurred.
          */
-        public void
-                save(final OutputStream out, final char separator) throws IOException {
-            final CSVDataOutput output = new CSVDataOutput(out, separator);
+        public void save(final OutputStream out, final char delimiter) throws IOException {
+            final CSVDataOutput output = new CSVDataOutput(out, delimiter);
+            output.write(getHierarchy());
+        }
+
+        /**
+         * Writes the hierarchy to a CSV file.
+         *
+         * @param out the out
+         * @param config the config
+         * @throws IOException Signals that an I/O exception has occurred.
+         */
+        public void save(final OutputStream out, final CSVSyntax config) throws IOException {
+            final CSVDataOutput output = new CSVDataOutput(out, config);
+            output.write(getHierarchy());
+        }
+
+        /**
+         * Writes the hierarchy to a CSV file.
+         *
+         * @param path the path
+         * @throws IOException Signals that an I/O exception has occurred.
+         */
+        public void save(final String path) throws IOException {
+            final CSVDataOutput output = new CSVDataOutput(path);
             output.write(getHierarchy());
         }
 
@@ -347,64 +518,72 @@ public class AttributeType implements Serializable, Cloneable {
          * Writes the hierarchy to a CSV file.
          *
          * @param path A path
-         * @param separator The utilized separator character
-         * @throws IOException
+         * @param delimiter The utilized separator character
+         * @throws IOException Signals that an I/O exception has occurred.
          */
-        public void
-                save(final String path, final char separator) throws IOException {
-            final CSVDataOutput output = new CSVDataOutput(path, separator);
+        public void save(final String path, final char delimiter) throws IOException {
+            final CSVDataOutput output = new CSVDataOutput(path, delimiter);
+            output.write(getHierarchy());
+        }
+
+        /**
+         * Writes the hierarchy to a CSV file.
+         *
+         * @param path the path
+         * @param config the config
+         * @throws IOException Signals that an I/O exception has occurred.
+         */
+        public void save(final String path, final CSVSyntax config) throws IOException {
+            final CSVDataOutput output = new CSVDataOutput(path, config);
             output.write(getHierarchy());
         }
     }
 
-    /**  TODO */
-    private static final long serialVersionUID = -7358540408016873823L;
+    /** TODO. */
+    private static final long   serialVersionUID            = -7358540408016873823L;
 
     /** The shift. */
-    protected static final int  SHIFT                 = 30;
+    protected static final int  SHIFT                       = 30;
 
     /** The mask. */
-    protected static final int  MASK                  = 0x3fffffff;
+    protected static final int  MASK                        = 0x3fffffff;
 
     /** Constant for type QI. */
-    protected static final int  ATTR_TYPE_QI          = 0;
+    protected static final int  ATTR_TYPE_QI                = 0;
 
     /** Constant for type SE. */
-    protected static final int  ATTR_TYPE_SE          = 1;
+    protected static final int  ATTR_TYPE_SE                = 1;
 
     /** Constant for type IN. */
-    protected static final int  ATTR_TYPE_IS          = 2;
+    protected static final int  ATTR_TYPE_IS                = 2;
 
     /** Constant for type ID. */
-    protected static final int  ATTR_TYPE_ID          = 3;
+    protected static final int  ATTR_TYPE_ID                = 3;
 
     /** Represents an identifying attribute. */
-    public static AttributeType IDENTIFYING_ATTRIBUTE = new AttributeType(ATTR_TYPE_ID);
+    public static AttributeType IDENTIFYING_ATTRIBUTE       = new AttributeType(ATTR_TYPE_ID);
 
     /** Represents a sensitive attribute. */
-    public static AttributeType SENSITIVE_ATTRIBUTE   = new AttributeType(ATTR_TYPE_SE);
+    public static AttributeType SENSITIVE_ATTRIBUTE         = new AttributeType(ATTR_TYPE_SE);
 
     /** Represents an insensitive attribute. */
-    public static AttributeType INSENSITIVE_ATTRIBUTE = new AttributeType(ATTR_TYPE_IS);
+    public static AttributeType INSENSITIVE_ATTRIBUTE       = new AttributeType(ATTR_TYPE_IS);
 
     /** Represents a quasi-identifying attribute. */
     public static AttributeType QUASI_IDENTIFYING_ATTRIBUTE = new AttributeType(ATTR_TYPE_QI);
 
     /** The type. */
-    private int                 type                  = 0x0;
+    private int                 type                        = 0x0;
 
     /**
      * Instantiates a new type.
      *
-     * @param type
+     * @param type the type
      */
     private AttributeType(final int type) {
         this.type = type;
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#clone()
-     */
     @Override
     public AttributeType clone() {
         return this;
@@ -413,7 +592,7 @@ public class AttributeType implements Serializable, Cloneable {
     /**
      * Returns a string representation.
      *
-     * @return
+     * @return the string
      */
     @Override
     public String toString() {
@@ -434,7 +613,7 @@ public class AttributeType implements Serializable, Cloneable {
     /**
      * Returns the type identifier.
      *
-     * @return
+     * @return the type
      */
     protected int getType() {
         return type;

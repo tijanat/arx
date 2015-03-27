@@ -1,19 +1,18 @@
 /*
  * ARX: Powerful Data Anonymization
- * Copyright (C) 2012 - 2014 Florian Kohlmayer, Fabian Prasser
+ * Copyright 2012 - 2015 Florian Kohlmayer, Fabian Prasser
  * 
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.deidentifier.arx;
@@ -104,9 +103,6 @@ public class DataHandleInput extends DataHandle {
         this.statistics = new StatisticsBuilder(new DataHandleStatistics(this), null);
     }
 
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.DataHandle#getAttributeName(int)
-     */
     @Override
     public String getAttributeName(final int column) {
         checkRegistry();
@@ -114,36 +110,24 @@ public class DataHandleInput extends DataHandle {
         return header[column];
     }
 
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.DataHandle#getGeneralization(java.lang.String)
-     */
     @Override
     public int getGeneralization(final String attribute) {
         checkRegistry();
         return 0;
     }
 
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.DataHandle#getNumColumns()
-     */
     @Override
     public int getNumColumns() {
         checkRegistry();
         return header.length;
     }
 
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.DataHandle#getNumRows()
-     */
     @Override
     public int getNumRows() {
         checkRegistry();
         return data.length;
     }
 
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.DataHandle#getValue(int, int)
-     */
     @Override
     public String getValue(final int row, final int column) {
         checkRegistry();
@@ -152,17 +136,11 @@ public class DataHandleInput extends DataHandle {
         return internalGetValue(row, column);
     }
 
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.DataHandle#isOutlier(int)
-     */
     @Override
     public boolean isOutlier(int row){
         return false;
     }
 
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.DataHandle#iterator()
-     */
     @Override
     public Iterator<String[]> iterator() {
         checkRegistry();
@@ -192,7 +170,7 @@ public class DataHandleInput extends DataHandle {
 
             @Override
             public void remove() {
-                throw new UnsupportedOperationException("Remove is unsupported!");
+                throw new UnsupportedOperationException("Remove is not supported by this iterator");
             }
         };
     }
@@ -219,18 +197,12 @@ public class DataHandleInput extends DataHandle {
         dataSE = null;
         dataIS = null;
     }
-    
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.DataHandle#getBaseDataType(java.lang.String)
-     */
+
     @Override
     protected DataType<?> getBaseDataType(final String attribute) {
         return this.getDataType(attribute);
     }
-
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.DataHandle#getDataTypeArray()
-     */
+    
     @Override
     protected DataType<?>[][] getDataTypeArray() {
         checkRegistry();
@@ -245,10 +217,7 @@ public class DataHandleInput extends DataHandle {
         }
         return dataTypes;
     }
-    
-    /* (non-Javadoc)
-     * @see org.deidentifier.arx.DataHandle#getDistinctValues(int, org.deidentifier.arx.DataHandleStatistics.InterruptHandler)
-     */
+
     @Override
     protected String[] getDistinctValues(final int column, InterruptHandler handler) {
         checkRegistry();
@@ -262,15 +231,26 @@ public class DataHandleInput extends DataHandle {
         System.arraycopy(dict, 0, vals, 0, vals.length);
         return vals;
     }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.deidentifier.ARX.ARXDataHandle#getValueInternal(int, int)
-     */
+    
     @Override
     protected String internalGetValue(final int row, final int column) {
         return dictionary.getMapping()[column][data[row][column]];
+    }
+
+    @Override
+    protected boolean internalReplace(int column,
+                                      String original,
+                                      String replacement) {
+
+        String[] values = dictionary.getMapping()[column];
+        boolean found = false;
+        for (int i = 0; i < values.length; i++) {
+            if (values[i].equals(original)) {
+                values[i] = replacement;
+                found = true;
+            }
+        }
+        return found;
     }
     
     /**
@@ -291,7 +271,7 @@ public class DataHandleInput extends DataHandle {
         if (dataSE != null) swap(row1, row2, dataSE);
         if (dataIS != null) swap(row1, row2, dataIS);
     }
-
+    
     /**
      * Is this handle locked?.
      *
@@ -300,7 +280,7 @@ public class DataHandleInput extends DataHandle {
     protected boolean isLocked(){
         return this.locked;
     }
-    
+
     /**
      * Overrides the handles data definition.
      *
@@ -309,7 +289,7 @@ public class DataHandleInput extends DataHandle {
     protected void setDefinition(DataDefinition definition) {
         this.definition = definition;
     }
-    
+
     /**
      * Lock/unlock this handle.
      *

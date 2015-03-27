@@ -1,37 +1,42 @@
 /*
  * ARX: Powerful Data Anonymization
- * Copyright (C) 2014 Karol Babioch <karol@babioch.de>
+ * Copyright 2014 Karol Babioch <karol@babioch.de>
  * 
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
+ * http://www.apache.org/licenses/LICENSE-2.0
  * 
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.deidentifier.arx.gui.view.impl.wizard;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
+import org.apache.commons.math3.util.Pair;
 import org.deidentifier.arx.DataType;
-import org.deidentifier.arx.DataType.DataTypeDescription;
 import org.deidentifier.arx.DataType.DataTypeWithFormat;
-import org.deidentifier.arx.gui.Controller;
+import org.deidentifier.arx.gui.resources.Resources;
+import org.deidentifier.arx.gui.view.SWTUtil;
 import org.deidentifier.arx.io.ImportColumn;
+import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
+import org.eclipse.jface.viewers.ComboBoxCellEditor;
 import org.eclipse.jface.viewers.ComboBoxViewerCellEditor;
 import org.eclipse.jface.viewers.EditingSupport;
 import org.eclipse.jface.viewers.ICheckStateListener;
@@ -70,47 +75,72 @@ import org.eclipse.swt.widgets.TableColumn;
 public class ImportWizardPageColumns extends WizardPage {
     
     /**
-     * Implements editing support for datatype column within the column page
+     * Implements editing support for data type column within the column page
      * 
-     * This allows to change the datatype of columns. The modifications are
+     * This allows to change the data type of columns. The modifications are
      * performed with a combo box {@link ComboBoxCellEditor}.
      */
     public class DatatypeEditingSupport extends EditingSupport {
 
-        /** Reference to actual editor. */
-        private AutoDropComboBoxViewerCellEditor editor;
+        /** Reference to actual viewer. */
+        private TableViewer viewer;
 
-        /**
-         * Allowed values for the user to choose from
-         * 
-         * This array contains all of the choices the user can make. The array
-         * gets populated during runtime.
-         */
-        private String[]           choices;
+        /** Editors*/
+        private Map<ImportWizardModelColumn, AutoDropComboBoxViewerCellEditor> editors = new
+                HashMap<ImportWizardModelColumn, AutoDropComboBoxViewerCellEditor>();
+        
+        /** Types*/
+        private Map<ImportWizardModelColumn, Map<String, DataType<?>>> types = 
+                new HashMap<ImportWizardModelColumn, Map<String, DataType<?>>>();
 
         /**
          * Creates a new editor for the given {@link TableViewer}.
          * 
-         * @param viewer
-         *            The TableViewer this editor is implemented for
+         * @param viewer The TableViewer this editor is implemented for
+         * @param columns The columns
          */
         public DatatypeEditingSupport(TableViewer viewer) {
-
             super(viewer);
-
-            List<String> labels = new ArrayList<String>();
-            for (DataTypeDescription<?> description : DataType.list()) {
-                /* Remove OrderedString from list of choices for now */
-                if (description.newInstance().getClass() == DataType.ORDERED_STRING.getClass()) {
-                    continue;
+            this.viewer = viewer;
+        }
+        
+        /**
+         * Updates this editing support
+         * @param columns
+         */
+        public void update(List<ImportWizardModelColumn> columns) {
+            
+            for (ImportWizardModelColumn column : columns) {
+                this.types.put(column, new HashMap<String, DataType<?>>());
+                
+                List<Pair<DataType<?>, Double>> matchingtypes = wizardImport.getData().getMatchingDataTypes(column);
+                List<String> labels = new ArrayList<String>();
+                List<DataType<?>> types = new ArrayList<DataType<?>>();
+                for (Pair<DataType<?>, Double> match : matchingtypes) {
+                    
+                    StringBuilder builder = new StringBuilder();
+                    builder.append(match.getFirst().getDescription().getLabel());
+                    if (match.getFirst() instanceof DataTypeWithFormat && ((DataTypeWithFormat)match.getFirst()).getFormat() != null) {
+                        builder.append(" ("); //$NON-NLS-1$
+                        builder.append(((DataTypeWithFormat)match.getFirst()).getFormat());
+                        builder.append(")"); //$NON-NLS-1$
+                    }
+                    builder.append(" "); //$NON-NLS-1$
+                    builder.append((int)(match.getSecond() * 100d));
+                    builder.append("%"); //$NON-NLS-1$
+                    
+                    String label = builder.toString();
+                    DataType<?> type = match.getFirst();
+                    labels.add(label);
+                    types.add(type);
+                    this.types.get(column).put(label, type);
                 }
-                labels.add(description.getLabel());
+                
+                AutoDropComboBoxViewerCellEditor editor = new AutoDropComboBoxViewerCellEditor(viewer.getTable());
+                editor.setContentProvider(new ArrayContentProvider());
+                editor.setInput(labels.toArray(new String[labels.size()]));
+                editors.put(column, editor);
             }
-
-            choices = labels.toArray(new String[labels.size()]);
-            editor = new AutoDropComboBoxViewerCellEditor(viewer.getTable());
-            editor.setContentProvider(new ArrayContentProvider());
-            editor.setInput(choices);
         }
 
         /**
@@ -132,7 +162,7 @@ public class ImportWizardPageColumns extends WizardPage {
          */
         @Override
         protected CellEditor getCellEditor(Object arg0) {
-            return editor;
+            return editors.get(arg0);
         }
 
         /**
@@ -143,19 +173,22 @@ public class ImportWizardPageColumns extends WizardPage {
          */
         @Override
         protected Object getValue(Object element) {
-
-            DataType<?> datatype = ((ImportWizardModelColumn) element).getColumn()
-                                                                      .getDataType();
-            return datatype.getDescription().getLabel();
+            ImportWizardModelColumn column = (ImportWizardModelColumn) element;
+            for (Entry<String, DataType<?>> entry : types.get(column).entrySet()) {
+                if (entry.getValue() == column.getColumn().getDataType()) {
+                    return entry.getKey();
+                }
+            }
+            return null;
         }
         
         /**
-         * Applies datatype choice made by the user
+         * Applies data type choice made by the user
          * 
-         * If a datatype, which requires a format string, was selected an input
+         * If a data type, which requires a format string, was selected an input
          * dialog will be shown {@link actionShowFormatInputDialog}. Otherwise
          * the choice is directly applied. THe input dialog itself will make
-         * sure that the format string is valid for the datatype. This method on
+         * sure that the format string is valid for the data type. This method on
          * the other hand will try to apply the format string to the available
          * preview data {@link ImportWizardModel#getPreviewData()} making sure
          * that it matches. In case of an error the choice is discarded.
@@ -165,66 +198,17 @@ public class ImportWizardPageColumns extends WizardPage {
          */
         @Override
         protected void setValue(Object element, Object value) {
-            
-            final String HEADER = "Format string";
-            final String BODY = "Please provide a format string describing each item of this column";
 
+            // Extract
             String label = (String)value;
             ImportWizardModelColumn wizardColumn = (ImportWizardModelColumn) element;
             ImportColumn column = wizardColumn.getColumn();
-            List<String> previewData = wizardImport.getData().getPreviewData(wizardColumn);
-
-            for (DataTypeDescription<?> description : DataType.list()) {
-                if (description.getLabel().equals(label)) {
-                    
-                    DataType<?> datatype = null;
-                    if (description.hasFormat()) {
-
-                        final Controller controller = wizardImport.getController();
-                        String format = null;
-                        if (column.getDataType().getClass() == description.newInstance()
-                                                                          .getClass()) {
-
-                            format = controller.actionShowFormatInputDialog(getShell(),
-                                                                            HEADER,
-                                                                            BODY,
-                                                                            ((DataTypeWithFormat) column.getDataType()).getFormat(),
-                                                                            wizardImport.getModel().getLocale(),
-                                                                            description,
-                                                                            previewData);
-
-                        } else {
-                            format = controller.actionShowFormatInputDialog(getShell(),
-                                                                            HEADER,
-                                                                            BODY,
-                                                                            wizardImport.getModel().getLocale(),
-                                                                            description,
-                                                                            previewData);
-                        }
-
-                        if (format != null) {
-                            datatype = description.newInstance(format, wizardImport.getModel().getLocale());
-                        } else {
-                            /* Invalid string or aborted by user */
-                            return;
-                        }
-                    } else {
-                        /* Datatype has no format */
-                        datatype = description.newInstance();
-                    }
-                    
-                    for (String data : previewData) {
-                        if (!datatype.isValid(data)) {
-                            datatype = DataType.STRING;
-                        }
-                    }
-
-                    /* Apply datatype */
-                    column.setDataType(datatype);
-                    getViewer().update(element, null);
-                    return;
-                }
-            }
+            DataType<?> type = types.get(wizardColumn).get(label);
+            
+            /* Apply datatype */
+            column.setDataType(type);
+            getViewer().update(element, null);
+            return;                
         }
     }
 
@@ -262,9 +246,6 @@ public class ImportWizardPageColumns extends WizardPage {
             return ((ImportWizardModelColumn) column).isEnabled();
         }
 
-        /* (non-Javadoc)
-         * @see org.eclipse.jface.viewers.EditingSupport#getCellEditor(java.lang.Object)
-         */
         @Override
         protected CellEditor getCellEditor(Object arg0) {
             return editor;
@@ -290,9 +271,9 @@ public class ImportWizardPageColumns extends WizardPage {
         @Override
         protected void setValue(Object element, Object value) {
 
-            ((ImportWizardModelColumn) element).getColumn()
-                                               .setAliasName((String) value);
+            ((ImportWizardModelColumn) element).getColumn().setAliasName((String) value);
             getViewer().update(element, null);
+            check();
         }
     }
 
@@ -313,9 +294,6 @@ public class ImportWizardPageColumns extends WizardPage {
             setActivationStyle(DROP_DOWN_ON_MOUSE_ACTIVATION);
         }
 
-        /* (non-Javadoc)
-         * @see org.eclipse.jface.viewers.ComboBoxViewerCellEditor#createControl(org.eclipse.swt.widgets.Composite)
-         */
         @Override
         protected Control createControl(Composite parent) {
             final Control control = super.createControl(parent);
@@ -354,12 +332,13 @@ public class ImportWizardPageColumns extends WizardPage {
             selectAll = !selectAll;
 
             if (selectAll) {
-                tblclmnEnabled.setToolTipText("Select all");
-                tblclmnEnabled.setText("SA");
+                tblclmnEnabled.setToolTipText(Resources.getMessage("ImportWizardPageColumns.4")); //$NON-NLS-1$
+                tblclmnEnabled.setText(Resources.getMessage("ImportWizardPageColumns.5")); //$NON-NLS-1$
             } else {
-                tblclmnEnabled.setToolTipText("Deselect all");
-                tblclmnEnabled.setText("DA");
+                tblclmnEnabled.setToolTipText(Resources.getMessage("ImportWizardPageColumns.6")); //$NON-NLS-1$
+                tblclmnEnabled.setText(Resources.getMessage("ImportWizardPageColumns.7")); //$NON-NLS-1$
             }
+            check();
         }
 
         /**
@@ -385,48 +364,54 @@ public class ImportWizardPageColumns extends WizardPage {
             }
         }
     }
-    
+
     /** Reference to the wizard containing this page. */
-    private ImportWizard        wizardImport;
-    /* Widgets */
-    /**  TODO */
-    private Table               table;
+    private ImportWizard           wizardImport;
     
-    /**  TODO */
-    private CheckboxTableViewer checkboxTableViewer;
-    
-    /**  TODO */
-    private TableColumn         tblclmnName;
-    
-    /**  TODO */
-    private TableViewerColumn   tableViewerColumnName;
-    
-    /**  TODO */
-    private TableColumn         tblclmnDatatype;
-    
-    /**  TODO */
-    private TableViewerColumn   tableViewerColumnDatatype;
-    
-    /**  TODO */
-    private TableColumn         tblclmnEnabled;
-    
-    /**  TODO */
-    private TableViewerColumn   tableViewerColumnEnabled;
-    
-    /**  TODO */
-    private TableColumn         tblclmnFormat;
+    /** View */
+    private Table                  table;
 
-    /**  TODO */
-    private TableViewerColumn   tableViewerColumnFormat;
+    /** View */
+    private CheckboxTableViewer    checkboxTableViewer;
 
-    /**  TODO */
-    private Button              btnUp;
+    /** View */
+    private TableColumn            tblclmnName;
 
-    /**  TODO */
-    private Button              btnDown;
+    /** View */
+    private TableViewerColumn      tableViewerColumnName;
+
+    /** View */
+    private TableColumn            tblclmnDatatype;
+
+    /** View */
+    private TableViewerColumn      tableViewerColumnDatatype;
+
+    /** View */
+    private TableColumn            tblclmnEnabled;
+
+    /** View */
+    private TableViewerColumn      tableViewerColumnEnabled;
+
+    /** View */
+    private TableColumn            tblclmnFormat;
+
+    /** View */
+    private TableViewerColumn      tableViewerColumnFormat;
+
+    /** View */
+    private DatatypeEditingSupport tableViewerColumnDatatypeEditingSupport;
+
+    /** View */
+    private Button                 btnUp;
+
+    /** View */
+    private Button                 btnDown;
+
+    /** View */
+    private Button                 btnCleansing;
 
     /** Indicator for the next action of {@link ColumnEnabledSelectionListener}. */
-    private boolean             selectAll = false;
+    private boolean                selectAll = false;
 
     /**
      * Creates a new instance of this page and sets its title and description.
@@ -435,15 +420,15 @@ public class ImportWizardPageColumns extends WizardPage {
      */
     public ImportWizardPageColumns(ImportWizard wizardImport) {
 
-        super("WizardImportCsvPage");
+        super("WizardImportCsvPage"); //$NON-NLS-1$
 
         this.wizardImport = wizardImport;
         
-        setTitle("Columns");
-        setDescription("Please check and/or modify the detected columns");
+        setTitle(Resources.getMessage("ImportWizardPageColumns.9")); //$NON-NLS-1$
+        setDescription(Resources.getMessage("ImportWizardPageColumns.10")); //$NON-NLS-1$
 
     }
-
+    
     /**
      * Creates the design of this page along with the appropriate listeners.
      *
@@ -457,9 +442,7 @@ public class ImportWizardPageColumns extends WizardPage {
         container.setLayout(new GridLayout(2, false));
 
         /* TableViewer for the columns with a checkbox in each row */
-        checkboxTableViewer = CheckboxTableViewer.newCheckList(container,
-                                                               SWT.BORDER |
-                                                                       SWT.FULL_SELECTION);
+        checkboxTableViewer = SWTUtil.createTableViewerCheckbox(container, SWT.BORDER | SWT.FULL_SELECTION);
         checkboxTableViewer.setContentProvider(new ArrayContentProvider());
         checkboxTableViewer.setCheckStateProvider(new ICheckStateProvider() {
 
@@ -487,17 +470,8 @@ public class ImportWizardPageColumns extends WizardPage {
              */
             @Override
             public void checkStateChanged(CheckStateChangedEvent event) {
-
-                setPageComplete(false);
                 ((ImportWizardModelColumn) event.getElement()).setEnabled(event.getChecked());
-                for (ImportWizardModelColumn column : wizardImport.getData()
-                                                                  .getWizardColumns()) {
-
-                    if (column.isEnabled()) {
-                        setPageComplete(true);
-                        return;
-                    }
-                }
+                check();
             }
         });
 
@@ -545,8 +519,8 @@ public class ImportWizardPageColumns extends WizardPage {
 
         /* Actual column for {@link tableViewerColumnEnabled} */
         tblclmnEnabled = tableViewerColumnEnabled.getColumn();
-        tblclmnEnabled.setToolTipText("Deselect all");
-        tblclmnEnabled.setText("DA");
+        tblclmnEnabled.setToolTipText(Resources.getMessage("ImportWizardPageColumns.11")); //$NON-NLS-1$
+        tblclmnEnabled.setText(Resources.getMessage("ImportWizardPageColumns.12")); //$NON-NLS-1$
         tblclmnEnabled.setWidth(40);
         tblclmnEnabled.addSelectionListener(new ColumnEnabledSelectionListener());
 
@@ -564,15 +538,6 @@ public class ImportWizardPageColumns extends WizardPage {
              */
             @Override
             public String getText(Object element) {
-
-                if (!uniqueColumnNames()) {
-                    setErrorMessage("Column names need to be unique");
-                    setPageComplete(false);
-                } else {
-                    setErrorMessage(null);
-                    setPageComplete(true);
-                }
-
                 ImportWizardModelColumn column = (ImportWizardModelColumn) element;
                 return column.getColumn().getAliasName();
             }
@@ -580,14 +545,14 @@ public class ImportWizardPageColumns extends WizardPage {
 
         /* Actual column for {@link tableViewerColumnName} */
         tblclmnName = tableViewerColumnName.getColumn();
-        tblclmnName.setToolTipText("Name of the column");
+        tblclmnName.setToolTipText(Resources.getMessage("ImportWizardPageColumns.13")); //$NON-NLS-1$
         tblclmnName.setWidth(300);
-        tblclmnName.setText("Name");
+        tblclmnName.setText(Resources.getMessage("ImportWizardPageColumns.14")); //$NON-NLS-1$
 
         /* Column containing the datatypes */
-        tableViewerColumnDatatype = new TableViewerColumn(checkboxTableViewer,
-                                                          SWT.NONE);
-        tableViewerColumnDatatype.setEditingSupport(new DatatypeEditingSupport(checkboxTableViewer));
+        tableViewerColumnDatatype = new TableViewerColumn(checkboxTableViewer, SWT.NONE);
+        tableViewerColumnDatatypeEditingSupport = new DatatypeEditingSupport(checkboxTableViewer);
+        tableViewerColumnDatatype.setEditingSupport(tableViewerColumnDatatypeEditingSupport);
         tableViewerColumnDatatype.setLabelProvider(new ColumnLabelProvider() {
 
             /**
@@ -597,24 +562,17 @@ public class ImportWizardPageColumns extends WizardPage {
              */
             @Override
             public String getText(Object element) {
-
-                DataType<?> datatype = ((ImportWizardModelColumn) element).getColumn()
-                                                                          .getDataType();
-
-                for (DataTypeDescription<?> description : DataType.list()) {
-                    if (description.newInstance().getClass() == datatype.getClass()) {
-                        return description.getLabel();
-                    }
-                }
-                return null;
+                ImportWizardModelColumn column = (ImportWizardModelColumn) element;
+                DataType<?> datatype = column.getColumn().getDataType();
+                return datatype.getDescription().getLabel();
             }
         });
 
         /* Actual column for {@link tableViewerColumnDatatype} */
         tblclmnDatatype = tableViewerColumnDatatype.getColumn();
-        tblclmnDatatype.setToolTipText("Datatype of the column");
+        tblclmnDatatype.setToolTipText(Resources.getMessage("ImportWizardPageColumns.15")); //$NON-NLS-1$
         tblclmnDatatype.setWidth(120);
-        tblclmnDatatype.setText("Datatype");
+        tblclmnDatatype.setText(Resources.getMessage("ImportWizardPageColumns.16")); //$NON-NLS-1$
 
         /* Column containing the format of the format */
         tableViewerColumnFormat = new TableViewerColumn(checkboxTableViewer,
@@ -641,23 +599,23 @@ public class ImportWizardPageColumns extends WizardPage {
                 if (column instanceof DataTypeWithFormat) {
                     return ((DataTypeWithFormat) column).getFormat();
                 }
-                return "";
+                return ""; //$NON-NLS-1$
             }
         });
 
         /* Actual column for {@link tableViewerColumnFormat} */
         tblclmnFormat = tableViewerColumnFormat.getColumn();
         tblclmnFormat.setWidth(120);
-        tblclmnFormat.setToolTipText("Format of the associated datatype");
+        tblclmnFormat.setToolTipText(Resources.getMessage("ImportWizardPageColumns.18")); //$NON-NLS-1$
         tblclmnFormat.setWidth(100);
-        tblclmnFormat.setText("Format");
+        tblclmnFormat.setText(Resources.getMessage("ImportWizardPageColumns.19")); //$NON-NLS-1$
 
         /* Buttons to move column up */
         btnUp = new Button(container, SWT.NONE);
-        btnUp.setText("Move up");
+        btnUp.setText(Resources.getMessage("ImportWizardPageColumns.20")); //$NON-NLS-1$
         btnUp.setImage(wizardImport.getController()
                                    .getResources()
-                                   .getImage("arrow_up.png"));
+                                   .getImage("arrow_up.png")); //$NON-NLS-1$
         btnUp.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
         btnUp.setEnabled(false);
         btnUp.addSelectionListener(new SelectionAdapter() {
@@ -684,10 +642,10 @@ public class ImportWizardPageColumns extends WizardPage {
 
         /* Buttons to move column down */
         btnDown = new Button(container, SWT.NONE);
-        btnDown.setText("Move down");
+        btnDown.setText(Resources.getMessage("ImportWizardPageColumns.22")); //$NON-NLS-1$
         btnDown.setImage(wizardImport.getController()
                                      .getResources()
-                                     .getImage("arrow_down.png"));
+                                     .getImage("arrow_down.png")); //$NON-NLS-1$
         btnDown.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1));
         btnDown.setEnabled(false);
         btnDown.addSelectionListener(new SelectionAdapter() {
@@ -712,6 +670,18 @@ public class ImportWizardPageColumns extends WizardPage {
                 }
             }
         });
+        
+        btnCleansing = new Button(container, SWT.CHECK);
+        btnCleansing.setLayoutData(GridDataFactory.fillDefaults().grab(true, false).span(2, 1).create());
+        btnCleansing.setText(Resources.getMessage("ImportWizardPageColumns.24")); //$NON-NLS-1$
+        btnCleansing.setToolTipText(Resources.getMessage("ImportWizardPageColumns.25")); //$NON-NLS-1$
+        btnCleansing.setEnabled(true);
+        btnCleansing.setSelection(wizardImport.getData().isPerformCleansing());
+        btnCleansing.addSelectionListener(new SelectionAdapter() {
+            public void widgetSelected(SelectionEvent arg0) {
+                wizardImport.getData().setPerformCleansing(btnCleansing.getSelection());
+            }
+        });
 
         /* Wait for at least one column to be enabled */
         setPageComplete(false);
@@ -727,34 +697,54 @@ public class ImportWizardPageColumns extends WizardPage {
 
         super.setVisible(visible);
         if (visible) {
+            
+            for (ImportWizardModelColumn column : wizardImport.getData().getWizardColumns()) {
+                column.getColumn().setDataType(wizardImport.getData().getMatchingDataTypes(column).iterator().next().getFirst());
+            }
+            
+            tableViewerColumnDatatypeEditingSupport.update(wizardImport.getData()
+                                                                       .getWizardColumns());
+            
             checkboxTableViewer.setInput(wizardImport.getData()
                                                      .getWizardColumns());
-            setPageComplete((wizardImport.getData().getWizardColumns().size() > 0));
+            check();
         }
     }
 
     /**
-     * Checks whether column names are unique.
-     *
-     * @return True if column names are unique, false otherwise
+     * Checks whether the current selection of columns is suited for import
      */
-    protected boolean uniqueColumnNames() {
+    private void check(){
 
-        for (ImportWizardModelColumn c1 : wizardImport.getData()
-                                                      .getWizardColumns()) {
-
-            for (ImportWizardModelColumn c2 : wizardImport.getData()
+        // Check selection
+        boolean selected = false;
+        for (ImportWizardModelColumn column : wizardImport.getData()
                                                           .getWizardColumns()) {
+            selected |= column.isEnabled();
+        }
+        
+        if (!selected) {
+            setErrorMessage(Resources.getMessage("ImportWizardPageColumns.26")); //$NON-NLS-1$
+            setPageComplete(false);
+            return;
+        }
 
-                if (c1 != c2 &&
-                    c1.getColumn()
-                      .getAliasName()
-                      .equals(c2.getColumn().getAliasName())) {
-
-                    return false;
+        // Check names
+        for (ImportWizardModelColumn c1 : wizardImport.getData().getWizardColumns()) {
+            if (c1.isEnabled()) {
+                String name1 = c1.getColumn().getAliasName();
+                for (ImportWizardModelColumn c2 : wizardImport.getData().getWizardColumns()) {
+                    if (c2.isEnabled() && c1 != c2 && name1.equals(c2.getColumn().getAliasName())) {
+                        setErrorMessage(Resources.getMessage("ImportWizardPageColumns.27") + name1); //$NON-NLS-1$
+                        setPageComplete(false);
+                        return;
+                    }
                 }
             }
         }
-        return true;
+        
+        // Everything is fine
+        setErrorMessage(null);
+        setPageComplete(true);
     }
 }
