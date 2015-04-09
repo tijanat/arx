@@ -134,6 +134,10 @@ public abstract class MicroaggregateFunction<T> implements Serializable {
         public T next() {
             if (currentFrequency == 0) {
                 int value = values.getBuckets()[nextBucket];
+                while (value == -1) { // Bucket not empty
+                    nextBucket += 2;
+                    value = values.getBuckets()[nextBucket];
+                }
                 currentValue = type.parse(dictionary[value]);
                 currentFrequency = values.getBuckets()[nextBucket + 1];
                 nextBucket += 2;

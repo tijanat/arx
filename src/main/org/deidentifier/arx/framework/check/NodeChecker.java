@@ -168,15 +168,18 @@ public class NodeChecker implements INodeChecker {
             loss = metric.getInformationLoss(transformation, currentGroupify).getInformationLoss();
         }
         
+        // Microaggregate
+        // Important: has to be done before marking outliers!
+        if (config.isMicroaggregation()) {
+            currentGroupify.microaggregate(transformer.getBuffer(), dataMIBuffer, startMI, functionsMI);
+        }
+        
         // Find outliers
         if (config.getAbsoluteMaxOutliers() != 0 || !currentGroupify.isAnonymous()) {
             currentGroupify.markOutliers(transformer.getBuffer());
         }
         
-        // Microaggregate
-        if (config.isMicroaggregation()) {
-            currentGroupify.microaggregate(transformer.getBuffer(), dataMIBuffer, startMI, functionsMI);
-        }
+       
         
         // Set properties
         Lattice lattice = new Lattice(new Node[][]{{transformation}}, 0);

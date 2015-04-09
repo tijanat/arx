@@ -89,8 +89,8 @@ public class Example31 extends Example {
         // Create an instance of the anonymizer
         final ARXAnonymizer anonymizer = new ARXAnonymizer();
         final ARXConfiguration config = ARXConfiguration.create();
-        config.addCriterion(new KAnonymity(3));
-        config.setMaxOutliers(0d);
+        config.addCriterion(new KAnonymity(2));
+        config.setMaxOutliers(0.5d);
         try {
             final ARXResult result = anonymizer.anonymize(data, config);
             
