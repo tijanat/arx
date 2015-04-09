@@ -32,6 +32,8 @@ public class Dictionary {
 
     /** Map used when building the dictionary. */
     private ObjectIntOpenHashMap<String>[] maps;
+    
+    private boolean allowModificationsAfterFinalize = false;
 
     /**
      * Instantiates a new dictionary.
@@ -46,6 +48,11 @@ public class Dictionary {
         for (int i = 0; i < dimensions; i++) {
             maps[i] = new ObjectIntOpenHashMap<String>();
         }
+    }
+    
+    public Dictionary(final int dimensions, final boolean allowModificationsAfterFinalize) {
+        this(dimensions);
+        this.allowModificationsAfterFinalize = allowModificationsAfterFinalize;
     }
 
     /**
@@ -64,7 +71,9 @@ public class Dictionary {
             }
 
         }
-        maps = null;
+        if (!allowModificationsAfterFinalize) {
+            maps = null;
+        }
     }
 
     /**

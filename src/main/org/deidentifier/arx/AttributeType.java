@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.deidentifier.arx.aggregates.MicroaggregateFunction;
 import org.deidentifier.arx.io.CSVDataOutput;
 import org.deidentifier.arx.io.CSVHierarchyInput;
 import org.deidentifier.arx.io.CSVSyntax;
@@ -37,7 +38,51 @@ import org.deidentifier.arx.io.CSVSyntax;
  * @author Florian Kohlmayer
  */
 public class AttributeType implements Serializable, Cloneable {
-
+    
+    /**
+     * This class is used to define aggregate functions for microaggregation.
+     * 
+     * @author Fabian Prasser
+     * @author Florian Kohlmayer
+     * @param <T>
+     *
+     */
+    public static class Microaggregation<T> extends AttributeType implements Serializable {
+        /** SVUID */
+        private static final long               serialVersionUID = -7175337291872533713L;
+        
+        /** The microaggregation function */
+        private final MicroaggregateFunction<T> function;
+        
+        /**
+         * Instantiates a new hierarchy.
+         */
+        public Microaggregation(MicroaggregateFunction<T> function) {
+            super(ATTR_TYPE_MI);
+            this.function = function;
+        }
+        
+        /**
+         * Returns the aggregate function.
+         * 
+         * @return
+         */
+        public MicroaggregateFunction<T> getFunction() {
+            return function;
+        }
+        
+        /**
+         * Creates an microaggregation attribute type.
+         * 
+         * @param function
+         * @return
+         */
+        public static <V> Microaggregation<V> create(MicroaggregateFunction<V> function) {
+            return new Microaggregation<V>(function);
+        }
+        
+    }
+    
     /**
      * This class implements a generalization hierarchy.
      *
@@ -45,7 +90,7 @@ public class AttributeType implements Serializable, Cloneable {
      * @author Florian Kohlmayer
      */
     public static abstract class Hierarchy extends AttributeType implements Serializable {
-
+        
         /**
          * The default implementation of a generalization hierarchy. It allows
          * the user to programmatically define its content.
@@ -54,23 +99,23 @@ public class AttributeType implements Serializable, Cloneable {
          * @author Florian Kohlmayer
          */
         public static class DefaultHierarchy extends Hierarchy {
-
+            
             /** TODO. */
             private static final long    serialVersionUID = 7493568420925738049L;
-
+            
             /** The raw data. */
             private final List<String[]> hierarchy;
-
+            
             /** The array. */
             private String[][]           array            = null;
-
+            
             /**
              * Instantiates a new default hierarchy.
              */
             public DefaultHierarchy() {
                 hierarchy = new ArrayList<String[]>();
             }
-
+            
             /**
              * Instantiates a new default hierarchy.
              *
@@ -80,7 +125,7 @@ public class AttributeType implements Serializable, Cloneable {
                 this.array = array;
                 hierarchy = null;
             }
-
+            
             /**
              * Adds a row to the tabular representation of this hierarchy.
              *
@@ -89,7 +134,7 @@ public class AttributeType implements Serializable, Cloneable {
             public void add(final String... row) {
                 hierarchy.add(row);
             }
-
+            
             @Override
             public Hierarchy clone() {
                 if (array != null) {
@@ -98,7 +143,7 @@ public class AttributeType implements Serializable, Cloneable {
                     return new DefaultHierarchy(getHierarchy());
                 }
             }
-
+            
             @Override
             public String[][] getHierarchy() {
                 if (array == null) {
@@ -111,7 +156,7 @@ public class AttributeType implements Serializable, Cloneable {
                 return array;
             }
         }
-
+        
         /**
          * The implementation for arrays.
          *
@@ -119,13 +164,13 @@ public class AttributeType implements Serializable, Cloneable {
          * @author Florian Kohlmayer
          */
         static class ArrayHierarchy extends Hierarchy {
-
+            
             /** TODO. */
             private static final long serialVersionUID = 8966189950800782892L;
-
+            
             /** TODO. */
             private final String[][]  hierarchy;
-
+            
             /**
              * Instantiates a new array hierarchy.
              *
@@ -134,18 +179,18 @@ public class AttributeType implements Serializable, Cloneable {
             private ArrayHierarchy(final String[][] hierarchy) {
                 this.hierarchy = hierarchy;
             }
-
+            
             @Override
             public Hierarchy clone() {
                 return new DefaultHierarchy(getHierarchy());
             }
-
+            
             @Override
             public String[][] getHierarchy() {
                 return hierarchy;
             }
         }
-
+        
         /**
          * The implementation for iterators.
          *
@@ -153,16 +198,16 @@ public class AttributeType implements Serializable, Cloneable {
          * @author Florian Kohlmayer
          */
         static class IterableHierarchy extends Hierarchy {
-
+            
             /** TODO. */
             private static final long  serialVersionUID = 5734204406574324342L;
-
+            
             /** TODO. */
             private Iterator<String[]> iterator;
-
+            
             /** The array. */
             private String[][]         array            = null;
-
+            
             /**
              * Instantiates a new iterable hierarchy.
              *
@@ -171,7 +216,7 @@ public class AttributeType implements Serializable, Cloneable {
             public IterableHierarchy(final Iterator<String[]> iterator) {
                 this.iterator = iterator;
             }
-
+            
             @Override
             public Hierarchy clone() {
                 if (array != null) {
@@ -180,7 +225,7 @@ public class AttributeType implements Serializable, Cloneable {
                     return new DefaultHierarchy(getHierarchy());
                 }
             }
-
+            
             @Override
             public String[][] getHierarchy() {
                 if (array == null) {
@@ -197,10 +242,10 @@ public class AttributeType implements Serializable, Cloneable {
                 return array;
             }
         }
-
+        
         /** TODO. */
         private static final long serialVersionUID = -4721439386792383385L;
-
+        
         /**
          * Creates a new default hierarchy.
          *
@@ -209,7 +254,7 @@ public class AttributeType implements Serializable, Cloneable {
         public static DefaultHierarchy create() {
             return new DefaultHierarchy();
         }
-
+        
         /**
          * Creates a new hierarchy from a CSV file.
          *
@@ -220,7 +265,7 @@ public class AttributeType implements Serializable, Cloneable {
         public static Hierarchy create(final File file) throws IOException {
             return new ArrayHierarchy(new CSVHierarchyInput(file).getHierarchy());
         }
-
+        
         /**
          * Creates a new hierarchy from a CSV file.
          *
@@ -232,7 +277,7 @@ public class AttributeType implements Serializable, Cloneable {
         public static Hierarchy create(final File file, final char delimiter) throws IOException {
             return new ArrayHierarchy(new CSVHierarchyInput(file, delimiter).getHierarchy());
         }
-
+        
         /**
          * Creates a new hierarchy from a CSV file.
          *
@@ -245,7 +290,7 @@ public class AttributeType implements Serializable, Cloneable {
         public static Hierarchy create(final File file, final char delimiter, final char quote) throws IOException {
             return new ArrayHierarchy(new CSVHierarchyInput(file, delimiter, quote).getHierarchy());
         }
-
+        
         /**
          * Creates a new hierarchy from a CSV file.
          *
@@ -259,7 +304,7 @@ public class AttributeType implements Serializable, Cloneable {
         public static Hierarchy create(final File file, final char delimiter, final char quote, final char escape) throws IOException {
             return new ArrayHierarchy(new CSVHierarchyInput(file, delimiter, quote, escape).getHierarchy());
         }
-
+        
         /**
          * Creates a new hierarchy from a CSV file.
          *
@@ -274,7 +319,7 @@ public class AttributeType implements Serializable, Cloneable {
         public static Hierarchy create(final File file, final char delimiter, final char quote, final char escape, final char[] linebreak) throws IOException {
             return new ArrayHierarchy(new CSVHierarchyInput(file, delimiter, quote, escape, linebreak).getHierarchy());
         }
-
+        
         /**
          * Creates a new hierarchy from a CSV file.
          * 
@@ -286,7 +331,7 @@ public class AttributeType implements Serializable, Cloneable {
         public static Hierarchy create(final File file, final CSVSyntax config) throws IOException {
             return new ArrayHierarchy(new CSVHierarchyInput(file, config).getHierarchy());
         }
-
+        
         /**
          * Creates a new hierarchy from a CSV file.
          *
@@ -297,7 +342,7 @@ public class AttributeType implements Serializable, Cloneable {
         public static Hierarchy create(final InputStream stream) throws IOException {
             return new ArrayHierarchy(new CSVHierarchyInput(stream).getHierarchy());
         }
-
+        
         /**
          * Creates a new hierarchy from a CSV file.
          *
@@ -309,7 +354,7 @@ public class AttributeType implements Serializable, Cloneable {
         public static Hierarchy create(final InputStream stream, final char delimiter) throws IOException {
             return new ArrayHierarchy(new CSVHierarchyInput(stream, delimiter).getHierarchy());
         }
-
+        
         /**
          * Creates a new hierarchy from a CSV file.
          *
@@ -322,7 +367,7 @@ public class AttributeType implements Serializable, Cloneable {
         public static Hierarchy create(final InputStream stream, final char delimiter, final char quote) throws IOException {
             return new ArrayHierarchy(new CSVHierarchyInput(stream, delimiter, quote).getHierarchy());
         }
-
+        
         /**
          * Creates a new hierarchy from a CSV file.
          *
@@ -336,7 +381,7 @@ public class AttributeType implements Serializable, Cloneable {
         public static Hierarchy create(final InputStream stream, final char delimiter, final char quote, final char escape) throws IOException {
             return new ArrayHierarchy(new CSVHierarchyInput(stream, delimiter, quote, escape).getHierarchy());
         }
-
+        
         /**
          * Creates a new hierarchy from a CSV file.
          *
@@ -351,7 +396,7 @@ public class AttributeType implements Serializable, Cloneable {
         public static Hierarchy create(final InputStream stream, final char delimiter, final char quote, final char escape, final char[] linebreak) throws IOException {
             return new ArrayHierarchy(new CSVHierarchyInput(stream, delimiter, quote, escape, linebreak).getHierarchy());
         }
-
+        
         /**
          * Creates a new hierarchy from a CSV file.
          * @param stream
@@ -362,7 +407,7 @@ public class AttributeType implements Serializable, Cloneable {
         public static Hierarchy create(final InputStream stream, final CSVSyntax config) throws IOException {
             return new ArrayHierarchy(new CSVHierarchyInput(stream, config).getHierarchy());
         }
-
+        
         /**
          * Creates a new hierarchy from an iterator over tuples.
          *
@@ -372,7 +417,7 @@ public class AttributeType implements Serializable, Cloneable {
         public static Hierarchy create(final Iterator<String[]> iterator) {
             return new IterableHierarchy(iterator);
         }
-
+        
         /**
          * Creates a new hierarchy from a list.
          *
@@ -382,7 +427,7 @@ public class AttributeType implements Serializable, Cloneable {
         public static Hierarchy create(final List<String[]> list) {
             return new IterableHierarchy(list.iterator());
         }
-
+        
         /**
          * Creates a new hierarchy from a CSV file.
          *
@@ -394,7 +439,7 @@ public class AttributeType implements Serializable, Cloneable {
         public static Hierarchy create(final String path, final char separator) throws IOException {
             return new ArrayHierarchy(new CSVHierarchyInput(path, separator).getHierarchy());
         }
-
+        
         /**
          * Creates a new hierarchy from a CSV file.
          * @param path
@@ -405,7 +450,7 @@ public class AttributeType implements Serializable, Cloneable {
         public static Hierarchy create(final String path, final CSVSyntax config) throws IOException {
             return new ArrayHierarchy(new CSVHierarchyInput(path, config).getHierarchy());
         }
-
+        
         /**
          * Creates a new hierarchy from a two-dimensional string array.
          *
@@ -415,24 +460,24 @@ public class AttributeType implements Serializable, Cloneable {
         public static Hierarchy create(final String[][] array) {
             return new ArrayHierarchy(array);
         }
-
+        
         /**
          * Instantiates a new hierarchy.
          */
         public Hierarchy() {
             super(ATTR_TYPE_QI);
         }
-
+        
         @Override
         public abstract Hierarchy clone();
-
+        
         /**
          * Returns the hierarchy as a two-dimensional string array.
          *
          * @return the hierarchy
          */
         public abstract String[][] getHierarchy();
-
+        
         /**
          * Writes the hierarchy to a CSV file.
          *
@@ -443,7 +488,7 @@ public class AttributeType implements Serializable, Cloneable {
             final CSVDataOutput output = new CSVDataOutput(file);
             output.write(getHierarchy());
         }
-
+        
         /**
          * Writes the hierarchy to a CSV file.
          *
@@ -455,7 +500,7 @@ public class AttributeType implements Serializable, Cloneable {
             final CSVDataOutput output = new CSVDataOutput(file, delimiter);
             output.write(getHierarchy());
         }
-
+        
         /**
          * Writes the hierarchy to a CSV file.
          *
@@ -467,7 +512,7 @@ public class AttributeType implements Serializable, Cloneable {
             final CSVDataOutput output = new CSVDataOutput(file, config);
             output.write(getHierarchy());
         }
-
+        
         /**
          * Writes the hierarchy to a CSV file.
          *
@@ -478,7 +523,7 @@ public class AttributeType implements Serializable, Cloneable {
             final CSVDataOutput output = new CSVDataOutput(out);
             output.write(getHierarchy());
         }
-
+        
         /**
          * Writes the hierarchy to a CSV file.
          *
@@ -490,7 +535,7 @@ public class AttributeType implements Serializable, Cloneable {
             final CSVDataOutput output = new CSVDataOutput(out, delimiter);
             output.write(getHierarchy());
         }
-
+        
         /**
          * Writes the hierarchy to a CSV file.
          *
@@ -502,7 +547,7 @@ public class AttributeType implements Serializable, Cloneable {
             final CSVDataOutput output = new CSVDataOutput(out, config);
             output.write(getHierarchy());
         }
-
+        
         /**
          * Writes the hierarchy to a CSV file.
          *
@@ -513,7 +558,7 @@ public class AttributeType implements Serializable, Cloneable {
             final CSVDataOutput output = new CSVDataOutput(path);
             output.write(getHierarchy());
         }
-
+        
         /**
          * Writes the hierarchy to a CSV file.
          *
@@ -525,7 +570,7 @@ public class AttributeType implements Serializable, Cloneable {
             final CSVDataOutput output = new CSVDataOutput(path, delimiter);
             output.write(getHierarchy());
         }
-
+        
         /**
          * Writes the hierarchy to a CSV file.
          *
@@ -538,43 +583,49 @@ public class AttributeType implements Serializable, Cloneable {
             output.write(getHierarchy());
         }
     }
-
+    
     /** TODO. */
     private static final long   serialVersionUID            = -7358540408016873823L;
-
+    
     /** The shift. */
     protected static final int  SHIFT                       = 30;
-
+    
     /** The mask. */
     protected static final int  MASK                        = 0x3fffffff;
-
+    
     /** Constant for type QI. */
     protected static final int  ATTR_TYPE_QI                = 0;
-
+    
     /** Constant for type SE. */
     protected static final int  ATTR_TYPE_SE                = 1;
-
+    
     /** Constant for type IN. */
     protected static final int  ATTR_TYPE_IS                = 2;
-
+    
     /** Constant for type ID. */
-    protected static final int  ATTR_TYPE_ID                = 3;
-
+    protected static final int  ATTR_TYPE_ID                = 4;
+    
+    /** Constant for type microaggregation. */
+    protected static final int  ATTR_TYPE_MI                = 3;
+    
     /** Represents an identifying attribute. */
     public static AttributeType IDENTIFYING_ATTRIBUTE       = new AttributeType(ATTR_TYPE_ID);
-
+    
     /** Represents a sensitive attribute. */
     public static AttributeType SENSITIVE_ATTRIBUTE         = new AttributeType(ATTR_TYPE_SE);
-
+    
     /** Represents an insensitive attribute. */
     public static AttributeType INSENSITIVE_ATTRIBUTE       = new AttributeType(ATTR_TYPE_IS);
-
+    
     /** Represents a quasi-identifying attribute. */
     public static AttributeType QUASI_IDENTIFYING_ATTRIBUTE = new AttributeType(ATTR_TYPE_QI);
-
+    
+    /** Represents a microaggregation attribute. */
+    public static AttributeType MICROAGGREGATION_ATTRIBUTE  = new AttributeType(ATTR_TYPE_MI);
+    
     /** The type. */
     private int                 type                        = 0x0;
-
+    
     /**
      * Instantiates a new type.
      *
@@ -583,12 +634,12 @@ public class AttributeType implements Serializable, Cloneable {
     private AttributeType(final int type) {
         this.type = type;
     }
-
+    
     @Override
     public AttributeType clone() {
         return this;
     }
-
+    
     /**
      * Returns a string representation.
      *
@@ -605,11 +656,13 @@ public class AttributeType implements Serializable, Cloneable {
             return "INSENSITIVE_ATTRIBUTE";
         case ATTR_TYPE_QI:
             return "QUASI_IDENTIFYING_ATTRIBUTE";
+        case ATTR_TYPE_MI:
+            return "MICROAGGREGATION_ATTRIBUTE";
         default:
             return "UNKNOWN_ATTRIBUTE_TYPE";
         }
     }
-
+    
     /**
      * Returns the type identifier.
      *

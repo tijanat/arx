@@ -17,8 +17,10 @@
 
 package org.deidentifier.arx.framework.check.groupify;
 
+import org.deidentifier.arx.aggregates.MicroaggregateFunction;
 import org.deidentifier.arx.framework.check.distribution.Distribution;
 import org.deidentifier.arx.framework.check.groupify.HashGroupify.GroupStatistics;
+import org.deidentifier.arx.framework.data.Data;
 import org.deidentifier.arx.framework.lattice.Node;
 
 /**
@@ -114,6 +116,14 @@ public interface IHashGroupify {
      * @param buffer
      */
     public abstract void markOutliers(int[][] buffer);
+    
+    /**
+     * Microaggregates.
+     *
+     * @param dataMIBuffer
+     * @param functions
+     */
+    public abstract void microaggregate(final int[][] data, Data dataMIBuffer, final int startMI, MicroaggregateFunction<?>[] functions);
 
     /**
      * Resets all flags that indicate that equivalence classes are suppressed.

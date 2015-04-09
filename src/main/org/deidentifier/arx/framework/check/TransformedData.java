@@ -25,10 +25,13 @@ import org.deidentifier.arx.framework.data.Data;
  */
 public class TransformedData {
 
-    /**  TODO */
+    /**  The quasi identifier */
     public Data buffer;
     
-    /**  TODO */
+    /**  The microaggregates */
+    public Data dataMI;
+    
+    /**  The statistics */
     public GroupStatistics statistics;
     
     /**
@@ -37,8 +40,9 @@ public class TransformedData {
      * @param data
      * @param statistics
      */
-    public TransformedData(Data data, GroupStatistics statistics) {
+    public TransformedData(Data data, Data dataMI, GroupStatistics statistics) {
         this.buffer = data;
+        this.dataMI = dataMI;
         this.statistics = statistics;
     }
 }

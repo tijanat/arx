@@ -216,6 +216,14 @@ public class ARXConfiguration implements Serializable, Cloneable {
         public boolean requires(int requirement) {
             return config.requires(requirement);
         }
+        
+        /**
+         * Is microaggregation enabled
+         * @return
+         */
+        public boolean isMicroaggregation() {
+            return config.isMicroaggregation();
+        }
     }
 
     /** Do the criteria require a counter per equivalence class. */
@@ -292,6 +300,9 @@ public class ARXConfiguration implements Serializable, Cloneable {
 
     /** Do we assume practical monotonicity. */
     private boolean                            practicalMonotonicity                 = false;
+    
+    /** Do we have microaggregation. */
+    private boolean                            microaggregation                 = false;
 
     /**
      * Make sure that no information can be derived from associations between
@@ -854,6 +865,12 @@ public class ARXConfiguration implements Serializable, Cloneable {
         for (PrivacyCriterion c : criteria) {
             this.requirements |= c.getRequirements();
         }
+        
+        // Requirements for microaggregation
+        if (manager.getDataMI() != null) {
+            this.microaggregation = true;
+            this.requirements |= ARXConfiguration.REQUIREMENT_DISTRIBUTION;
+        }
 
         // Initialize: Always make sure that d-presence is initialized first, because
         // the research subset needs to be available for initializing t-closeness
@@ -915,4 +932,10 @@ public class ARXConfiguration implements Serializable, Cloneable {
     protected boolean requires(int requirement) {
         return (this.requirements & requirement) != 0;
     }
+
+    public boolean isMicroaggregation() {
+        return microaggregation;
+    }
+
+
 }

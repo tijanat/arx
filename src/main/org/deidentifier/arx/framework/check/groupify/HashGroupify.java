@@ -17,8 +17,12 @@
 
 package org.deidentifier.arx.framework.check.groupify;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.deidentifier.arx.ARXConfiguration.ARXConfigurationInternal;
 import org.deidentifier.arx.RowSet;
+import org.deidentifier.arx.aggregates.MicroaggregateFunction;
 import org.deidentifier.arx.criteria.DPresence;
 import org.deidentifier.arx.criteria.Inclusion;
 import org.deidentifier.arx.criteria.PrivacyCriterion;
@@ -481,6 +485,37 @@ public class HashGroupify implements IHashGroupify {
                 }
             }
         }
+    }
+    
+    @Override
+    public void microaggregate(final int[][] data, final Data dataMI, final int startMI, final MicroaggregateFunction<?>[] functions) {
+        Map<Distribution, Integer> cache = new HashMap<Distribution, Integer>();
+        for (int row = 0; row < data.length; row++) {
+            if (subset == null || subset.contains(row)) {
+                final int[] key = data[row];
+                final int hash = HashTableUtil.hashcode(key);
+                final int index = hash & (buckets.length - 1);
+                HashGroupifyEntry m = buckets[index];
+                while ((m != null) && ((m.hashcode != hash) || !equalsIgnoringOutliers(key, m.key))) {
+                    m = m.next;
+                }
+                if (m == null) {
+                    throw new RuntimeException("Invalid state! Groupify the data before microaggregation!");
+                }
+                Distribution[] dis = m.distributions;
+                int cnt = 0;
+                for (int i = startMI; i < dis.length; i++) {
+                    if (!cache.containsKey(dis[i])) {
+                        String result = functions[cnt].aggregate(dis[i]);
+                        int code = dataMI.getDictionary().register(cnt, result);
+                        cache.put(dis[i], code);
+                    }
+                    dataMI.getArray()[row][cnt] = cache.get(dis[i]);
+                    cnt++;
+                }
+            }
+        }
+        dataMI.getDictionary().finalizeAll();
     }
 
     /**

@@ -160,6 +160,21 @@ public class DataDefinition implements Cloneable{
     }
     
     /**
+     * Returns the microaggregation attributes.
+     * 
+     * @return
+     */
+    public Set<String> getMicroaggregationAttributes() {
+        final Set<String> result = new HashSet<String>();
+        for (final Entry<String, AttributeType> entry : attributeTypes.entrySet()) {
+            if (entry.getValue().getType() == AttributeType.ATTR_TYPE_MI) {
+                result.add(entry.getKey());
+            }
+        }
+        return result;
+    }
+    
+    /**
      * Returns the maximum generalization for the attribute.
      *
      * @param attribute

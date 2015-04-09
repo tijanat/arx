@@ -19,6 +19,7 @@ package org.deidentifier.arx.framework.check;
 
 import org.deidentifier.arx.ARXConfiguration;
 import org.deidentifier.arx.ARXConfiguration.ARXConfigurationInternal;
+import org.deidentifier.arx.aggregates.MicroaggregateFunction;
 import org.deidentifier.arx.framework.check.StateMachine.Transition;
 import org.deidentifier.arx.framework.check.distribution.IntArrayDictionary;
 import org.deidentifier.arx.framework.check.groupify.HashGroupify;
@@ -45,6 +46,13 @@ public class NodeChecker implements INodeChecker {
 
     /** The data. */
     private final Data             data;
+    
+    /** The microaggregate data. */
+    private final Data                        dataMIBuffer;
+        /** The microaggregate functions. */
+    private final MicroaggregateFunction<?>[] functionsMI;
+    /** The microaggregate start index. */
+    private final int                         startMI;
 
     /** The current hash groupify. */
     protected IHashGroupify        currentGroupify;
@@ -86,6 +94,9 @@ public class NodeChecker implements INodeChecker {
         this.metric = metric;
         this.config = config;
         this.data = manager.getDataQI();
+        // Make copy of the microaggregation columns for the output transformation
+        this.dataMIBuffer = manager.getDataMI().clone();
+        this.functionsMI = manager.getMicroaggregationFunctions();
         
         int initialSize = (int) (manager.getDataQI().getDataLength() * 0.01d);
         IntArrayDictionary dictionarySensValue;
@@ -97,6 +108,28 @@ public class NodeChecker implements INodeChecker {
             // Just to allow byte code instrumentation
             dictionarySensValue = new IntArrayDictionary(0);
             dictionarySensFreq = new IntArrayDictionary(0);
+        }
+        // TODO: Ugly! Integrate microaggregation into transformer?
+        // Copy arrays
+        int[][] attributeWithDistribution;
+        if (config.isMicroaggregation()) {
+            int sizeSE = manager.getDataSE().getHeader().length;
+            int sizeMI = manager.getDataMI().getHeader().length;
+            int rows = Math.max(manager.getDataSE().getArray().length, manager.getDataMI().getArray().length);
+            attributeWithDistribution = new int[rows][sizeSE + sizeMI];
+            for (int i = 0; i < attributeWithDistribution.length; i++) {
+                for (int j = 0; j < attributeWithDistribution[i].length; j++) {
+                    if (j < sizeSE) {
+                        attributeWithDistribution[i][j] = manager.getDataSE().getArray()[i][j];
+                    } else {
+                        attributeWithDistribution[i][j] = manager.getDataMI().getArray()[i][j - sizeSE];
+                    }
+                }
+            }
+            startMI = sizeSE;
+        } else {
+            attributeWithDistribution = manager.getDataSE().getArray();
+            startMI = -1;
         }
 
         this.history = new History(manager.getDataQI().getArray().length,
@@ -112,7 +145,7 @@ public class NodeChecker implements INodeChecker {
         this.lastGroupify = new HashGroupify(initialSize, config);
         this.transformer = new Transformer(manager.getDataQI().getArray(),
                                            manager.getHierarchies(),
-                                           manager.getDataSE().getArray(),
+                                           attributeWithDistribution,
                                            config,
                                            dictionarySensValue,
                                            dictionarySensFreq);
@@ -140,6 +173,11 @@ public class NodeChecker implements INodeChecker {
             currentGroupify.markOutliers(transformer.getBuffer());
         }
         
+        // Microaggregate
+        if (config.isMicroaggregation()) {
+            currentGroupify.microaggregate(transformer.getBuffer(), dataMIBuffer, startMI, functionsMI);
+        }
+        
         // Set properties
         Lattice lattice = new Lattice(new Node[][]{{transformation}}, 0);
         lattice.setChecked(transformation, new Result(currentGroupify.isAnonymous(), 
@@ -148,7 +186,7 @@ public class NodeChecker implements INodeChecker {
                                                       null));
         
         // Return the buffer
-        return new TransformedData(getBuffer(), currentGroupify.getGroupStatistics());
+        return new TransformedData(getBuffer(), dataMIBuffer, currentGroupify.getGroupStatistics());
     }
 
     @Override
@@ -220,6 +258,7 @@ public class NodeChecker implements INodeChecker {
     }
 
     @Override
+    @Deprecated
     public Data getData() {
         return data;
     }
