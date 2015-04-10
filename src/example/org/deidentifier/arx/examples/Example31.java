@@ -36,7 +36,7 @@ import org.deidentifier.arx.aggregates.MicroaggregateFunction.MicroAggregateFunc
 import org.deidentifier.arx.criteria.KAnonymity;
 
 /**
- * This class implements an example of how to compute summary statistics
+ * This class implements an example of how to use microaggregation
  *
  * @author Fabian Prasser
  * @author Florian Kohlmayer
