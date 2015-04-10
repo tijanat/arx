@@ -218,14 +218,14 @@ public class DataHandleOutput extends DataHandle {
         }
 
         // Build inverse data array
-        this.inverseData = new int[4][][];
+        this.inverseData = new int[5][][];
         this.inverseData[AttributeType.ATTR_TYPE_IS] = this.dataIS.getArray();
         this.inverseData[AttributeType.ATTR_TYPE_SE] = this.dataSE.getArray();
         this.inverseData[AttributeType.ATTR_TYPE_MI] = this.dataMI.getArray();
         this.inverseData[AttributeType.ATTR_TYPE_QI] = this.dataQI.getArray();
 
         // Build inverse dictionary array
-        this.inverseDictionaries = new Dictionary[4];
+        this.inverseDictionaries = new Dictionary[5];
         this.inverseDictionaries[AttributeType.ATTR_TYPE_IS] = this.dataIS.getDictionary();
         this.inverseDictionaries[AttributeType.ATTR_TYPE_SE] = this.dataSE.getDictionary();
         this.inverseDictionaries[AttributeType.ATTR_TYPE_MI] = this.dataMI.getDictionary();
@@ -366,7 +366,7 @@ public class DataHandleOutput extends DataHandle {
     @Override
     protected DataType<?>[][] getDataTypeArray() {
 
-        DataType<?>[][] dataTypes = new DataType[4][];
+        DataType<?>[][] dataTypes = new DataType[5][];
         dataTypes[AttributeType.ATTR_TYPE_IS] = new DataType[dataIS.getHeader().length];
         dataTypes[AttributeType.ATTR_TYPE_SE] = new DataType[dataSE.getHeader().length];
         dataTypes[AttributeType.ATTR_TYPE_MI] = new DataType[dataMI.getHeader().length];
@@ -390,6 +390,9 @@ public class DataHandleOutput extends DataHandle {
             case AttributeType.ATTR_TYPE_MI:
                 header = dataMI.getHeader();
                 break;
+            // Ignore identifying attributes
+            case AttributeType.ATTR_TYPE_ID:
+                continue;
             }
 
             for (int j = 0; j < type.length; j++) {
@@ -503,7 +506,7 @@ public class DataHandleOutput extends DataHandle {
             final int index = inverseMap[col] & AttributeType.MASK;
             final int[][] data = inverseData[type];
 
-            if ((suppressedAttributeTypes & (1 << type)) != 0 &&
+            if ((type == AttributeType.ATTR_TYPE_QI || type == AttributeType.ATTR_TYPE_MI) && suppressedAttributeTypes != 0 &&
                 ((dataQI.getArray()[row][0] & Data.OUTLIER_MASK) != 0)) { return suppressionString; }
 
             final int value = data[row][index] & Data.REMOVE_OUTLIER_MASK;

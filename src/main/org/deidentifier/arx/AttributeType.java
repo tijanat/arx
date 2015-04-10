@@ -588,7 +588,7 @@ public class AttributeType implements Serializable, Cloneable {
     private static final long   serialVersionUID            = -7358540408016873823L;
     
     /** The shift. */
-    protected static final int  SHIFT                       = 30;
+    protected static final int  SHIFT                       = 29;
     
     /** The mask. */
     protected static final int  MASK                        = 0x3fffffff;
