@@ -52,7 +52,6 @@ public abstract class MicroaggregateFunction<T> implements Serializable {
             int count = 0;
             while (iter.hasNext()) {
                 T value = iter.next();
-                System.out.println(value);
                 if (!DataType.isNull(type.format(value))) {
                     if (result == null) {
                         result = value;
