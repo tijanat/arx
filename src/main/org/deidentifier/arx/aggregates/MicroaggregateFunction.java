@@ -35,14 +35,17 @@ public abstract class MicroaggregateFunction implements Serializable {
     public static class ArithmeticMean extends MicroaggregateFunction {
         
         /** SVUID */
-        private static final long serialVersionUID = 8108686651029571643L;
+        private static final long           serialVersionUID = 8108686651029571643L;
+        
+        private final DescriptiveStatistics stats;
         
         public ArithmeticMean() {
-            super();
+            this(HandlingOfNullValues.IGNORE);
         }
         
         public ArithmeticMean(HandlingOfNullValues nullValueHandling) {
             super(nullValueHandling);
+            stats = new DescriptiveStatistics();
         }
         
         @Override
@@ -58,13 +61,10 @@ public abstract class MicroaggregateFunction implements Serializable {
         @SuppressWarnings({ "unchecked", "rawtypes" })
         @Override
         protected String aggregateInternal(Distribution values) {
-            
             DataTypeWithRatioScale castedType = (DataTypeWithRatioScale) type;
+            Iterator<Double> it = new DistributionIteratorDouble(values, castedType, dictionary);
             
-            Iterator<Double> it = new DistributionIteratorRatio(values, castedType, dictionary);
-            
-            DescriptiveStatistics stats = new DescriptiveStatistics();
-            
+            stats.clear();
             while (it.hasNext()) {
                 Double value = it.next();
                 if (value == null) {
@@ -82,6 +82,59 @@ public abstract class MicroaggregateFunction implements Serializable {
                 
             }
             return castedType.format(castedType.fromDouble(stats.getMean()));
+        }
+    }
+    
+    public static class GeometricMean extends MicroaggregateFunction {
+        
+        /** SVUID */
+        private static final long           serialVersionUID = -6715484856330698691L;
+        
+        private final DescriptiveStatistics stats;
+        
+        public GeometricMean() {
+            this(HandlingOfNullValues.IGNORE);
+        }
+        
+        public GeometricMean(HandlingOfNullValues nullValueHandling) {
+            super(nullValueHandling);
+            stats = new DescriptiveStatistics();
+        }
+        
+        @Override
+        public ScaleOfMeasure getRequiredScale() {
+            return ScaleOfMeasure.RATIO;
+        }
+        
+        @Override
+        public String toString() {
+            return "Microaggrate function: GeometricMean";
+        }
+        
+        @SuppressWarnings({ "unchecked", "rawtypes" })
+        @Override
+        protected String aggregateInternal(Distribution values) {
+            DataTypeWithRatioScale castedType = (DataTypeWithRatioScale) type;
+            Iterator<Double> it = new DistributionIteratorDouble(values, castedType, dictionary);
+            
+            stats.clear();
+            while (it.hasNext()) {
+                Double value = it.next();
+                if (value == null) {
+                    switch (handleNullValues) {
+                    case IGNORE:
+                        // Do nothing
+                        break;
+                    case IDENTITIY:
+                        stats.addValue(1d);
+                        break;
+                    }
+                } else {
+                    stats.addValue(value);
+                }
+                
+            }
+            return castedType.format(castedType.fromDouble(stats.getGeometricMean()));
         }
     }
     
@@ -113,7 +166,7 @@ public abstract class MicroaggregateFunction implements Serializable {
         }
     }
     
-    protected class DistributionIteratorRatio implements Iterator<Double> {
+    private class DistributionIteratorDouble implements Iterator<Double> {
         
         private final Distribution           values;
         @SuppressWarnings("rawtypes")
@@ -124,7 +177,7 @@ public abstract class MicroaggregateFunction implements Serializable {
         private Double                       currentValue;
         private int                          remaining;
         
-        public DistributionIteratorRatio(Distribution values, DataTypeWithRatioScale<?> type, String[] dictionary) {
+        public DistributionIteratorDouble(Distribution values, DataTypeWithRatioScale<?> type, String[] dictionary) {
             this.values = values;
             this.type = type;
             this.dictionary = dictionary;
@@ -185,7 +238,7 @@ public abstract class MicroaggregateFunction implements Serializable {
     protected String[]             dictionary;
     
     public MicroaggregateFunction() {
-        handleNullValues = HandlingOfNullValues.IGNORE;
+        this(HandlingOfNullValues.IGNORE);
     }
     
     public MicroaggregateFunction(HandlingOfNullValues nullValueHandling) {

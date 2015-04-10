@@ -28,6 +28,7 @@ import java.util.List;
 
 import org.deidentifier.arx.aggregates.MicroaggregateFunction;
 import org.deidentifier.arx.aggregates.MicroaggregateFunction.ArithmeticMean;
+import org.deidentifier.arx.aggregates.MicroaggregateFunction.GeometricMean;
 import org.deidentifier.arx.io.CSVDataOutput;
 import org.deidentifier.arx.io.CSVHierarchyInput;
 import org.deidentifier.arx.io.CSVSyntax;
@@ -85,11 +86,19 @@ public class AttributeType implements Serializable, Cloneable {
         /**
          * Creates an microaggregation using arithmetic mean function.
          * 
-         * @param function
          * @return
          */
         public static Microaggregation createArithmeticMean() {
             return new Microaggregation(new ArithmeticMean());
+        }
+        
+        /**
+         * Creates an microaggregation using geometric mean function.
+         * 
+         * @return
+         */
+        public static AttributeType createGeometricMean() {
+            return new Microaggregation(new GeometricMean());
         }
         
     }
