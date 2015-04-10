@@ -199,16 +199,17 @@ public abstract class DataType<T> implements Serializable, Comparator<T> {
         }
 
         @Override
-        public DataTypeDescription<Date> getDescription(){
-            return description;
+        public Date fromDouble(Double value) {
+            if (value == null) {
+                return null;
+            }
+            long v = value.longValue();
+            return new Date(v);
         }
 
         @Override
-        public Double getDouble(Date value) {
-          if (value == null) {
-              return null;
-          }
-          return (double)value.getTime();
+        public DataTypeDescription<Date> getDescription(){
+            return description;
         }
         
         @Override
@@ -313,6 +314,14 @@ public abstract class DataType<T> implements Serializable, Comparator<T> {
             long d1 = minuend.getTime();
             long d2 = subtrahend.getTime();
             return new Date(d1 - d2);
+        }
+
+        @Override
+        public Double toDouble(Date value) {
+          if (value == null) {
+              return null;
+          }
+          return (double)value.getTime();
         }
 
         @Override
@@ -477,13 +486,13 @@ public abstract class DataType<T> implements Serializable, Comparator<T> {
         }
 
         @Override
-        public DataTypeDescription<Double> getDescription(){
-            return description;
+        public Double fromDouble(Double value) {
+            return value;
         }
 
         @Override
-        public Double getDouble(Double value) {
-            return value;
+        public DataTypeDescription<Double> getDescription(){
+            return description;
         }
         
         @Override
@@ -584,6 +593,11 @@ public abstract class DataType<T> implements Serializable, Comparator<T> {
         @Override
         public Double subtract(Double minuend, Double subtrahend) {
             return parse(format(minuend - subtrahend));
+        }
+
+        @Override
+        public Double toDouble(Double value) {
+            return value;
         }
 
         @Override
@@ -744,16 +758,16 @@ public abstract class DataType<T> implements Serializable, Comparator<T> {
         }
         
         @Override
-        public DataTypeDescription<Long> getDescription(){
-            return description;
+        public Long fromDouble(Double value) {
+           if (value == null) {
+               return null;
+           }
+            return value.longValue();
         }
 
         @Override
-        public Double getDouble(Long value) {
-            if (value == null) {
-                return null;
-            }
-            return value.doubleValue();
+        public DataTypeDescription<Long> getDescription(){
+            return description;
         }
         
         @Override
@@ -854,6 +868,14 @@ public abstract class DataType<T> implements Serializable, Comparator<T> {
         @Override
         public Long subtract(Long minuend, Long subtrahend) {
             return minuend - subtrahend;
+        }
+
+        @Override
+        public Double toDouble(Long value) {
+            if (value == null) {
+                return null;
+            }
+            return value.doubleValue();
         }
 
         @Override
@@ -1355,33 +1377,35 @@ public abstract class DataType<T> implements Serializable, Comparator<T> {
         public abstract String format(T t);
 
         /**
+         * Converts the double representation into the datatype.
+         * 
+         * @param value
+         * @return
+         */
+        public abstract T fromDouble(Double value);
+
+        /**
          * 
          *
          * @return
          */
         public abstract DataTypeDescription<T> getDescription();
-
-        /**
-            * Gets a double representation of the value
-            * @param value
-            * @return
-            */
-            public abstract Double getDouble(T value);
-
-        /**
-         * 
-         *
-         * @return
-         */
-        public T getMaximum();
         
         /**
          * 
          *
          * @return
          */
-        public T getMinimum();
+        public T getMaximum();
 
+
+        /**
+         * 
+         *
+         * @return
+         */
+        public T getMinimum();
+        
         /**
          * 
          *
@@ -1426,7 +1450,7 @@ public abstract class DataType<T> implements Serializable, Comparator<T> {
          * @return
          */
         public abstract T multiply(T multiplicand, T multiplicator);
-        
+
         /**
          * 
          *
@@ -1444,14 +1468,22 @@ public abstract class DataType<T> implements Serializable, Comparator<T> {
          */
         public abstract double ratio(T dividend, T divisor);
         
+        /**
+         * 
+         *
+         * @param minuend
+         * @param subtrahend
+         * @return
+         */
+        public abstract T subtract(T minuend, T subtrahend);
+        
        /**
+     * Gets a double representation of the value.
      * 
-     *
-     * @param minuend
-     * @param subtrahend
+     * @param value
      * @return
      */
-    public abstract T subtract(T minuend, T subtrahend);
+    public abstract Double toDouble(T value);
     }
 
     /**
