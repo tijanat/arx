@@ -52,16 +52,19 @@ public abstract class MicroaggregateFunction<T> implements Serializable {
             int count = 0;
             while (iter.hasNext()) {
                 T value = iter.next();
+                System.out.println(value);
                 if (!DataType.isNull(type.format(value))) {
                     if (result == null) {
                         result = value;
                     } else {
                         result = type.add(result, value);
                     }
+                    
                     count++;
                 }
             }
             result = type.divide(result, type.parse(String.valueOf(count)));
+            System.out.println("r: " + result);
             return String.valueOf(result);
         }
         
@@ -103,7 +106,7 @@ public abstract class MicroaggregateFunction<T> implements Serializable {
         private int                             nextBucket;
         private int                             currentFrequency;
         private T                               currentValue;
-        private int                             size;
+        private int                             remaining;
         
         public DistributionIterator(Distribution values, DataTypeWithRatioScale<T> type, String[] dictionary) {
             this.values = values;
@@ -119,7 +122,7 @@ public abstract class MicroaggregateFunction<T> implements Serializable {
                 int[] buckets = values.getBuckets();
                 for (int i = 0; i < buckets.length; i += 2) {
                     if (buckets[i] != -1) { // bucket not empty
-                        size += buckets[i + 1];
+                        remaining += buckets[i + 1];
                     }
                 }
             }
@@ -127,7 +130,7 @@ public abstract class MicroaggregateFunction<T> implements Serializable {
         
         @Override
         public boolean hasNext() {
-            return nextBucket < size;
+            return remaining != 0;
         }
         
         @Override
@@ -143,6 +146,7 @@ public abstract class MicroaggregateFunction<T> implements Serializable {
                 nextBucket += 2;
             }
             currentFrequency--;
+            remaining--;
             return currentValue;
         }
         
