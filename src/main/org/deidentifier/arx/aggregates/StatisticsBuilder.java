@@ -653,7 +653,7 @@ public class StatisticsBuilder {
                     // Analyze
                     if (value != null && !DataType.isNull(value)) {
                         ordinal.get(attribute).addValue(value);
-                        if (scales.get(attribute) == ScaleOfMeasure.RATIO) {
+                        if (type instanceof DataTypeWithRatioScale) {
                             statistics.get(attribute).addValue(((DataTypeWithRatioScale) type).toDouble(type.parse(value)));
                         }
                     }
