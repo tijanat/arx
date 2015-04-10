@@ -181,6 +181,14 @@ public class ARXConfiguration implements Serializable, Cloneable {
         }
 
         /**
+         * Is microaggregation enabled
+         * @return
+         */
+        public boolean isMicroaggregation() {
+            return config.isMicroaggregation();
+        }
+
+        /**
          * Is practical monotonicity assumed.
          *
          * @return
@@ -206,7 +214,7 @@ public class ARXConfiguration implements Serializable, Cloneable {
         public boolean isUseHeuristicForSampleBasedCriteria() {
             return config.isUseHeuristicSearchForSampleBasedCriteria();
         }
-
+        
         /**
          * Convenience method for checking the requirements.
          *
@@ -216,27 +224,7 @@ public class ARXConfiguration implements Serializable, Cloneable {
         public boolean requires(int requirement) {
             return config.requires(requirement);
         }
-        
-        /**
-         * Is microaggregation enabled
-         * @return
-         */
-        public boolean isMicroaggregation() {
-            return config.isMicroaggregation();
-        }
     }
-
-    /** Do the criteria require a counter per equivalence class. */
-    public static final int       REQUIREMENT_COUNTER           = 0x1;
-
-    /** Do the criteria require distributions of sensitive values in the equivalence classes. */
-    public static final int       REQUIREMENT_DISTRIBUTION      = 0x4;
-
-    /** Do the criteria require a second counter. */
-    public static final int       REQUIREMENT_SECONDARY_COUNTER = 0x2;
-    
-    /** For serialization. */
-    private static final long     serialVersionUID              = -6713510386735241964L;
 
     /**
      * Creates a new config without tuple suppression.
@@ -269,7 +257,7 @@ public class ARXConfiguration implements Serializable, Cloneable {
     public static ARXConfiguration create(double supp, Metric<?> metric) {
         return new ARXConfiguration(supp, metric);
     }
-
+    
     /**
      * Creates a new config that allows to define the metric for measuring information loss.
      *
@@ -279,6 +267,18 @@ public class ARXConfiguration implements Serializable, Cloneable {
     public static ARXConfiguration create(Metric<?> metric) {
         return new ARXConfiguration(metric);
     }
+
+    /** Do the criteria require a counter per equivalence class. */
+    public static final int       REQUIREMENT_COUNTER           = 0x1;
+
+    /** Do the criteria require distributions of sensitive values in the equivalence classes. */
+    public static final int       REQUIREMENT_DISTRIBUTION      = 0x4;
+
+    /** Do the criteria require a second counter. */
+    public static final int       REQUIREMENT_SECONDARY_COUNTER = 0x2;
+
+    /** For serialization. */
+    private static final long     serialVersionUID              = -6713510386735241964L;
 
     /** Absolute tuple outliers. */
     private int                                absMaxOutliers                        = 0;
@@ -302,7 +302,7 @@ public class ARXConfiguration implements Serializable, Cloneable {
     private boolean                            practicalMonotonicity                 = false;
     
     /** Do we have microaggregation. */
-    private boolean                            microaggregation                 = false;
+    private boolean                            microaggregation                      = false;
 
     /**
      * Make sure that no information can be derived from associations between
@@ -758,6 +758,15 @@ public class ARXConfiguration implements Serializable, Cloneable {
     }
     
     /**
+     * Is microaggregation enabled
+     * 
+     * @return
+     */
+    private boolean isMicroaggregation() {
+        return microaggregation;
+    }
+    
+    /**
      * Returns the maximum number of allowed outliers.
      *
      * @return
@@ -774,7 +783,7 @@ public class ARXConfiguration implements Serializable, Cloneable {
     protected PrivacyCriterion[] getCriteriaAsArray() {
         return this.aCriteria;
     }
-    
+
     /**
      * TODO: This is a hack and should be removed in future releases.
      *
@@ -827,7 +836,7 @@ public class ARXConfiguration implements Serializable, Cloneable {
     protected SampleBasedCriterion[] getSampleBasedCriteriaAsArray() {
         return this.bCriteria;
     }
-
+    
     /**
      * Returns the specific length of each entry in a snapshot.
      *
@@ -847,7 +856,7 @@ public class ARXConfiguration implements Serializable, Cloneable {
         if (suppressedAttributeTypes == null) { return 1 << AttributeType.ATTR_TYPE_QI; }
         return this.suppressedAttributeTypes;
     }
-    
+
     /**
      * Initializes the configuration.
      *
@@ -931,10 +940,6 @@ public class ARXConfiguration implements Serializable, Cloneable {
      */
     protected boolean requires(int requirement) {
         return (this.requirements & requirement) != 0;
-    }
-
-    public boolean isMicroaggregation() {
-        return microaggregation;
     }
 
 
