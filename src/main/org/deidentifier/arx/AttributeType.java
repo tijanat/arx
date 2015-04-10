@@ -603,10 +603,10 @@ public class AttributeType implements Serializable, Cloneable {
     protected static final int  ATTR_TYPE_IS                = 2;
     
     /** Constant for type ID. */
-    protected static final int  ATTR_TYPE_ID                = 4;
+    protected static final int  ATTR_TYPE_ID                = 3;
     
     /** Constant for type microaggregation. */
-    protected static final int  ATTR_TYPE_MI                = 3;
+    protected static final int  ATTR_TYPE_MI                = 4;
     
     /** Represents an identifying attribute. */
     public static AttributeType IDENTIFYING_ATTRIBUTE       = new AttributeType(ATTR_TYPE_ID);
