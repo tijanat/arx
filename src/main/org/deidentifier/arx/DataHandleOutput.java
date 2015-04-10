@@ -506,7 +506,7 @@ public class DataHandleOutput extends DataHandle {
             final int index = inverseMap[col] & AttributeType.MASK;
             final int[][] data = inverseData[type];
 
-            if ((type == AttributeType.ATTR_TYPE_QI || type == AttributeType.ATTR_TYPE_MI) && suppressedAttributeTypes != 0 &&
+            if ((suppressedAttributeTypes & (1 << type)) != 0 &&
                 ((dataQI.getArray()[row][0] & Data.OUTLIER_MASK) != 0)) { return suppressionString; }
 
             final int value = data[row][index] & Data.REMOVE_OUTLIER_MASK;

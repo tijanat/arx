@@ -323,7 +323,7 @@ public class ARXConfiguration implements Serializable, Cloneable {
      * Defines values of which attribute type are to be replaced by the
      * suppression string in suppressed tuples.
      */
-    private Integer                            suppressedAttributeTypes              = 1 << AttributeType.ATTR_TYPE_QI;
+    private Integer                            suppressedAttributeTypes              = (1 << AttributeType.ATTR_TYPE_QI) | (1 << AttributeType.ATTR_TYPE_MI);
 
     /** The string with which suppressed values are to be replaced. */
     private String                             suppressionString                     = "*";

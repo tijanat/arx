@@ -591,7 +591,7 @@ public class AttributeType implements Serializable, Cloneable {
     protected static final int  SHIFT                       = 29;
     
     /** The mask. */
-    protected static final int  MASK                        = 0x3fffffff;
+    protected static final int  MASK                        = 0x1fffffff;
     
     /** Constant for type QI. */
     protected static final int  ATTR_TYPE_QI                = 0;
