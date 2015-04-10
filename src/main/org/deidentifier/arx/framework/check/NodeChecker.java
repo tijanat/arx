@@ -99,15 +99,15 @@ public class NodeChecker implements INodeChecker {
         this.functionsMA = manager.getMicroaggregationFunctions();
         
         int initialSize = (int) (manager.getDataQI().getDataLength() * 0.01d);
-        IntArrayDictionary dictionarySensValue;
-        IntArrayDictionary dictionarySensFreq;
+        IntArrayDictionary dictionaryDistributionValue;
+        IntArrayDictionary dictionaryDistributionFreq;
         if ((config.getRequirements() & ARXConfiguration.REQUIREMENT_DISTRIBUTION) != 0) {
-            dictionarySensValue = new IntArrayDictionary(initialSize);
-            dictionarySensFreq = new IntArrayDictionary(initialSize);
+            dictionaryDistributionValue = new IntArrayDictionary(initialSize);
+            dictionaryDistributionFreq = new IntArrayDictionary(initialSize);
         } else {
             // Just to allow byte code instrumentation
-            dictionarySensValue = new IntArrayDictionary(0);
-            dictionarySensFreq = new IntArrayDictionary(0);
+            dictionaryDistributionValue = new IntArrayDictionary(0);
+            dictionaryDistributionFreq = new IntArrayDictionary(0);
         }
         // TODO: Ugly! Integrate microaggregation into transformer?
         // Copy arrays
@@ -137,8 +137,8 @@ public class NodeChecker implements INodeChecker {
                                    snapshotSizeDataset,
                                    snapshotSizeSnapshot,
                                    config,
-                                   dictionarySensValue,
-                                   dictionarySensFreq);
+                                   dictionaryDistributionValue,
+                                   dictionaryDistributionFreq);
         
         this.stateMachine = new StateMachine(history);
         this.currentGroupify = new HashGroupify(initialSize, config);
@@ -147,8 +147,8 @@ public class NodeChecker implements INodeChecker {
                                            manager.getHierarchies(),
                                            attributeWithDistribution,
                                            config,
-                                           dictionarySensValue,
-                                           dictionarySensFreq);
+                                           dictionaryDistributionValue,
+                                           dictionaryDistributionFreq);
     }
 
     @Override

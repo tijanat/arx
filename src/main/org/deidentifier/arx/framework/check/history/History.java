@@ -60,10 +60,10 @@ public class History {
     private final ARXConfigurationInternal config;
 
     /** The dictionary for frequencies of the distributions. */
-    private final IntArrayDictionary         dictionarySensFreq;
+    private final IntArrayDictionary         dictionaryDistributionFreq;
 
     /** The dictionary for values of the distributions. */
-    private final IntArrayDictionary         dictionarySensValue;
+    private final IntArrayDictionary         dictionaryDistributionValue;
 
     /** Maximal number of entries. */
     private int                              size;
@@ -94,24 +94,24 @@ public class History {
      * @param snapshotSizeDataset the snapshotSizeDataset
      * @param snapshotSizeSnapshot
      * @param config
-     * @param dictionarySensValue
-     * @param dictionarySensFreq
+     * @param dictionaryDistributionValue
+     * @param dictionaryDistributionFreq
      */
     public History(final int rowCount,
                    final int size,
                    final double snapshotSizeDataset,
                    final double snapshotSizeSnapshot,
                    final ARXConfigurationInternal config,
-                   final IntArrayDictionary dictionarySensValue,
-                   final IntArrayDictionary dictionarySensFreq) {
+                   final IntArrayDictionary dictionaryDistributionValue,
+                   final IntArrayDictionary dictionaryDistributionFreq) {
         
         this.snapshotSizeDataset = (long) (rowCount * snapshotSizeDataset);
         this.snapshotSizeSnapshot = snapshotSizeSnapshot;
         this.cache = new MRUCache<Node>(size);
         this.nodeToSnapshot = new HashMap<Node, int[]>(size);
         this.size = size;
-        this.dictionarySensFreq = dictionarySensFreq;
-        this.dictionarySensValue = dictionarySensValue;
+        this.dictionaryDistributionFreq = dictionaryDistributionFreq;
+        this.dictionaryDistributionValue = dictionaryDistributionValue;
         this.config = config;
         this.requirements = config.getRequirements();
         this.storageTrigger = STORAGE_TRIGGER_NON_ANONYMOUS;
@@ -169,8 +169,8 @@ public class History {
      *
      * @return
      */
-    public IntArrayDictionary getDictionarySensFreq() {
-        return dictionarySensFreq;
+    public IntArrayDictionary getDictionaryDistributionFreq() {
+        return dictionaryDistributionFreq;
     }
 
     /**
@@ -178,8 +178,8 @@ public class History {
      *
      * @return
      */
-    public IntArrayDictionary getDictionarySensValue() {
-        return dictionarySensValue;
+    public IntArrayDictionary getDictionaryDistributionValue() {
+        return dictionaryDistributionValue;
     }
 
     /**
@@ -206,8 +206,8 @@ public class History {
     public void reset() {
         this.cache.clear();
         this.nodeToSnapshot.clear();
-        this.dictionarySensFreq.clear();
-        this.dictionarySensValue.clear();
+        this.dictionaryDistributionFreq.clear();
+        this.dictionaryDistributionValue.clear();
         this.resultNode = null;
     }
     
@@ -328,8 +328,8 @@ public class History {
                 for (int i=0; i<m.distributions.length; i++) {
                     Distribution distribution = m.distributions[i];
                     distribution.pack();
-                    data[index + 3 + i * 2] = dictionarySensValue.probe(distribution.getPackedElements());
-                    data[index + 4 + i * 2] = dictionarySensFreq.probe(distribution.getPackedFrequency());
+                    data[index + 3 + i * 2] = dictionaryDistributionValue.probe(distribution.getPackedElements());
+                    data[index + 4 + i * 2] = dictionaryDistributionFreq.probe(distribution.getPackedFrequency());
                 }
                 break;
             // TODO: If we only need a distribution, we should get rid of the primary counter
@@ -338,8 +338,8 @@ public class History {
                 for (int i=0; i<m.distributions.length; i++) {
                     Distribution distribution = m.distributions[i];
                     distribution.pack();
-                    data[index + 2 + i * 2] = dictionarySensValue.probe(distribution.getPackedElements());
-                    data[index + 3 + i * 2] = dictionarySensFreq.probe(distribution.getPackedFrequency());
+                    data[index + 2 + i * 2] = dictionaryDistributionValue.probe(distribution.getPackedElements());
+                    data[index + 3 + i * 2] = dictionaryDistributionFreq.probe(distribution.getPackedFrequency());
                 }
                 break;
             default:
@@ -364,8 +364,8 @@ public class History {
         case ARXConfiguration.REQUIREMENT_COUNTER | ARXConfiguration.REQUIREMENT_SECONDARY_COUNTER | ARXConfiguration.REQUIREMENT_DISTRIBUTION:
             for (int i = 0; i < snapshot.length; i += config.getSnapshotLength()) {
                 for (int j = i + 3; j < i + config.getSnapshotLength() - 1; j += 2) {
-                    dictionarySensValue.decrementRefCount(snapshot[j]);
-                    dictionarySensFreq.decrementRefCount(snapshot[j+1]);
+                    dictionaryDistributionValue.decrementRefCount(snapshot[j]);
+                    dictionaryDistributionFreq.decrementRefCount(snapshot[j+1]);
                 }
             }
             break;
@@ -374,8 +374,8 @@ public class History {
         case ARXConfiguration.REQUIREMENT_DISTRIBUTION:
             for (int i = 0; i < snapshot.length; i += config.getSnapshotLength()) {
                 for (int j = i + 2; j < i + config.getSnapshotLength() - 1; j += 2) {
-                    dictionarySensValue.decrementRefCount(snapshot[j]);
-                    dictionarySensFreq.decrementRefCount(snapshot[j+1]);
+                    dictionaryDistributionValue.decrementRefCount(snapshot[j]);
+                    dictionaryDistributionFreq.decrementRefCount(snapshot[j+1]);
                 }
             }
         }
