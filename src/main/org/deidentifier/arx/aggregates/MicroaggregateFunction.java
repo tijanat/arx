@@ -19,6 +19,7 @@ package org.deidentifier.arx.aggregates;
 import java.io.Serializable;
 import java.util.Iterator;
 
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.deidentifier.arx.DataType;
 import org.deidentifier.arx.DataType.DataTypeWithRatioScale;
 import org.deidentifier.arx.framework.check.distribution.Distribution;
@@ -57,9 +58,8 @@ public abstract class MicroaggregateFunction implements Serializable {
             
             Iterator<Double> it = new DistributionIteratorRatio(values, castedType, dictionary);
             
-            // TODO: use common math
-            double result = 0d;
-            int count = 0;
+            DescriptiveStatistics stats = new DescriptiveStatistics();
+            
             while (it.hasNext()) {
                 Double value = it.next();
                 if (value == null) {
@@ -68,18 +68,15 @@ public abstract class MicroaggregateFunction implements Serializable {
                         // Do nothing
                         break;
                     case IDENTITIY:
-                        result += 0d;
-                        count++;
+                        stats.addValue(0d);
                         break;
                     }
                 } else {
-                    result += value;
-                    count++;
+                    stats.addValue(value);
                 }
                 
             }
-            result = result / count;
-            return castedType.format(castedType.fromDouble(result));
+            return castedType.format(castedType.fromDouble(stats.getMean()));
         }
     }
     
