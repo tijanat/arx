@@ -64,7 +64,6 @@ public abstract class MicroaggregateFunction<T> implements Serializable {
                 }
             }
             result = type.divide(result, type.parse(String.valueOf(count)));
-            System.out.println("r: " + result);
             return String.valueOf(result);
         }
         
