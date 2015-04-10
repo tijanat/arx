@@ -111,7 +111,7 @@ public class ARXResult {
         ((DataHandleInput)handle).update(manager.getDataQI().getArray(), 
                                          manager.getDataSE().getArray(),
                                          manager.getDataIS().getArray(),
-                                         manager.getDataMI().getArray());
+                                         manager.getDataMA().getArray());
         
         // Lock handle
         ((DataHandleInput)handle).setLocked(true);
@@ -306,7 +306,7 @@ public class ARXResult {
         // Clone if needed
         if (fork) {
             information.buffer = information.buffer.clone(); 
-            information.dataMI = information.dataMI.clone(); 
+            information.dataMA = information.dataMA.clone(); 
         }
 
         // Create
@@ -314,7 +314,7 @@ public class ARXResult {
                                                        registry,
                                                        manager,
                                                        information.buffer,
-                                                       information.dataMI,
+                                                       information.dataMA,
                                                        node,
                                                        new StatisticsEquivalenceClasses(information.statistics),
                                                        definition,

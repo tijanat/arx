@@ -86,13 +86,13 @@ public class DataManager {
     protected final Data                                 dataIS;
     
     /** The data. */
-    protected final Data                                 dataMI;
+    protected final Data                                 dataMA;
 
     /** The generalization hierarchiesQI. */
     protected final GeneralizationHierarchy[]            hierarchiesQI;
     
     /** The microaggregation functions. */
-    protected final MicroaggregateFunction[]          functionsMI;
+    protected final MicroaggregateFunction[]          functionsMA;
 
     /** The sensitive attributes. */
     protected final Map<String, GeneralizationHierarchy> hierarchiesSE;
@@ -145,25 +145,25 @@ public class DataManager {
         Set<String> qi = definition.getQuasiIdentifyingAttributes();
         Set<String> se = definition.getSensitiveAttributes();
         Set<String> is = definition.getInsensitiveAttributes();
-        Set<String> mi = definition.getMicroaggregationAttributes();
+        Set<String> ma = definition.getMicroaggregationAttributes();
 
         // Init dictionary
         final Dictionary dictionaryQI = new Dictionary(qi.size());
         final Dictionary dictionarySE = new Dictionary(se.size());
         final Dictionary dictionaryIS = new Dictionary(is.size());
-        final Dictionary dictionaryMI = new Dictionary(mi.size(), true);
+        final Dictionary dictionaryMA = new Dictionary(ma.size(), true);
 
         // Init maps for reordering the output
         final int[] mapQI = new int[dictionaryQI.getNumDimensions()];
         final int[] mapSE = new int[dictionarySE.getNumDimensions()];
         final int[] mapIS = new int[dictionaryIS.getNumDimensions()];
-        final int[] mapMI = new int[dictionaryMI.getNumDimensions()];
+        final int[] mapMA = new int[dictionaryMA.getNumDimensions()];
 
         // Indexes
         int indexQI = 0;
         int indexSE = 0;
         int indexIS = 0;
-        int indexMI = 0;
+        int indexMA = 0;
         int counter = 0;
 
         // Build map
@@ -171,7 +171,7 @@ public class DataManager {
         final String[] headerQI = new String[dictionaryQI.getNumDimensions()];
         final String[] headerSE = new String[dictionarySE.getNumDimensions()];
         final String[] headerIS = new String[dictionaryIS.getNumDimensions()];
-        final String[] headerMI = new String[dictionaryMI.getNumDimensions()];
+        final String[] headerMA = new String[dictionaryMA.getNumDimensions()];
 
         for (final String column : header) {
             if (qi.contains(column)) {
@@ -186,12 +186,12 @@ public class DataManager {
                 dictionaryIS.registerAll(indexIS, dictionary, counter);
                 headerIS[indexIS] = header[counter];
                 indexIS++;
-            } else if (mi.contains(column)) {
-                map[counter] = new TypeInformation(AttributeType.MICROAGGREGATION_ATTRIBUTE, indexMI);
-                mapMI[indexMI] = counter;
-                dictionaryMI.registerAll(indexMI, dictionary, counter);
-                headerMI[indexMI] = header[counter];
-                indexMI++;
+            } else if (ma.contains(column)) {
+                map[counter] = new TypeInformation(AttributeType.MICROAGGREGATION_ATTRIBUTE, indexMA);
+                mapMA[indexMA] = counter;
+                dictionaryMA.registerAll(indexMA, dictionary, counter);
+                headerMA[indexMA] = header[counter];
+                indexMA++;
             } else if (id.contains(column)) {
                 map[counter] = new TypeInformation(AttributeType.IDENTIFYING_ATTRIBUTE, -1);
             } else if (!id.contains(column)) {
@@ -205,11 +205,11 @@ public class DataManager {
         }
 
         // encode Data
-        final Data[] ddata = encode(data, map, mapQI, mapSE, mapIS, mapMI, dictionaryQI, dictionarySE, dictionaryIS, dictionaryMI, headerQI, headerSE, headerIS, headerMI);
+        final Data[] ddata = encode(data, map, mapQI, mapSE, mapIS, mapMA, dictionaryQI, dictionarySE, dictionaryIS, dictionaryMA, headerQI, headerSE, headerIS, headerMA);
         dataQI = ddata[0];
         dataSE = ddata[1];
         dataIS = ddata[2];
-        dataMI = ddata[3];
+        dataMA = ddata[3];
 
         // Initialize minlevels
         minLevels = new int[qi.size()];
@@ -269,17 +269,17 @@ public class DataManager {
         dictionaryQI.finalizeAll();
         dictionarySE.finalizeAll();
         dictionaryIS.finalizeAll();
-        dictionaryMI.finalizeAll();
+        dictionaryMA.finalizeAll();
 
         // Init microaggregation functions
-        functionsMI = new MicroaggregateFunction[mi.size()];
+        functionsMA = new MicroaggregateFunction[ma.size()];
         for (int i = 0; i < header.length; i++) {
-            if (mi.contains(header[i]) && map[i].attributeType == AttributeType.MICROAGGREGATION_ATTRIBUTE) {
+            if (ma.contains(header[i]) && map[i].attributeType == AttributeType.MICROAGGREGATION_ATTRIBUTE) {
                 final int dictionaryIndex = map[i].getIndexPosition();
                 final String name = header[i];
                 if (definition.getAttributeType(name) instanceof Microaggregation) {
-                    functionsMI[dictionaryIndex] = ((Microaggregation) definition.getAttributeType(name)).getFunction();
-                    functionsMI[dictionaryIndex].init(dictionaryMI.getMapping()[dictionaryIndex], definition.getDataType(name));
+                    functionsMA[dictionaryIndex] = ((Microaggregation) definition.getAttributeType(name)).getFunction();
+                    functionsMA[dictionaryIndex].init(dictionaryMA.getMapping()[dictionaryIndex], definition.getDataType(name));
                 } else {
                     throw new IllegalStateException("No microaggregation defined for attribute (" + header[i] + ")");
                 }
@@ -304,9 +304,9 @@ public class DataManager {
     protected DataManager(final Data dataQI,
                           final Data dataSE,
                           final Data dataIS,
-                          final Data dataMI,
+                          final Data dataMA,
                           final GeneralizationHierarchy[] hierarchiesQI,
-                          final MicroaggregateFunction[] functionsMI,
+                          final MicroaggregateFunction[] functionsMA,
                           final Map<String, GeneralizationHierarchy> hierarchiesSE,
                           final Map<String, Integer> indexesSE,
                           final int[] hierarchyHeights,
@@ -316,7 +316,7 @@ public class DataManager {
         this.dataQI = dataQI;
         this.dataSE = dataSE;
         this.dataIS = dataIS;
-        this.dataMI = dataMI;
+        this.dataMA = dataMA;
         this.hierarchiesQI = hierarchiesQI;
         this.hierarchiesSE = hierarchiesSE;
         this.hierarchyHeights = hierarchyHeights;
@@ -324,7 +324,7 @@ public class DataManager {
         this.minLevels = minLevels;
         this.indexesSE = indexesSE;
         this.header = header;
-        this.functionsMI = functionsMI;
+        this.functionsMA = functionsMA;
     }
 
     /**
@@ -359,8 +359,8 @@ public class DataManager {
      *
      * @return the data
      */
-    public Data getDataMI() {
-        return dataMI;
+    public Data getDataMA() {
+        return dataMA;
     }
 
     /**
@@ -426,10 +426,10 @@ public class DataManager {
     /**
      * Returns the microaggregation functions.
      * 
-     * @return the functionsMI
+     * @return the functionsMA
      */
     public MicroaggregateFunction[] getMicroaggregationFunctions() {
-        return functionsMI;
+        return functionsMA;
     }
 
 
@@ -586,21 +586,21 @@ public class DataManager {
                           final int[] mapQI,
                           final int[] mapSE,
                           final int[] mapIS,
-                          final int[] mapMI,
+                          final int[] mapMA,
                           final Dictionary dictionaryQI,
                           final Dictionary dictionarySE,
                           final Dictionary dictionaryIS,
-                          final Dictionary dictionaryMI,
+                          final Dictionary dictionaryMA,
                           final String[] headerQI,
                           final String[] headerSE,
                           final String[] headerIS,
-                          final String[] headerMI) {
+                          final String[] headerMa) {
 
         // Parse the dataset
         final int[][] valsQI = new int[data.length][];
         final int[][] valsSE = new int[data.length][];
         final int[][] valsIS = new int[data.length][];
-        final int[][] valsMI = new int[data.length][];
+        final int[][] valsMA = new int[data.length][];
 
 
         int index = 0;
@@ -610,7 +610,7 @@ public class DataManager {
             final int[] tupleQI = new int[headerQI.length];
             final int[] tupleSE = new int[headerSE.length];
             final int[] tupleIS = new int[headerIS.length];
-            final int[] tupleMI = new int[headerMI.length];
+            final int[] tupleMA = new int[headerMa.length];
 
             for (int i = 0; i < tuple.length; i++) {
                 AttributeType aType = map[i].getAttributeType();
@@ -622,18 +622,18 @@ public class DataManager {
                 } else if (aType == AttributeType.SENSITIVE_ATTRIBUTE) {
                     tupleSE[iPos] = tuple[i];
                 } else if (aType == AttributeType.MICROAGGREGATION_ATTRIBUTE) {
-                    tupleMI[iPos] = tuple[i];
+                    tupleMA[iPos] = tuple[i];
                 }
             }
             valsQI[index] = tupleQI;
             valsIS[index] = tupleIS;
             valsSE[index] = tupleSE;
-            valsMI[index] = tupleMI;
+            valsMA[index] = tupleMA;
             index++;
         }
 
         // Build data object
-        final Data[] result = { new Data(valsQI, headerQI, mapQI, dictionaryQI), new Data(valsSE, headerSE, mapSE, dictionarySE), new Data(valsIS, headerIS, mapIS, dictionaryIS), new Data(valsMI, headerMI, mapMI, dictionaryMI) };
+        final Data[] result = { new Data(valsQI, headerQI, mapQI, dictionaryQI), new Data(valsSE, headerSE, mapSE, dictionarySE), new Data(valsIS, headerIS, mapIS, dictionaryIS), new Data(valsMA, headerMa, mapMA, dictionaryMA) };
         return result;
     }
 

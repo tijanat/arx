@@ -488,7 +488,7 @@ public class HashGroupify implements IHashGroupify {
     }
     
     @Override
-    public void microaggregate(final int[][] data, final Data dataMI, final int startMI, final MicroaggregateFunction[] functions) {
+    public void microaggregate(final int[][] data, final Data dataMA, final int startMA, final MicroaggregateFunction[] functions) {
         Map<Distribution, Integer> cache = new HashMap<Distribution, Integer>();
         for (int row = 0; row < data.length; row++) {
             if (subset == null || subset.contains(row)) {
@@ -504,18 +504,18 @@ public class HashGroupify implements IHashGroupify {
                 }
                 Distribution[] dis = m.distributions;
                 int cnt = 0;
-                for (int i = startMI; i < dis.length; i++) {
+                for (int i = startMA; i < dis.length; i++) {
                     if (!cache.containsKey(dis[i])) {
                         String result = functions[cnt].aggregate(dis[i]);
-                        int code = dataMI.getDictionary().register(cnt, result);
+                        int code = dataMA.getDictionary().register(cnt, result);
                         cache.put(dis[i], code);
                     }
-                    dataMI.getArray()[row][cnt] = cache.get(dis[i]);
+                    dataMA.getArray()[row][cnt] = cache.get(dis[i]);
                     cnt++;
                 }
             }
         }
-        dataMI.getDictionary().finalizeAll();
+        dataMA.getDictionary().finalizeAll();
     }
 
     /**

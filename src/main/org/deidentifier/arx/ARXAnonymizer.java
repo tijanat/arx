@@ -478,7 +478,7 @@ public class ARXAnonymizer {
         ((DataHandleInput)handle).update(manager.getDataQI().getArray(), 
                                          manager.getDataSE().getArray(),
                                          manager.getDataIS().getArray(),
-                                         manager.getDataMI().getArray());
+                                         manager.getDataMA().getArray());
 
         // Initialize
         config.initialize(manager);

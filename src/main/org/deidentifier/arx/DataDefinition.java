@@ -167,7 +167,7 @@ public class DataDefinition implements Cloneable{
     public Set<String> getMicroaggregationAttributes() {
         final Set<String> result = new HashSet<String>();
         for (final Entry<String, AttributeType> entry : attributeTypes.entrySet()) {
-            if (entry.getValue().getType() == AttributeType.ATTR_TYPE_MI) {
+            if (entry.getValue().getType() == AttributeType.ATTR_TYPE_MA) {
                 result.add(entry.getKey());
             }
         }

@@ -50,7 +50,7 @@ public class DataHandleInput extends DataHandle {
     private int[][]      dataIS     = null;
     
     /** The data. */
-    private int[][]      dataMI     = null;
+    private int[][]      dataMA     = null;
     
     /** Is this handle locked?. */
     private boolean      locked     = false;
@@ -199,7 +199,7 @@ public class DataHandleInput extends DataHandle {
         dataQI = null;
         dataSE = null;
         dataIS = null;
-        dataMI = null;
+        dataMA = null;
     }
 
     @Override
@@ -273,7 +273,7 @@ public class DataHandleInput extends DataHandle {
         swap(row1, row2, data);
         if (dataQI != null) swap(row1, row2, dataQI);
         if (dataSE != null) swap(row1, row2, dataSE);
-        if (dataMI != null) swap(row1, row2, dataMI);
+        if (dataMA != null) swap(row1, row2, dataMA);
         if (dataIS != null) swap(row1, row2, dataIS);
     }
     
@@ -325,10 +325,10 @@ public class DataHandleInput extends DataHandle {
      * @param dataSE
      * @param dataIS
      */
-    protected void update(int[][] dataQI, int[][] dataSE, int[][] dataIS, int[][] dataMI) {
+    protected void update(int[][] dataQI, int[][] dataSE, int[][] dataIS, int[][] dataMA) {
         this.dataQI = dataQI;
         this.dataSE = dataSE;
         this.dataIS = dataIS;
-        this.dataMI = dataMI;
+        this.dataMA = dataMA;
     }
 }

@@ -48,11 +48,11 @@ public class NodeChecker implements INodeChecker {
     private final Data             data;
     
     /** The microaggregate data. */
-    private final Data                        dataMIBuffer;
+    private final Data                        dataMABuffer;
         /** The microaggregate functions. */
-    private final MicroaggregateFunction[] functionsMI;
+    private final MicroaggregateFunction[] functionsMA;
     /** The microaggregate start index. */
-    private final int                         startMI;
+    private final int                         startMA;
 
     /** The current hash groupify. */
     protected IHashGroupify        currentGroupify;
@@ -95,8 +95,8 @@ public class NodeChecker implements INodeChecker {
         this.config = config;
         this.data = manager.getDataQI();
         // Make copy of the microaggregation columns for the output transformation
-        this.dataMIBuffer = manager.getDataMI().clone();
-        this.functionsMI = manager.getMicroaggregationFunctions();
+        this.dataMABuffer = manager.getDataMA().clone();
+        this.functionsMA = manager.getMicroaggregationFunctions();
         
         int initialSize = (int) (manager.getDataQI().getDataLength() * 0.01d);
         IntArrayDictionary dictionarySensValue;
@@ -114,22 +114,22 @@ public class NodeChecker implements INodeChecker {
         int[][] attributeWithDistribution;
         if (config.isMicroaggregation()) {
             int sizeSE = manager.getDataSE().getHeader().length;
-            int sizeMI = manager.getDataMI().getHeader().length;
-            int rows = Math.max(manager.getDataSE().getArray().length, manager.getDataMI().getArray().length);
-            attributeWithDistribution = new int[rows][sizeSE + sizeMI];
+            int sizeMA = manager.getDataMA().getHeader().length;
+            int rows = Math.max(manager.getDataSE().getArray().length, manager.getDataMA().getArray().length);
+            attributeWithDistribution = new int[rows][sizeSE + sizeMA];
             for (int i = 0; i < attributeWithDistribution.length; i++) {
                 for (int j = 0; j < attributeWithDistribution[i].length; j++) {
                     if (j < sizeSE) {
                         attributeWithDistribution[i][j] = manager.getDataSE().getArray()[i][j];
                     } else {
-                        attributeWithDistribution[i][j] = manager.getDataMI().getArray()[i][j - sizeSE];
+                        attributeWithDistribution[i][j] = manager.getDataMA().getArray()[i][j - sizeSE];
                     }
                 }
             }
-            startMI = sizeSE;
+            startMA = sizeSE;
         } else {
             attributeWithDistribution = manager.getDataSE().getArray();
-            startMI = -1;
+            startMA = -1;
         }
 
         this.history = new History(manager.getDataQI().getArray().length,
@@ -171,7 +171,7 @@ public class NodeChecker implements INodeChecker {
         // Microaggregate
         // Important: has to be done before marking outliers!
         if (config.isMicroaggregation()) {
-            currentGroupify.microaggregate(transformer.getBuffer(), dataMIBuffer, startMI, functionsMI);
+            currentGroupify.microaggregate(transformer.getBuffer(), dataMABuffer, startMA, functionsMA);
         }
         
         // Find outliers
@@ -189,7 +189,7 @@ public class NodeChecker implements INodeChecker {
                                                       null));
         
         // Return the buffer
-        return new TransformedData(getBuffer(), dataMIBuffer, currentGroupify.getGroupStatistics());
+        return new TransformedData(getBuffer(), dataMABuffer, currentGroupify.getGroupStatistics());
     }
 
     @Override

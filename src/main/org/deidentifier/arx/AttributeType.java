@@ -59,7 +59,7 @@ public class AttributeType implements Serializable, Cloneable {
          * Instantiates a new hierarchy.
          */
         public Microaggregation(MicroaggregateFunction function) {
-            super(ATTR_TYPE_MI);
+            super(ATTR_TYPE_MA);
             this.function = function;
         }
         
@@ -617,7 +617,7 @@ public class AttributeType implements Serializable, Cloneable {
     protected static final int  ATTR_TYPE_ID                = 3;
     
     /** Constant for type microaggregation. */
-    protected static final int  ATTR_TYPE_MI                = 4;
+    protected static final int  ATTR_TYPE_MA                = 4;
     
     /** Represents an identifying attribute. */
     public static AttributeType IDENTIFYING_ATTRIBUTE       = new AttributeType(ATTR_TYPE_ID);
@@ -632,7 +632,7 @@ public class AttributeType implements Serializable, Cloneable {
     public static AttributeType QUASI_IDENTIFYING_ATTRIBUTE = new AttributeType(ATTR_TYPE_QI);
     
     /** Represents a microaggregation attribute. */
-    public static AttributeType MICROAGGREGATION_ATTRIBUTE  = new AttributeType(ATTR_TYPE_MI);
+    public static AttributeType MICROAGGREGATION_ATTRIBUTE  = new AttributeType(ATTR_TYPE_MA);
     
     /** The type. */
     private int                 type                        = 0x0;
@@ -667,7 +667,7 @@ public class AttributeType implements Serializable, Cloneable {
             return "INSENSITIVE_ATTRIBUTE";
         case ATTR_TYPE_QI:
             return "QUASI_IDENTIFYING_ATTRIBUTE";
-        case ATTR_TYPE_MI:
+        case ATTR_TYPE_MA:
             return "MICROAGGREGATION_ATTRIBUTE";
         default:
             return "UNKNOWN_ATTRIBUTE_TYPE";

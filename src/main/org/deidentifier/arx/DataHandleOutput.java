@@ -99,7 +99,7 @@ public class DataHandleOutput extends DataHandle {
     protected Data        dataSE;
     
     /** The data. */
-    protected Data        dataMI;
+    protected Data        dataMA;
 
     /** An inverse map to data arrays. */
     private int[][][]     inverseData;
@@ -152,7 +152,7 @@ public class DataHandleOutput extends DataHandle {
      * @param registry
      * @param manager
      * @param buffer
-     * @param dataMI
+     * @param dataMA
      * @param node
      * @param statistics
      * @param definition
@@ -162,7 +162,7 @@ public class DataHandleOutput extends DataHandle {
                                final DataRegistry registry,
                                final DataManager manager,
                                final Data buffer,
-                               final Data dataMI,
+                               final Data dataMA,
                                final ARXNode node,
                                final StatisticsEquivalenceClasses statistics,
                                final DataDefinition definition,
@@ -181,10 +181,10 @@ public class DataHandleOutput extends DataHandle {
 
         // Extract data
         this.dataQI = buffer;
-        if (dataMI == null) {
-            this.dataMI = manager.getDataMI();
+        if (dataMA == null) {
+            this.dataMA = manager.getDataMA();
         } else {
-            this.dataMI = dataMI;
+            this.dataMA = dataMA;
         }
         this.dataSE = manager.getDataSE();
         this.dataIS = manager.getDataIS();
@@ -210,8 +210,8 @@ public class DataHandleOutput extends DataHandle {
         for (int i = 0; i < this.dataSE.getMap().length; i++) {
             this.inverseMap[dataSE.getMap()[i]] = i | (AttributeType.ATTR_TYPE_SE << AttributeType.SHIFT);
         }
-        for (int i = 0; i < this.dataMI.getMap().length; i++) {
-            this.inverseMap[this.dataMI.getMap()[i]] = i | (AttributeType.ATTR_TYPE_MI << AttributeType.SHIFT);
+        for (int i = 0; i < this.dataMA.getMap().length; i++) {
+            this.inverseMap[this.dataMA.getMap()[i]] = i | (AttributeType.ATTR_TYPE_MA << AttributeType.SHIFT);
         }
         for (int i = 0; i < dataIS.getMap().length; i++) {
             inverseMap[dataIS.getMap()[i]] = i | (AttributeType.ATTR_TYPE_IS << AttributeType.SHIFT);
@@ -221,14 +221,14 @@ public class DataHandleOutput extends DataHandle {
         this.inverseData = new int[5][][];
         this.inverseData[AttributeType.ATTR_TYPE_IS] = this.dataIS.getArray();
         this.inverseData[AttributeType.ATTR_TYPE_SE] = this.dataSE.getArray();
-        this.inverseData[AttributeType.ATTR_TYPE_MI] = this.dataMI.getArray();
+        this.inverseData[AttributeType.ATTR_TYPE_MA] = this.dataMA.getArray();
         this.inverseData[AttributeType.ATTR_TYPE_QI] = this.dataQI.getArray();
 
         // Build inverse dictionary array
         this.inverseDictionaries = new Dictionary[5];
         this.inverseDictionaries[AttributeType.ATTR_TYPE_IS] = this.dataIS.getDictionary();
         this.inverseDictionaries[AttributeType.ATTR_TYPE_SE] = this.dataSE.getDictionary();
-        this.inverseDictionaries[AttributeType.ATTR_TYPE_MI] = this.dataMI.getDictionary();
+        this.inverseDictionaries[AttributeType.ATTR_TYPE_MA] = this.dataMA.getDictionary();
         this.inverseDictionaries[AttributeType.ATTR_TYPE_QI] = this.dataQI.getDictionary();
         
         // Create view
@@ -344,7 +344,7 @@ public class DataHandleOutput extends DataHandle {
         dataIS = null;
         dataQI = null;
         dataSE = null;
-        dataMI = null;
+        dataMA = null;
         inverseData = null;
         inverseDictionaries = null;
         inverseMap = null;
@@ -369,7 +369,7 @@ public class DataHandleOutput extends DataHandle {
         DataType<?>[][] dataTypes = new DataType[5][];
         dataTypes[AttributeType.ATTR_TYPE_IS] = new DataType[dataIS.getHeader().length];
         dataTypes[AttributeType.ATTR_TYPE_SE] = new DataType[dataSE.getHeader().length];
-        dataTypes[AttributeType.ATTR_TYPE_MI] = new DataType[dataMI.getHeader().length];
+        dataTypes[AttributeType.ATTR_TYPE_MA] = new DataType[dataMA.getHeader().length];
         dataTypes[AttributeType.ATTR_TYPE_QI] = new DataType[dataQI.getHeader().length];
 
         for (int i = 0; i < dataTypes.length; i++) {
@@ -387,8 +387,8 @@ public class DataHandleOutput extends DataHandle {
             case AttributeType.ATTR_TYPE_SE:
                 header = dataSE.getHeader();
                 break;
-            case AttributeType.ATTR_TYPE_MI:
-                header = dataMI.getHeader();
+            case AttributeType.ATTR_TYPE_MA:
+                header = dataMA.getHeader();
                 break;
             // Ignore identifying attributes
             case AttributeType.ATTR_TYPE_ID:

@@ -29,7 +29,7 @@ public class TransformedData {
     public Data buffer;
     
     /**  The microaggregates */
-    public Data dataMI;
+    public Data dataMA;
     
     /**  The statistics */
     public GroupStatistics statistics;
@@ -40,9 +40,9 @@ public class TransformedData {
      * @param data
      * @param statistics
      */
-    public TransformedData(Data data, Data dataMI, GroupStatistics statistics) {
+    public TransformedData(Data data, Data dataMA, GroupStatistics statistics) {
         this.buffer = data;
-        this.dataMI = dataMI;
+        this.dataMA = dataMA;
         this.statistics = statistics;
     }
 }
