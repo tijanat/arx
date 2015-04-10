@@ -65,7 +65,7 @@ public abstract class AbstractTransformer implements Callable<IHashGroupify> {
         
         @Override
         public final void callAll(final int[] outtuple, final int i) {
-            groupify.addAll(outtuple, i, 1, sensitiveValues[i], -1);
+            groupify.addAll(outtuple, i, 1, distributionValues[i], -1);
         }
 
         @Override
@@ -77,14 +77,14 @@ public abstract class AbstractTransformer implements Callable<IHashGroupify> {
         public final void callSnapshot(final int[] outtuple, final int[] snapshot, final int i) {
             
             // TODO: Improve!
-            int[][] values = new int[sensitiveValues[0].length][];
-            int[][] frequencies = new int[sensitiveValues[0].length][];
+            int[][] values = new int[distributionValues[0].length][];
+            int[][] frequencies = new int[distributionValues[0].length][];
             int index = 0;
             int offset = i + 2;
             int length = config.getSnapshotLength() - 1 - 2;
             for (int j = offset; j < offset + length; j += 2) {
-                values[index] = dictionarySensValue.get(snapshot[j]);
-                frequencies[index++] = dictionarySensFreq.get(snapshot[j + 1]);
+                values[index] = dictionaryDistributionValue.get(snapshot[j]);
+                frequencies[index++] = dictionaryDistributionFreq.get(snapshot[j + 1]);
             }
             
             groupify.addSnapshot(outtuple, snapshot[i], snapshot[i + 1], values, frequencies, -1);
@@ -122,7 +122,7 @@ public abstract class AbstractTransformer implements Callable<IHashGroupify> {
         
         @Override
         public final void callAll(final int[] outtuple, final int i) {
-            groupify.addAll(outtuple, i, 1, sensitiveValues[i], 1);
+            groupify.addAll(outtuple, i, 1, distributionValues[i], 1);
         }
 
         @Override
@@ -134,14 +134,14 @@ public abstract class AbstractTransformer implements Callable<IHashGroupify> {
         public final void callSnapshot(final int[] outtuple, final int[] snapshot, final int i) {
 
             // TODO: Improve!
-            int[][] values = new int[sensitiveValues[0].length][];
-            int[][] frequencies = new int[sensitiveValues[0].length][];
+            int[][] values = new int[distributionValues[0].length][];
+            int[][] frequencies = new int[distributionValues[0].length][];
             int index = 0;
             int offset = i + 3;
             int length = config.getSnapshotLength() - 1 - 3;
             for (int j = offset; j < offset + length; j += 2) {
-                values[index] = dictionarySensValue.get(snapshot[j]);
-                frequencies[index++] = dictionarySensFreq.get(snapshot[j + 1]);
+                values[index] = dictionaryDistributionValue.get(snapshot[j]);
+                frequencies[index++] = dictionaryDistributionFreq.get(snapshot[j + 1]);
             }
 
             groupify.addSnapshot(outtuple, snapshot[i], snapshot[i + 1], values, frequencies, snapshot[i + 2]);
@@ -157,7 +157,7 @@ public abstract class AbstractTransformer implements Callable<IHashGroupify> {
         
         @Override
         public final void callAll(final int[] outtuple, final int i) {
-            groupify.addAll(outtuple, i, 1, sensitiveValues[i], -1);
+            groupify.addAll(outtuple, i, 1, distributionValues[i], -1);
         }
 
         @Override
@@ -169,14 +169,14 @@ public abstract class AbstractTransformer implements Callable<IHashGroupify> {
         public final void callSnapshot(final int[] outtuple, final int[] snapshot, final int i) {
 
             // TODO: Improve!
-            int[][] values = new int[sensitiveValues[0].length][];
-            int[][] frequencies = new int[sensitiveValues[0].length][];
+            int[][] values = new int[distributionValues[0].length][];
+            int[][] frequencies = new int[distributionValues[0].length][];
             int index = 0;
             int offset = i + 2;
             int length = config.getSnapshotLength() - 1 - 2;
             for (int j = offset; j < offset + length; j += 2) {
-                values[index] = dictionarySensValue.get(snapshot[j]);
-                frequencies[index++] = dictionarySensFreq.get(snapshot[j + 1]);
+                values[index] = dictionaryDistributionValue.get(snapshot[j]);
+                frequencies[index++] = dictionaryDistributionFreq.get(snapshot[j + 1]);
             }
 
             groupify.addSnapshot(outtuple, snapshot[i], snapshot[i + 1], values, frequencies, -1);
@@ -241,10 +241,10 @@ public abstract class AbstractTransformer implements Callable<IHashGroupify> {
     protected final IGroupify                 delegate;
     
     /** The dictionary for the snapshot compression *. */
-    protected final IntArrayDictionary        dictionarySensFreq;
+    protected final IntArrayDictionary        dictionaryDistributionFreq;
     
     /** The dictionary for the snapshot compression *. */
-    protected final IntArrayDictionary        dictionarySensValue;
+    protected final IntArrayDictionary        dictionaryDistributionValue;
     
     /** The dimensions. */
     protected final int                       dimensions;
@@ -299,7 +299,7 @@ public abstract class AbstractTransformer implements Callable<IHashGroupify> {
     /** The outtuple. */
     protected int[]                           outtuple;
     /** The sesitive values. */
-    protected final int[][]                   sensitiveValues;
+    protected final int[][]                   distributionValues;
     /** The snapshot. */
     protected int[]                           snapshot;
     
@@ -367,23 +367,23 @@ public abstract class AbstractTransformer implements Callable<IHashGroupify> {
      *
      * @param data the data
      * @param hierarchies the hierarchies
-     * @param sensitive
-     * @param dictionarySensValue
-     * @param dictionarySensFreq
+     * @param distribution
+     * @param dictionaryDistributionValue
+     * @param dictionaryDistributionFreq
      * @param config
      */
     public AbstractTransformer(final int[][] data,
                                final GeneralizationHierarchy[] hierarchies,
-                               final int[][] sensitive,
-                               final IntArrayDictionary dictionarySensValue,
-                               final IntArrayDictionary dictionarySensFreq,
+                               final int[][] distribution,
+                               final IntArrayDictionary dictionaryDistributionValue,
+                               final IntArrayDictionary dictionaryDistributionFreq,
                                final ARXConfigurationInternal config) {
         this.config = config;
         this.data = data;
         this.hierarchies = hierarchies;
-        this.sensitiveValues = sensitive;
-        this.dictionarySensValue = dictionarySensValue;
-        this.dictionarySensFreq = dictionarySensFreq;
+        this.distributionValues = distribution;
+        this.dictionaryDistributionValue = dictionaryDistributionValue;
+        this.dictionaryDistributionFreq = dictionaryDistributionFreq;
         ssStepWidth = config.getSnapshotLength();
 
         // Init arrays

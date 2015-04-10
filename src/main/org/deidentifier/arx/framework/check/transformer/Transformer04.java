@@ -34,18 +34,18 @@ public class Transformer04 extends AbstractTransformer {
      *
      * @param data the data
      * @param hierarchies the hierarchies
-     * @param sensitiveValues
-     * @param dictionarySensValue
-     * @param dictionarySensFreq
+     * @param distribution
+     * @param dictionaryDistributionValue
+     * @param dictionaryDistributionFreq
      * @param config
      */
     public Transformer04(final int[][] data,
                          final GeneralizationHierarchy[] hierarchies,
-                         final int[][] sensitiveValues,
-                         final IntArrayDictionary dictionarySensValue,
-                         final IntArrayDictionary dictionarySensFreq,
+                         final int[][] distribution,
+                         final IntArrayDictionary dictionaryDistributionValue,
+                         final IntArrayDictionary dictionaryDistributionFreq,
                          final ARXConfigurationInternal config) {
-        super(data, hierarchies, sensitiveValues, dictionarySensValue, dictionarySensFreq, config);
+        super(data, hierarchies, distribution, dictionaryDistributionValue, dictionaryDistributionFreq, config);
     }
 
     /*

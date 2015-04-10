@@ -50,26 +50,26 @@ import org.deidentifier.arx.framework.data.GeneralizationHierarchy;
 public class Transformer {
 
     /** The buffer. */
-    protected int[][]                          buffer;
-
-    /** Sensitive attribute values. */
-    protected int[][]                          sensitive;
-
+    protected int[][]                         buffer;
+    
+    /** Attribute values for which a distribution should be calculated. */
+    protected int[][]                         distribution;
+    
     /** The config. */
-    protected final ARXConfigurationInternal config;
-
+    protected final ARXConfigurationInternal  config;
+    
     /** The data. */
-    protected final int[][]                    data;
-
-    /** The dictionary for the snapshot compression *. */
-    protected IntArrayDictionary               dictionarySensFreq;
-
-    /** The dictionary for the snapshot compression *. */
-    protected IntArrayDictionary               dictionarySensValue;
-
+    protected final int[][]                   data;
+    
+    /** The dictionary for the snapshot compression. */
+    protected IntArrayDictionary              dictionaryDistributionFreq;
+    
+    /** The dictionary for the snapshot compression. */
+    protected IntArrayDictionary              dictionaryDistributionValue;
+    
     /** The dimensions. */
-    protected final int                        dimensions;
-
+    protected final int                       dimensions;
+    
     /** The hierarchies. */
     protected final GeneralizationHierarchy[]  hierarchies;
 
@@ -81,17 +81,17 @@ public class Transformer {
      *
      * @param data
      * @param hierarchies
-     * @param sensitive
+     * @param distribution
      * @param config
-     * @param dictionarySensValue
-     * @param dictionarySensFreq
+     * @param dictionaryDistributionValue
+     * @param dictionaryDistributionFreq
      */
     public Transformer(final int[][] data,
                        final GeneralizationHierarchy[] hierarchies,
-                       final int[][] sensitive,
+                       final int[][] distribution,
                        final ARXConfigurationInternal config,
-                       final IntArrayDictionary dictionarySensValue,
-                       final IntArrayDictionary dictionarySensFreq) {
+                       final IntArrayDictionary dictionaryDistributionValue,
+                       final IntArrayDictionary dictionaryDistributionFreq) {
 
         this.config = config;
         this.data = data;
@@ -104,9 +104,9 @@ public class Transformer {
         }
 
         this.dimensions = data[0].length;
-        this.dictionarySensValue = dictionarySensValue;
-        this.dictionarySensFreq = dictionarySensFreq;
-        this.sensitive = sensitive;
+        this.dictionaryDistributionValue = dictionaryDistributionValue;
+        this.dictionaryDistributionFreq = dictionaryDistributionFreq;
+        this.distribution = distribution;
 
         buildApplicators();
     }
@@ -198,99 +198,99 @@ public class Transformer {
     private void buildApplicators() {
         instances[15] = new Transformer15(data,
                                           hierarchies,
-                                          sensitive,
-                                          dictionarySensValue,
-                                          dictionarySensFreq,
+                                          distribution,
+                                          dictionaryDistributionValue,
+                                          dictionaryDistributionFreq,
                                           config);
         instances[14] = new Transformer14(data,
                                           hierarchies,
-                                          sensitive,
-                                          dictionarySensValue,
-                                          dictionarySensFreq,
+                                          distribution,
+                                          dictionaryDistributionValue,
+                                          dictionaryDistributionFreq,
                                           config);
         instances[13] = new Transformer13(data,
                                           hierarchies,
-                                          sensitive,
-                                          dictionarySensValue,
-                                          dictionarySensFreq,
+                                          distribution,
+                                          dictionaryDistributionValue,
+                                          dictionaryDistributionFreq,
                                           config);
         instances[12] = new Transformer12(data,
                                           hierarchies,
-                                          sensitive,
-                                          dictionarySensValue,
-                                          dictionarySensFreq,
+                                          distribution,
+                                          dictionaryDistributionValue,
+                                          dictionaryDistributionFreq,
                                           config);
         instances[11] = new Transformer11(data,
                                           hierarchies,
-                                          sensitive,
-                                          dictionarySensValue,
-                                          dictionarySensFreq,
+                                          distribution,
+                                          dictionaryDistributionValue,
+                                          dictionaryDistributionFreq,
                                           config);
         instances[10] = new Transformer10(data,
                                           hierarchies,
-                                          sensitive,
-                                          dictionarySensValue,
-                                          dictionarySensFreq,
+                                          distribution,
+                                          dictionaryDistributionValue,
+                                          dictionaryDistributionFreq,
                                           config);
         instances[9] = new Transformer09(data,
                                          hierarchies,
-                                         sensitive,
-                                         dictionarySensValue,
-                                         dictionarySensFreq,
+                                         distribution,
+                                         dictionaryDistributionValue,
+                                         dictionaryDistributionFreq,
                                          config);
         instances[8] = new Transformer08(data,
                                          hierarchies,
-                                         sensitive,
-                                         dictionarySensValue,
-                                         dictionarySensFreq,
+                                         distribution,
+                                         dictionaryDistributionValue,
+                                         dictionaryDistributionFreq,
                                          config);
         instances[7] = new Transformer07(data,
                                          hierarchies,
-                                         sensitive,
-                                         dictionarySensValue,
-                                         dictionarySensFreq,
+                                         distribution,
+                                         dictionaryDistributionValue,
+                                         dictionaryDistributionFreq,
                                          config);
         instances[6] = new Transformer06(data,
                                          hierarchies,
-                                         sensitive,
-                                         dictionarySensValue,
-                                         dictionarySensFreq,
+                                         distribution,
+                                         dictionaryDistributionValue,
+                                         dictionaryDistributionFreq,
                                          config);
         instances[5] = new Transformer05(data,
                                          hierarchies,
-                                         sensitive,
-                                         dictionarySensValue,
-                                         dictionarySensFreq,
+                                         distribution,
+                                         dictionaryDistributionValue,
+                                         dictionaryDistributionFreq,
                                          config);
         instances[4] = new Transformer04(data,
                                          hierarchies,
-                                         sensitive,
-                                         dictionarySensValue,
-                                         dictionarySensFreq,
+                                         distribution,
+                                         dictionaryDistributionValue,
+                                         dictionaryDistributionFreq,
                                          config);
         instances[3] = new Transformer03(data,
                                          hierarchies,
-                                         sensitive,
-                                         dictionarySensValue,
-                                         dictionarySensFreq,
+                                         distribution,
+                                         dictionaryDistributionValue,
+                                         dictionaryDistributionFreq,
                                          config);
         instances[2] = new Transformer02(data,
                                          hierarchies,
-                                         sensitive,
-                                         dictionarySensValue,
-                                         dictionarySensFreq,
+                                         distribution,
+                                         dictionaryDistributionValue,
+                                         dictionaryDistributionFreq,
                                          config);
         instances[1] = new Transformer01(data,
                                          hierarchies,
-                                         sensitive,
-                                         dictionarySensValue,
-                                         dictionarySensFreq,
+                                         distribution,
+                                         dictionaryDistributionValue,
+                                         dictionaryDistributionFreq,
                                          config);
         instances[0] = new TransformerAll(data,
                                           hierarchies,
-                                          sensitive,
-                                          dictionarySensValue,
-                                          dictionarySensFreq,
+                                          distribution,
+                                          dictionaryDistributionValue,
+                                          dictionaryDistributionFreq,
                                           config);
     }
 

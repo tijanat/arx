@@ -288,16 +288,16 @@ public class HashGroupify implements IHashGroupify {
     }
     
     @Override
-    public void addAll(int[] key, int representant, int count, int[] sensitive, int pcount) {
+    public void addAll(int[] key, int representant, int count, int[] valsForDistribution, int pcount) {
 
         // Add
         final int hash = HashTableUtil.hashcode(key);
         final HashGroupifyEntry entry = addInternal(key, hash, representant, count, pcount);
 
-        // Is a sensitive attribute provided
-        if (sensitive != null) {
+        // Is an attribute provided for with an distribution should be calculated
+        if (valsForDistribution != null) {
             if (entry.distributions == null) {
-                entry.distributions = new Distribution[sensitive.length];
+                entry.distributions = new Distribution[valsForDistribution.length];
                 
                 // TODO: Improve!
                 for (int i=0; i<entry.distributions.length; i++){
@@ -305,12 +305,12 @@ public class HashGroupify implements IHashGroupify {
                 }
             }
 
-            // Only add sensitive value if in research subset
+            // Only add value if in research subset
             if (subset == null || subset.contains(representant)) {
 
                 // TODO: Improve!
                 for (int i=0; i<entry.distributions.length; i++){
-                    entry.distributions[i].add(sensitive[i]);
+                    entry.distributions[i].add(valsForDistribution[i]);
                 }
             }
         }

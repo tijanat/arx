@@ -51,7 +51,7 @@ public class HashGroupifyEntry {
     /** Is this class not an outlier?. */
     public boolean           isNotOutlier = false;
 
-    /** Frequency set for sensitive attributes *. */
+    /** Frequency set for attributes *. */
     public Distribution[]    distributions;
 
     /**

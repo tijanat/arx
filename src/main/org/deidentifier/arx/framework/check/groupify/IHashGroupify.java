@@ -34,10 +34,10 @@ public interface IHashGroupify {
      * @param outtuple
      * @param representant
      * @param count
-     * @param sensitive
+     * @param valuesForDistribution
      * @param pcount
      */
-    public abstract void addAll(int[] outtuple, int representant, int count, int[] sensitive, int pcount);
+    public abstract void addAll(int[] outtuple, int representant, int count, int[] valuesForDistribution, int pcount);
 
     /**
      * Generic adder for all combinations of criteria in mode transform GROUPIFY.
