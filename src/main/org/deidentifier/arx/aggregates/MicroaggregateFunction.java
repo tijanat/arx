@@ -29,15 +29,19 @@ import org.deidentifier.arx.framework.check.distribution.Distribution;
  * @author Florian Kohlmayer
  * @param <T>
  */
-public abstract class MicroaggregateFunction<T> implements Serializable {
+public abstract class MicroaggregateFunction implements Serializable {
     
-    public static class ArithmeticMean<T> extends MicroaggregateFunction<T> {
+    public static class ArithmeticMean extends MicroaggregateFunction {
         
         /** SVUID */
         private static final long serialVersionUID = 8108686651029571643L;
         
-        protected ArithmeticMean(DataTypeWithRatioScale<T> type) {
-            super(type);
+        public ArithmeticMean() {
+            super();
+        }
+        
+        public ArithmeticMean(HANDLE_NULL_VALUES nullValueHandling) {
+            super(nullValueHandling);
         }
         
         @Override
@@ -45,74 +49,63 @@ public abstract class MicroaggregateFunction<T> implements Serializable {
             return "Microaggrate function: ArithmeticMean";
         }
         
+        @SuppressWarnings({ "unchecked", "rawtypes" })
         @Override
-        protected String aggregateInternal(Iterator<T> iter) {
-            // TODO: is this the right way to do it?
-            T result = null;
+        protected String aggregateInternal(Distribution values) {
+            
+            DataTypeWithRatioScale castedType = (DataTypeWithRatioScale) type;
+            
+            Iterator<Double> it = new DistributionIteratorRatio(values, castedType, dictionary);
+            
+            // TODO: use common math
+            double result = 0d;
             int count = 0;
-            while (iter.hasNext()) {
-                T value = iter.next();
-                if (!DataType.isNull(type.format(value))) {
-                    if (result == null) {
-                        result = value;
-                    } else {
-                        result = type.add(result, value);
+            while (it.hasNext()) {
+                Double value = it.next();
+                if (value == null) {
+                    switch (handleNullValues) {
+                    case IGNORE:
+                        // Do nothing
+                        break;
+                    case IDENTITIY:
+                        result += 0d;
+                        count++;
+                        break;
                     }
-                    
+                } else {
+                    result += value;
                     count++;
                 }
+                
             }
-            result = type.divide(result, type.parse(String.valueOf(count)));
-            return String.valueOf(result);
-        }
-        
-    }
-    
-    public static class MicroAggregateFunctionBuilder<T> {
-        
-        /** The data type */
-        private final DataType<T> type;
-        
-        /**
-         * Creates a new instance.
-         *
-         * @param type
-         */
-        public MicroAggregateFunctionBuilder(DataType<T> type) {
-            this.type = type;
-        }
-        
-        /**
-         * An aggregate function that returns a the arithmetic mean, if it can be computed, NULL otherwise.
-         *
-         * @return
-         */
-        @SuppressWarnings("unchecked")
-        public final MicroaggregateFunction<T> createArithmeticMeanFunction() {
-            if (!(type instanceof DataTypeWithRatioScale)) {
-                throw new IllegalArgumentException("Can not compute arithmetic mean on data types without ratio scale.");
-            }
-            return new ArithmeticMean<T>((DataTypeWithRatioScale<T>) type);
+            result = result / count;
+            return castedType.format(castedType.fromDouble(result));
         }
     }
     
-    protected class DistributionIterator implements Iterator<T> {
+    public static enum HANDLE_NULL_VALUES {
+        IGNORE,
+        IDENTITIY
+    }
+    
+    protected class DistributionIteratorRatio implements Iterator<Double> {
         
-        private final Distribution              values;
-        private final DataTypeWithRatioScale<T> type;
-        private final String[]                  dictionary;
-        private int                             nextBucket;
-        private int                             currentFrequency;
-        private T                               currentValue;
-        private int                             remaining;
+        private final Distribution           values;
+        @SuppressWarnings("rawtypes")
+        private final DataTypeWithRatioScale type;
+        private final String[]               dictionary;
+        private int                          nextBucket;
+        private int                          currentFrequency;
+        private Double                       currentValue;
+        private int                          remaining;
         
-        public DistributionIterator(Distribution values, DataTypeWithRatioScale<T> type, String[] dictionary) {
+        public DistributionIteratorRatio(Distribution values, DataTypeWithRatioScale<?> type, String[] dictionary) {
             this.values = values;
             this.type = type;
             this.dictionary = dictionary;
-            this.nextBucket = 0;
-            this.currentFrequency = 0;
-            this.currentValue = null;
+            nextBucket = 0;
+            currentFrequency = 0;
+            currentValue = null;
             
             // Calculate number of entries for "hasNext()"
             // TODO there has to be a more efficient way!
@@ -131,15 +124,16 @@ public abstract class MicroaggregateFunction<T> implements Serializable {
             return remaining != 0;
         }
         
+        @SuppressWarnings("unchecked")
         @Override
-        public T next() {
+        public Double next() {
             if (currentFrequency == 0) {
                 int value = values.getBuckets()[nextBucket];
                 while (value == -1) { // Bucket not empty
                     nextBucket += 2;
                     value = values.getBuckets()[nextBucket];
                 }
-                currentValue = type.parse(dictionary[value]);
+                currentValue = type.toDouble(type.parse(dictionary[value]));
                 currentFrequency = values.getBuckets()[nextBucket + 1];
                 nextBucket += 2;
             }
@@ -155,29 +149,22 @@ public abstract class MicroaggregateFunction<T> implements Serializable {
         
     }
     
+    protected HANDLE_NULL_VALUES handleNullValues = HANDLE_NULL_VALUES.IGNORE;
+    
     /** SVUID */
-    private static final long                 serialVersionUID = 331877806010996154L;
+    private static final long    serialVersionUID = 331877806010996154L;
     /** The data type. */
-    protected final DataTypeWithRatioScale<T> type;
+    protected DataType<?>        type;
     
     /** The dictionary */
-    protected String[]                        dictionary;
+    protected String[]           dictionary;
     
-    /**
-     * Constructor.
-     * @param type
-     */
-    protected MicroaggregateFunction(DataTypeWithRatioScale<T> type) {
-        this.type = type;
+    public MicroaggregateFunction() {
+        handleNullValues = HANDLE_NULL_VALUES.IGNORE;
     }
     
-    /**
-     * Inits the aggregate function and sets the according dictionary.
-     * 
-     * @param dictionary
-     */
-    public void init(String[] dictionary) {
-        this.dictionary = dictionary;
+    public MicroaggregateFunction(HANDLE_NULL_VALUES nullValueHandling) {
+        handleNullValues = nullValueHandling;
     }
     
     /**
@@ -188,9 +175,19 @@ public abstract class MicroaggregateFunction<T> implements Serializable {
      * @return
      */
     public String aggregate(Distribution values) {
-        Iterator<T> it = new DistributionIterator(values, type, dictionary);
-        String returnValue = aggregateInternal(it);
+        String returnValue = aggregateInternal(values);
         return returnValue.intern();
+    }
+    
+    /**
+     * Inits the aggregate function and sets the according dictionary.
+     * 
+     * @param dictionary
+     * @param attributeType
+     */
+    public void init(String[] dictionary, DataType<?> attributeType) {
+        this.dictionary = dictionary;
+        type = attributeType;
     }
     
     @Override
@@ -202,5 +199,6 @@ public abstract class MicroaggregateFunction<T> implements Serializable {
      * @param values
      * @return
      */
-    protected abstract String aggregateInternal(Iterator<T> values);
+    protected abstract String aggregateInternal(Distribution values);
+    
 }

@@ -123,7 +123,7 @@ public interface IHashGroupify {
      * @param dataMIBuffer
      * @param functions
      */
-    public abstract void microaggregate(final int[][] data, Data dataMIBuffer, final int startMI, MicroaggregateFunction<?>[] functions);
+    public abstract void microaggregate(final int[][] data, Data dataMIBuffer, final int startMI, MicroaggregateFunction[] functions);
 
     /**
      * Resets all flags that indicate that equivalence classes are suppressed.

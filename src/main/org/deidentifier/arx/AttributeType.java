@@ -27,6 +27,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.deidentifier.arx.aggregates.MicroaggregateFunction;
+import org.deidentifier.arx.aggregates.MicroaggregateFunction.ArithmeticMean;
 import org.deidentifier.arx.io.CSVDataOutput;
 import org.deidentifier.arx.io.CSVHierarchyInput;
 import org.deidentifier.arx.io.CSVSyntax;
@@ -47,17 +48,17 @@ public class AttributeType implements Serializable, Cloneable {
      * @param <T>
      *
      */
-    public static class Microaggregation<T> extends AttributeType implements Serializable {
+    public static class Microaggregation extends AttributeType implements Serializable {
         /** SVUID */
-        private static final long               serialVersionUID = -7175337291872533713L;
+        private static final long            serialVersionUID = -7175337291872533713L;
         
         /** The microaggregation function */
-        private final MicroaggregateFunction<T> function;
+        private final MicroaggregateFunction function;
         
         /**
          * Instantiates a new hierarchy.
          */
-        public Microaggregation(MicroaggregateFunction<T> function) {
+        public Microaggregation(MicroaggregateFunction function) {
             super(ATTR_TYPE_MI);
             this.function = function;
         }
@@ -67,7 +68,7 @@ public class AttributeType implements Serializable, Cloneable {
          * 
          * @return
          */
-        public MicroaggregateFunction<T> getFunction() {
+        public MicroaggregateFunction getFunction() {
             return function;
         }
         
@@ -77,8 +78,18 @@ public class AttributeType implements Serializable, Cloneable {
          * @param function
          * @return
          */
-        public static <V> Microaggregation<V> create(MicroaggregateFunction<V> function) {
-            return new Microaggregation<V>(function);
+        public static Microaggregation create(MicroaggregateFunction function) {
+            return new Microaggregation(function);
+        }
+        
+        /**
+         * Creates an microaggregation using arithmetic mean function.
+         * 
+         * @param function
+         * @return
+         */
+        public static Microaggregation createArithmeticMean() {
+            return new Microaggregation(new ArithmeticMean());
         }
         
     }

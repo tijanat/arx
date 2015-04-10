@@ -24,15 +24,12 @@ import java.util.Iterator;
 import org.deidentifier.arx.ARXAnonymizer;
 import org.deidentifier.arx.ARXConfiguration;
 import org.deidentifier.arx.ARXResult;
-import org.deidentifier.arx.AttributeType;
 import org.deidentifier.arx.AttributeType.Hierarchy;
 import org.deidentifier.arx.AttributeType.Hierarchy.DefaultHierarchy;
 import org.deidentifier.arx.AttributeType.Microaggregation;
 import org.deidentifier.arx.Data;
 import org.deidentifier.arx.Data.DefaultData;
 import org.deidentifier.arx.DataType;
-import org.deidentifier.arx.aggregates.MicroaggregateFunction;
-import org.deidentifier.arx.aggregates.MicroaggregateFunction.MicroAggregateFunctionBuilder;
 import org.deidentifier.arx.criteria.KAnonymity;
 
 /**
@@ -78,11 +75,8 @@ public class Example31 extends Example {
         zipcode.add("81931", "8193*", "819**", "81***", "8****", "*****");
         zipcode.add("NULL", "NULL", "NULL", "NULL", "NULL", "*****");
         
-        // Create microaggregation for attribute age
-        MicroaggregateFunction<Long> function = new MicroAggregateFunctionBuilder<Long>(DataType.INTEGER).createArithmeticMeanFunction();
-        AttributeType ageType = Microaggregation.create(function);
         
-        data.getDefinition().setAttributeType("age", ageType);
+        data.getDefinition().setAttributeType("age", Microaggregation.createArithmeticMean());
         data.getDefinition().setAttributeType("gender", gender);
         data.getDefinition().setAttributeType("zipcode", zipcode);
         

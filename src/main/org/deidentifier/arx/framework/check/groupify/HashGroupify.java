@@ -488,7 +488,7 @@ public class HashGroupify implements IHashGroupify {
     }
     
     @Override
-    public void microaggregate(final int[][] data, final Data dataMI, final int startMI, final MicroaggregateFunction<?>[] functions) {
+    public void microaggregate(final int[][] data, final Data dataMI, final int startMI, final MicroaggregateFunction[] functions) {
         Map<Distribution, Integer> cache = new HashMap<Distribution, Integer>();
         for (int row = 0; row < data.length; row++) {
             if (subset == null || subset.contains(row)) {

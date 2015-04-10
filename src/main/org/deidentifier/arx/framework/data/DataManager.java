@@ -92,7 +92,7 @@ public class DataManager {
     protected final GeneralizationHierarchy[]            hierarchiesQI;
     
     /** The microaggregation functions. */
-    protected final MicroaggregateFunction<?>[]          functionsMI;
+    protected final MicroaggregateFunction[]          functionsMI;
 
     /** The sensitive attributes. */
     protected final Map<String, GeneralizationHierarchy> hierarchiesSE;
@@ -278,8 +278,8 @@ public class DataManager {
                 final int dictionaryIndex = map[i].getIndexPosition();
                 final String name = header[i];
                 if (definition.getAttributeType(name) instanceof Microaggregation) {
-                    functionsMI[dictionaryIndex] = ((Microaggregation<?>) definition.getAttributeType(name)).getFunction();
-                    functionsMI[dictionaryIndex].init(dictionaryMI.getMapping()[dictionaryIndex]);
+                    functionsMI[dictionaryIndex] = ((Microaggregation) definition.getAttributeType(name)).getFunction();
+                    functionsMI[dictionaryIndex].init(dictionaryMI.getMapping()[dictionaryIndex], definition.getDataType(name));
                 } else {
                     throw new IllegalStateException("No microaggregation defined for attribute (" + header[i] + ")");
                 }
@@ -306,7 +306,7 @@ public class DataManager {
                           final Data dataIS,
                           final Data dataMI,
                           final GeneralizationHierarchy[] hierarchiesQI,
-                          final MicroaggregateFunction<?>[] functionsMI,
+                          final MicroaggregateFunction[] functionsMI,
                           final Map<String, GeneralizationHierarchy> hierarchiesSE,
                           final Map<String, Integer> indexesSE,
                           final int[] hierarchyHeights,
@@ -428,7 +428,7 @@ public class DataManager {
      * 
      * @return the functionsMI
      */
-    public MicroaggregateFunction<?>[] getMicroaggregationFunctions() {
+    public MicroaggregateFunction[] getMicroaggregationFunctions() {
         return functionsMI;
     }
 

@@ -50,7 +50,7 @@ public class NodeChecker implements INodeChecker {
     /** The microaggregate data. */
     private final Data                        dataMIBuffer;
         /** The microaggregate functions. */
-    private final MicroaggregateFunction<?>[] functionsMI;
+    private final MicroaggregateFunction[] functionsMI;
     /** The microaggregate start index. */
     private final int                         startMI;
 
