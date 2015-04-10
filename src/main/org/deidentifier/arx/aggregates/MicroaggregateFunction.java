@@ -22,6 +22,7 @@ import java.util.Iterator;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.deidentifier.arx.DataType;
 import org.deidentifier.arx.DataType.DataTypeWithRatioScale;
+import org.deidentifier.arx.DataType.ScaleOfMeasure;
 import org.deidentifier.arx.framework.check.distribution.Distribution;
 
 /**
@@ -49,8 +50,8 @@ public abstract class MicroaggregateFunction implements Serializable {
         }
         
         @Override
-        public ScaleOfMeasure getRequiredScale() {
-            return ScaleOfMeasure.RATIO;
+        public ScaleOfMeasure getMinimalRequiredScale() {
+            return ScaleOfMeasure.INTERVAL;
         }
         
         @Override
@@ -102,7 +103,7 @@ public abstract class MicroaggregateFunction implements Serializable {
         }
         
         @Override
-        public ScaleOfMeasure getRequiredScale() {
+        public ScaleOfMeasure getMinimalRequiredScale() {
             return ScaleOfMeasure.RATIO;
         }
         
@@ -143,28 +144,7 @@ public abstract class MicroaggregateFunction implements Serializable {
         IDENTITIY
     }
     
-    public static enum ScaleOfMeasure {
-        NOMINAL("Nominal scale"),
-        ORDINAL("Ordinal scale"),
-        INTERVAL("Interval scale"),
-        RATIO("Ratio scale");
-        
-        /** Label */
-        private final String label;
-        
-        /**
-         * Construct
-         * @param label
-         */
-        private ScaleOfMeasure(String label) {
-            this.label = label;
-        }
-        
-        @Override
-        public String toString() {
-            return label;
-        }
-    }
+
     
     private class DistributionIteratorDouble implements Iterator<Double> {
         
@@ -261,7 +241,7 @@ public abstract class MicroaggregateFunction implements Serializable {
      * Returns the scale which is needed
      * @return
      */
-    public abstract ScaleOfMeasure getRequiredScale();
+    public abstract ScaleOfMeasure getMinimalRequiredScale();
     
     /**
      * Inits the aggregate function and sets the according dictionary.

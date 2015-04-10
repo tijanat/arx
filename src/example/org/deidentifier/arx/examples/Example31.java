@@ -76,9 +76,11 @@ public class Example31 extends Example {
         zipcode.add("NULL", "NULL", "NULL", "NULL", "NULL", "*****");
         
         
-        data.getDefinition().setAttributeType("age", Microaggregation.createArithmeticMean());
+        data.getDefinition().setAttributeType("age", Microaggregation.createGeometricMean());
         data.getDefinition().setAttributeType("gender", gender);
         data.getDefinition().setAttributeType("zipcode", zipcode);
+        data.getDefinition().setAttributeType("date", Microaggregation.createArithmeticMean());
+
         
         // Create an instance of the anonymizer
         final ARXAnonymizer anonymizer = new ARXAnonymizer();

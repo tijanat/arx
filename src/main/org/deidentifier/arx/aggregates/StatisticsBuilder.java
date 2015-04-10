@@ -34,11 +34,10 @@ import org.deidentifier.arx.AttributeType.Hierarchy;
 import org.deidentifier.arx.DataHandleStatistics;
 import org.deidentifier.arx.DataHandleStatistics.InterruptHandler;
 import org.deidentifier.arx.DataType;
-import org.deidentifier.arx.DataType.ARXOrderedString;
 import org.deidentifier.arx.DataType.ARXString;
 import org.deidentifier.arx.DataType.DataTypeWithRatioScale;
+import org.deidentifier.arx.DataType.ScaleOfMeasure;
 import org.deidentifier.arx.aggregates.StatisticsContingencyTable.Entry;
-import org.deidentifier.arx.aggregates.StatisticsSummary.ScaleOfMeasure;
 import org.deidentifier.arx.aggregates.StatisticsSummary.StatisticsSummaryOrdinal;
 
 import cern.colt.GenericSorting;
@@ -602,17 +601,9 @@ public class StatisticsBuilder {
             // Meta
             String attribute = handle.getAttributeName(col);
             DataType<?> type = handle.getDataType(attribute);
-            Class<?> clazz = type.getDescription().getWrappedClass();
             
             // Scale
-            ScaleOfMeasure scale = ScaleOfMeasure.NOMINAL;
-            if (clazz == Long.class || clazz == Double.class) {
-                scale = ScaleOfMeasure.RATIO;
-            } else if (clazz == Date.class) {
-                scale = ScaleOfMeasure.INTERVAL;
-            } else if (type instanceof ARXOrderedString) {
-                scale = ScaleOfMeasure.ORDINAL;
-            }
+            ScaleOfMeasure scale = type.getScaleOfMeasure();
             
             // Try to replace nominal scale with ordinal scale based on base data type
             if (scale == ScaleOfMeasure.NOMINAL && handle.getGeneralization(attribute) != 0) {
@@ -662,7 +653,7 @@ public class StatisticsBuilder {
                     // Analyze
                     if (value != null && !DataType.isNull(value)) {
                         ordinal.get(attribute).addValue(value);
-                        if (type instanceof DataTypeWithRatioScale) {
+                        if (scales.get(attribute) == ScaleOfMeasure.RATIO) {
                             statistics.get(attribute).addValue(((DataTypeWithRatioScale) type).toDouble(type.parse(value)));
                         }
                     }

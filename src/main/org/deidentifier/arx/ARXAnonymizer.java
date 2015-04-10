@@ -22,7 +22,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.deidentifier.arx.AttributeType.Microaggregation;
-import org.deidentifier.arx.DataType.DataTypeWithRatioScale;
 import org.deidentifier.arx.aggregates.MicroaggregateFunction;
 import org.deidentifier.arx.algorithm.AbstractAlgorithm;
 import org.deidentifier.arx.algorithm.FLASHAlgorithm;
@@ -438,20 +437,10 @@ public class ARXAnonymizer {
         for (String attribute : handle.getDefinition().getMicroaggregationAttributes()) {
             MicroaggregateFunction f = ((Microaggregation) definition.getAttributeType(attribute)).getFunction();
             DataType<?> t = definition.getDataType(attribute);
-            
-            switch (f.getRequiredScale()) {
-            case RATIO:
-                if (!(t instanceof DataTypeWithRatioScale)) {
-                    throw new IllegalArgumentException("Microaggregation attribute '" + attribute + "' has a aggregation function specified wich needs a datatype with ratio scale");
-                }
-            case INTERVAL:
-            case NOMINAL:
-            case ORDINAL:
-                // Currently not implemented
-                break;
+            if (f.getMinimalRequiredScale().compareTo(t.getScaleOfMeasure()) > 0) {
+                throw new IllegalArgumentException("Microaggregation attribute '" + attribute + "' has a aggregation function specified wich needs a datatype with at least a " + f.getMinimalRequiredScale());
             }
         }
-
         
         // Perform sanity checks
         Set<String> qis = definition.getQuasiIdentifyingAttributes();
