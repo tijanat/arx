@@ -41,8 +41,13 @@ public abstract class MicroaggregateFunction implements Serializable {
             super();
         }
         
-        public ArithmeticMean(HANDLE_NULL_VALUES nullValueHandling) {
+        public ArithmeticMean(HandlingOfNullValues nullValueHandling) {
             super(nullValueHandling);
+        }
+        
+        @Override
+        public ScaleOfMeasure getRequiredScale() {
+            return ScaleOfMeasure.RATIO;
         }
         
         @Override
@@ -80,9 +85,32 @@ public abstract class MicroaggregateFunction implements Serializable {
         }
     }
     
-    public static enum HANDLE_NULL_VALUES {
+    public static enum HandlingOfNullValues {
         IGNORE,
         IDENTITIY
+    }
+    
+    public static enum ScaleOfMeasure {
+        NOMINAL("Nominal scale"),
+        ORDINAL("Ordinal scale"),
+        INTERVAL("Interval scale"),
+        RATIO("Ratio scale");
+        
+        /** Label */
+        private final String label;
+        
+        /**
+         * Construct
+         * @param label
+         */
+        private ScaleOfMeasure(String label) {
+            this.label = label;
+        }
+        
+        @Override
+        public String toString() {
+            return label;
+        }
     }
     
     protected class DistributionIteratorRatio implements Iterator<Double> {
@@ -146,21 +174,21 @@ public abstract class MicroaggregateFunction implements Serializable {
         
     }
     
-    protected HANDLE_NULL_VALUES handleNullValues = HANDLE_NULL_VALUES.IGNORE;
+    protected HandlingOfNullValues handleNullValues = HandlingOfNullValues.IGNORE;
     
     /** SVUID */
-    private static final long    serialVersionUID = 331877806010996154L;
+    private static final long      serialVersionUID = 331877806010996154L;
     /** The data type. */
-    protected DataType<?>        type;
+    protected DataType<?>          type;
     
     /** The dictionary */
-    protected String[]           dictionary;
+    protected String[]             dictionary;
     
     public MicroaggregateFunction() {
-        handleNullValues = HANDLE_NULL_VALUES.IGNORE;
+        handleNullValues = HandlingOfNullValues.IGNORE;
     }
     
-    public MicroaggregateFunction(HANDLE_NULL_VALUES nullValueHandling) {
+    public MicroaggregateFunction(HandlingOfNullValues nullValueHandling) {
         handleNullValues = nullValueHandling;
     }
     
@@ -175,6 +203,12 @@ public abstract class MicroaggregateFunction implements Serializable {
         String returnValue = aggregateInternal(values);
         return returnValue.intern();
     }
+    
+    /**
+     * Returns the scale which is needed
+     * @return
+     */
+    public abstract ScaleOfMeasure getRequiredScale();
     
     /**
      * Inits the aggregate function and sets the according dictionary.
