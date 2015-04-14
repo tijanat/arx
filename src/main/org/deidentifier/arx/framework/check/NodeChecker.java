@@ -45,10 +45,10 @@ public class NodeChecker implements INodeChecker {
     private final ARXConfigurationInternal config;
 
     /** The data. */
-    private final Data             data;
+    private final Data             dataGH;
     
     /** The microaggregate data. */
-    private final Data                        dataMABuffer;
+    private final Data                        bufferOT;
         /** The microaggregate functions. */
     private final MicroaggregateFunction[] functionsMA;
     /** The microaggregate start index. */
@@ -93,10 +93,11 @@ public class NodeChecker implements INodeChecker {
         // Initialize all operators
         this.metric = metric;
         this.config = config;
-        this.data = manager.getDataQI();
+        this.dataGH = manager.getDataQI();
         // Make copy of the microaggregation columns for the output transformation
-        this.dataMABuffer = manager.getDataMA().clone();
         this.functionsMA = manager.getMicroaggregationFunctions();
+        this.bufferOT = manager.getDataMA().clone();
+
         
         int initialSize = (int) (manager.getDataQI().getDataLength() * 0.01d);
         IntArrayDictionary dictionaryDistributionValue;
@@ -109,28 +110,9 @@ public class NodeChecker implements INodeChecker {
             dictionaryDistributionValue = new IntArrayDictionary(0);
             dictionaryDistributionFreq = new IntArrayDictionary(0);
         }
-        // TODO: Ugly! Integrate microaggregation into transformer?
-        // Copy arrays
-        int[][] attributeWithDistribution;
-        if (config.isMicroaggregation()) {
-            int sizeSE = manager.getDataSE().getHeader().length;
-            int sizeMA = manager.getDataMA().getHeader().length;
-            int rows = Math.max(manager.getDataSE().getArray().length, manager.getDataMA().getArray().length);
-            attributeWithDistribution = new int[rows][sizeSE + sizeMA];
-            for (int i = 0; i < attributeWithDistribution.length; i++) {
-                for (int j = 0; j < attributeWithDistribution[i].length; j++) {
-                    if (j < sizeSE) {
-                        attributeWithDistribution[i][j] = manager.getDataSE().getArray()[i][j];
-                    } else {
-                        attributeWithDistribution[i][j] = manager.getDataMA().getArray()[i][j - sizeSE];
-                    }
-                }
-            }
-            startMA = sizeSE;
-        } else {
-            attributeWithDistribution = manager.getDataSE().getArray();
-            startMA = -1;
-        }
+        int[][] attributeWithDistribution = manager.getDataDI();
+
+        startMA = manager.getMAStartIndex();
 
         this.history = new History(manager.getDataQI().getArray().length,
                                    historyMaxSize,
@@ -171,7 +153,7 @@ public class NodeChecker implements INodeChecker {
         // Microaggregate
         // Important: has to be done before marking outliers!
         if (config.isMicroaggregation()) {
-            currentGroupify.microaggregate(transformer.getBuffer(), dataMABuffer, startMA, functionsMA);
+            currentGroupify.microaggregate(transformer.getBuffer(), bufferOT, startMA, functionsMA);
         }
         
         // Find outliers
@@ -189,7 +171,7 @@ public class NodeChecker implements INodeChecker {
                                                       null));
         
         // Return the buffer
-        return new TransformedData(getBuffer(), dataMABuffer, currentGroupify.getGroupStatistics());
+        return new TransformedData(getBuffer(), bufferOT, currentGroupify.getGroupStatistics());
     }
 
     @Override
@@ -252,7 +234,7 @@ public class NodeChecker implements INodeChecker {
 
     @Override
     public Data getBuffer() {
-        return new Data(transformer.getBuffer(), data.getHeader(), data.getMap(), data.getDictionary());
+        return new Data(transformer.getBuffer(), dataGH.getHeader(), dataGH.getMap(), dataGH.getDictionary());
     }
 
     @Override
@@ -263,7 +245,7 @@ public class NodeChecker implements INodeChecker {
     @Override
     @Deprecated
     public Data getData() {
-        return data;
+        return dataGH;
     }
 
     @Override

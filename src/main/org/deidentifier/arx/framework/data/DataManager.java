@@ -51,7 +51,7 @@ public class DataManager {
      */
     public static class TypeInformation {
         private AttributeType attributeType;
-        private int indexPosition;
+        private int           indexPosition;
         
         public TypeInformation(AttributeType attributeType, int indexPosition) {
             this.attributeType = attributeType;
@@ -75,49 +75,49 @@ public class DataManager {
         }
         
     }
-
+    
     /** The data. */
     protected final Data                                 dataQI;
-
+    
     /** The data. */
     protected final Data                                 dataSE;
-
+    
     /** The data. */
     protected final Data                                 dataIS;
     
     /** The data. */
     protected final Data                                 dataMA;
-
+    
     /** The generalization hierarchiesQI. */
     protected final GeneralizationHierarchy[]            hierarchiesQI;
     
     /** The microaggregation functions. */
-    protected final MicroaggregateFunction[]          functionsMA;
-
+    protected final MicroaggregateFunction[]             functionsMA;
+    
     /** The sensitive attributes. */
     protected final Map<String, GeneralizationHierarchy> hierarchiesSE;
-
+    
     /** The indexes of sensitive attributes. */
     protected final Map<String, Integer>                 indexesSE;
-
+    
     /** The hierarchy heights for each QI. */
     protected final int[]                                hierarchyHeights;
-
+    
     /** The maximum level for each QI. */
     protected final int[]                                maxLevels;
-
+    
     /** The minimum level for each QI. */
     protected final int[]                                minLevels;
-
+    
     /** The original input header. */
     protected final String[]                             header;
-
+    
     /** The research subset, if any. */
-    protected RowSet                           subset     = null;
-
+    protected RowSet                                     subset     = null;
+    
     /** The size of the research subset. */
     protected int                                        subsetSize = 0;
-
+    
     /**
      * Creates a new data manager from pre-encoded data.
      *
@@ -128,7 +128,7 @@ public class DataManager {
      * @param criteria
      */
     public DataManager(final String[] header, final int[][] data, final Dictionary dictionary, final DataDefinition definition, final Set<PrivacyCriterion> criteria) {
-
+        
         // Store research subset
         for (PrivacyCriterion c : criteria) {
             if (c instanceof DPresence) {
@@ -137,42 +137,42 @@ public class DataManager {
                 break;
             }
         }
-
+        
         // Store columns for reordering the output
         this.header = header;
-
+        
         Set<String> id = getIdentifiers(header, definition);
         Set<String> qi = definition.getQuasiIdentifyingAttributes();
         Set<String> se = definition.getSensitiveAttributes();
         Set<String> is = definition.getInsensitiveAttributes();
         Set<String> ma = definition.getMicroaggregationAttributes();
-
+        
         // Init dictionary
         final Dictionary dictionaryQI = new Dictionary(qi.size());
         final Dictionary dictionarySE = new Dictionary(se.size());
         final Dictionary dictionaryIS = new Dictionary(is.size());
         final Dictionary dictionaryMA = new Dictionary(ma.size(), true);
-
+        
         // Init maps for reordering the output
         final int[] mapQI = new int[dictionaryQI.getNumDimensions()];
         final int[] mapSE = new int[dictionarySE.getNumDimensions()];
         final int[] mapIS = new int[dictionaryIS.getNumDimensions()];
         final int[] mapMA = new int[dictionaryMA.getNumDimensions()];
-
+        
         // Indexes
         int indexQI = 0;
         int indexSE = 0;
         int indexIS = 0;
         int indexMA = 0;
         int counter = 0;
-
+        
         // Build map
         final TypeInformation[] map = new TypeInformation[header.length];
         final String[] headerQI = new String[dictionaryQI.getNumDimensions()];
         final String[] headerSE = new String[dictionarySE.getNumDimensions()];
         final String[] headerIS = new String[dictionaryIS.getNumDimensions()];
         final String[] headerMA = new String[dictionaryMA.getNumDimensions()];
-
+        
         for (final String column : header) {
             if (qi.contains(column)) {
                 map[counter] = new TypeInformation(AttributeType.QUASI_IDENTIFYING_ATTRIBUTE, indexQI);
@@ -203,19 +203,19 @@ public class DataManager {
             }
             counter++;
         }
-
+        
         // encode Data
         final Data[] ddata = encode(data, map, mapQI, mapSE, mapIS, mapMA, dictionaryQI, dictionarySE, dictionaryIS, dictionaryMA, headerQI, headerSE, headerIS, headerMA);
         dataQI = ddata[0];
         dataSE = ddata[1];
         dataIS = ddata[2];
         dataMA = ddata[3];
-
+        
         // Initialize minlevels
         minLevels = new int[qi.size()];
         hierarchyHeights = new int[qi.size()];
         maxLevels = new int[qi.size()];
-
+        
         // Build qi generalisation hierarchiesQI
         hierarchiesQI = new GeneralizationHierarchy[qi.size()];
         for (int i = 0; i < header.length; i++) {
@@ -236,7 +236,7 @@ public class DataManager {
                 maxLevels[dictionaryIndex] = maxGenLevel == null ? hierarchyHeights[dictionaryIndex] - 1 : maxGenLevel;
             }
         }
-
+        
         // Build map with hierarchies for sensitive attributes
         Map<String, String[][]> sensitiveHierarchies = new HashMap<String, String[][]>();
         for (PrivacyCriterion c : criteria) {
@@ -245,7 +245,7 @@ public class DataManager {
                 sensitiveHierarchies.put(t.getAttribute(), t.getHierarchy().getHierarchy());
             }
         }
-
+        
         // Build sa generalisation hierarchies
         hierarchiesSE = new HashMap<String, GeneralizationHierarchy>();
         indexesSE = new HashMap<String, Integer>();
@@ -253,24 +253,24 @@ public class DataManager {
             final String name = header[i];
             if (sensitiveHierarchies.containsKey(name) && map[i].attributeType == AttributeType.SENSITIVE_ATTRIBUTE) {
                 final int dictionaryIndex = map[i].getIndexPosition();
-                    final String[][] hiers = sensitiveHierarchies.get(name);
-                    if (hiers != null) {
-                        hierarchiesSE.put(name, new GeneralizationHierarchy(name, hiers, dictionaryIndex, dictionarySE));
-                    }
+                final String[][] hiers = sensitiveHierarchies.get(name);
+                if (hiers != null) {
+                    hierarchiesSE.put(name, new GeneralizationHierarchy(name, hiers, dictionaryIndex, dictionarySE));
+                }
             }
-
+            
             // Store index for sensitive attributes
             if (se.contains(header[i])) {
                 indexesSE.put(name, map[i].indexPosition);
             }
         }
-
+        
         // finalize dictionary
         dictionaryQI.finalizeAll();
         dictionarySE.finalizeAll();
         dictionaryIS.finalizeAll();
         dictionaryMA.finalizeAll();
-
+        
         // Init microaggregation functions
         functionsMA = new MicroaggregateFunction[ma.size()];
         for (int i = 0; i < header.length; i++) {
@@ -286,7 +286,7 @@ public class DataManager {
             }
         }
     }
-
+    
     /**
      * 
      *
@@ -326,7 +326,7 @@ public class DataManager {
         this.header = header;
         this.functionsMA = functionsMA;
     }
-
+    
     /**
      * Returns the data.
      *
@@ -335,7 +335,7 @@ public class DataManager {
     public Data getDataIS() {
         return dataIS;
     }
-
+    
     /**
      * Returns the data.
      *
@@ -344,7 +344,7 @@ public class DataManager {
     public Data getDataQI() {
         return dataQI;
     }
-
+    
     /**
      * Returns the data.
      *
@@ -362,7 +362,7 @@ public class DataManager {
     public Data getDataMA() {
         return dataMA;
     }
-
+    
     /**
      * Returns the distribution of the given sensitive attribute in
      * the original dataset. Required for t-closeness.
@@ -371,13 +371,13 @@ public class DataManager {
      * @return distribution
      */
     public double[] getDistribution(String attribute) {
-
+        
         // TODO: Distribution size equals the size of the complete dataset
         // TODO: Good idea?
         final int index = indexesSE.get(attribute);
         final int distinct = dataSE.getDictionary().getMapping()[index].length;
         final int[][] data = dataSE.getArray();
-
+        
         // Initialize counts: iterate over all rows or the subset
         final int[] cardinalities = new int[distinct];
         for (int i = 0; i < data.length; i++) {
@@ -385,7 +385,7 @@ public class DataManager {
                 cardinalities[data[i][index]]++;
             }
         }
-
+        
         // compute distribution
         final double total = subset == null ? data.length : subsetSize;
         final double[] distribution = new double[cardinalities.length];
@@ -394,7 +394,7 @@ public class DataManager {
         }
         return distribution;
     }
-
+    
     /**
      * The original data header.
      *
@@ -403,17 +403,17 @@ public class DataManager {
     public String[] getHeader() {
         return header;
     }
-
+    
     /**
      * Returns the heights of the hierarchiesQI.
      * 
      * @return
      */
-
+    
     public int[] getHierachyHeights() {
         return hierarchyHeights;
     }
-
+    
     /**
      * Returns the generalization hierarchiesQI.
      * 
@@ -431,8 +431,7 @@ public class DataManager {
     public MicroaggregateFunction[] getMicroaggregationFunctions() {
         return functionsMA;
     }
-
-
+    
     /**
      * Returns the maximum levels for the generalizaiton.
      * 
@@ -441,17 +440,17 @@ public class DataManager {
     public int[] getMaxLevels() {
         return maxLevels;
     }
-
+    
     /**
      * Returns the minimum levels for the generalizations.
      * 
      * @return
      */
-
+    
     public int[] getMinLevels() {
         return minLevels;
     }
-
+    
     /**
      * Returns the tree for the given sensitive attribute, if a generalization hierarchy
      * is associated. Required for t-closeness with hierarchical distance EMD
@@ -460,25 +459,25 @@ public class DataManager {
      * @return tree
      */
     public int[] getTree(String attribute) {
-
+        
         final int[][] data = dataSE.getArray();
         final int index = indexesSE.get(attribute);
         final int[][] hierarchy = hierarchiesSE.get(attribute).map;
         final int totalElementsP = subset == null ? data.length : subsetSize;
         final int height = hierarchy[0].length - 1;
         final int numLeafs = hierarchy.length;
-
+        
         // TODO: Size could be calculated?!
         final ArrayList<Integer> treeList = new ArrayList<Integer>();
         treeList.add(totalElementsP);
         treeList.add(numLeafs);
         treeList.add(height);
-
+        
         // Init all freq to 0
         for (int i = 0; i < numLeafs; i++) {
             treeList.add(0);
         }
-
+        
         // Count frequencies
         final int offsetLeafs = 3;
         for (int i = 0; i < data.length; i++) {
@@ -488,19 +487,19 @@ public class DataManager {
                 treeList.set(data[i][index] + offsetLeafs, previousFreq);
             }
         }
-
+        
         // Init extras
         for (int i = 0; i < numLeafs; i++) {
             treeList.add(-1);
         }
-
+        
         // Temporary class for nodes
         class TNode {
             IntOpenHashSet children = new IntOpenHashSet();
             int            offset   = 0;
             int            level    = 0;
         }
-
+        
         final int offsetsExtras = offsetLeafs + numLeafs;
         final IntObjectOpenHashMap<TNode> nodes = new IntObjectOpenHashMap<TNode>();
         final ArrayList<ArrayList<TNode>> levels = new ArrayList<ArrayList<TNode>>();
@@ -509,13 +508,13 @@ public class DataManager {
         for (int i = 0; i < hierarchy[0].length; i++) {
             levels.add(new ArrayList<TNode>());
         }
-
+        
         // Build nodes
         for (int i = 0; i < hierarchy[0].length; i++) {
             for (int j = 0; j < hierarchy.length; j++) {
                 final int nodeID = hierarchy[j][i];
                 TNode curNode = null;
-
+                
                 if (!nodes.containsKey(nodeID)) {
                     curNode = new TNode();
                     curNode.level = i;
@@ -525,28 +524,28 @@ public class DataManager {
                 } else {
                     curNode = nodes.get(nodeID);
                 }
-
+                
                 if (i > 0) { // first add child
                     curNode.children.add(hierarchy[j][i - 1]);
                 }
             }
         }
-
+        
         // For all nodes
         for (final ArrayList<TNode> level : levels) {
             for (final TNode node : level) {
-
+                
                 if (node.level > 0) { // only inner nodes
                     node.offset = treeList.size();
-
+                    
                     treeList.add(node.children.size());
                     treeList.add(node.level);
-
-                    final int [] keys = node.children.keys;
-                    final boolean [] allocated = node.children.allocated;
-                    for (int i=0; i<allocated.length; i++){
+                    
+                    final int[] keys = node.children.keys;
+                    final boolean[] allocated = node.children.allocated;
+                    for (int i = 0; i < allocated.length; i++) {
                         if (allocated[i]) {
-                            treeList.add(node.level==1 ? keys[i] + offsetsExtras : nodes.get(keys[i]).offset);
+                            treeList.add(node.level == 1 ? keys[i] + offsetsExtras : nodes.get(keys[i]).offset);
                         }
                     }
                     
@@ -555,16 +554,16 @@ public class DataManager {
                 }
             }
         }
-
+        
         final int[] treeArray = new int[treeList.size()];
         int count = 0;
         for (final int val : treeList) {
             treeArray[count++] = val;
         }
-
+        
         return treeArray;
     }
-
+    
     /**
      * Encodes the data.
      *
@@ -595,29 +594,28 @@ public class DataManager {
                           final String[] headerSE,
                           final String[] headerIS,
                           final String[] headerMa) {
-
+        
         // Parse the dataset
         final int[][] valsQI = new int[data.length][];
         final int[][] valsSE = new int[data.length][];
         final int[][] valsIS = new int[data.length][];
         final int[][] valsMA = new int[data.length][];
-
-
+        
         int index = 0;
         for (final int[] tuple : data) {
-
+            
             // Process a tuple
             final int[] tupleQI = new int[headerQI.length];
             final int[] tupleSE = new int[headerSE.length];
             final int[] tupleIS = new int[headerIS.length];
             final int[] tupleMA = new int[headerMa.length];
-
+            
             for (int i = 0; i < tuple.length; i++) {
                 AttributeType aType = map[i].getAttributeType();
                 int iPos = map[i].getIndexPosition();
                 if (aType == AttributeType.INSENSITIVE_ATTRIBUTE) {
                     tupleIS[iPos] = tuple[i];
-                } else  if (aType == AttributeType.QUASI_IDENTIFYING_ATTRIBUTE) {
+                } else if (aType == AttributeType.QUASI_IDENTIFYING_ATTRIBUTE) {
                     tupleQI[iPos] = tuple[i];
                 } else if (aType == AttributeType.SENSITIVE_ATTRIBUTE) {
                     tupleSE[iPos] = tuple[i];
@@ -631,12 +629,12 @@ public class DataManager {
             valsMA[index] = tupleMA;
             index++;
         }
-
+        
         // Build data object
         final Data[] result = { new Data(valsQI, headerQI, mapQI, dictionaryQI), new Data(valsSE, headerSE, mapSE, dictionarySE), new Data(valsIS, headerIS, mapIS, dictionaryIS), new Data(valsMA, headerMa, mapMA, dictionaryMA) };
         return result;
     }
-
+    
     /**
      * Performs a sanity check and returns all identifying attributes.
      *
@@ -645,29 +643,59 @@ public class DataManager {
      * @return
      */
     private Set<String> getIdentifiers(final String[] columns, final DataDefinition definition) {
-
+        
         Set<String> result = new HashSet<String>();
         result.addAll(definition.getIdentifyingAttributes());
-
+        
         final int mappedColumnsCount = definition.getQuasiIdentifyingAttributes().size() + definition.getSensitiveAttributes().size() + definition.getInsensitiveAttributes().size() +
                                        definition.getIdentifyingAttributes().size();
-
+        
         // We always treat undefined attributes as identifiers
         if (mappedColumnsCount < columns.length) {
             for (int i = 0; i < columns.length; i++) {
-
+                
                 final String attribute = columns[i];
-
+                
                 // Check
                 if (!(definition.getQuasiIdentifyingAttributes().contains(attribute) || definition.getSensitiveAttributes().contains(attribute) || definition.getInsensitiveAttributes()
                                                                                                                                                              .contains(attribute))) {
-
+                    
                     // Add to identifiers
                     result.add(attribute);
                 }
             }
         }
-
+        
         return result;
+    }
+    
+    int startMA = -1;
+    
+    public int[][] getDataDI() {
+        int[][] attributeWithDistribution;
+        if (functionsMA.length > 0) { // are there any microaggregation values
+            int sizeSE = dataSE.getHeader().length;
+            int sizeMA = dataMA.getHeader().length;
+            int rows = Math.max(dataSE.getArray().length, dataMA.getArray().length);
+            attributeWithDistribution = new int[rows][sizeSE + sizeMA];
+            for (int i = 0; i < attributeWithDistribution.length; i++) {
+                for (int j = 0; j < attributeWithDistribution[i].length; j++) {
+                    if (j < sizeSE) {
+                        attributeWithDistribution[i][j] = dataSE.getArray()[i][j];
+                    } else {
+                        attributeWithDistribution[i][j] = dataMA.getArray()[i][j - sizeSE];
+                    }
+                }
+            }
+            startMA = sizeSE;
+        } else {
+            attributeWithDistribution = dataSE.getArray();
+            startMA = -1;
+        }
+        return attributeWithDistribution;
+    }
+    
+    public int getMAStartIndex() {
+        return startMA;
     }
 }
