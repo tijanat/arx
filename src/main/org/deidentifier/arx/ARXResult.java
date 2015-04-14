@@ -305,16 +305,16 @@ public class ARXResult {
         
         // Clone if needed
         if (fork) {
-            information.buffer = information.buffer.clone(); 
-            information.dataMA = information.dataMA.clone(); 
+            information.bufferGH = information.bufferGH.clone(); 
+            information.bufferOT = information.bufferOT.clone(); 
         }
 
         // Create
         DataHandleOutput result = new DataHandleOutput(this,
                                                        registry,
                                                        manager,
-                                                       information.buffer,
-                                                       information.dataMA,
+                                                       information.bufferGH,
+                                                       information.bufferOT,
                                                        node,
                                                        new StatisticsEquivalenceClasses(information.statistics),
                                                        definition,

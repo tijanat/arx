@@ -26,23 +26,24 @@ import org.deidentifier.arx.framework.data.Data;
 public class TransformedData {
 
     /**  The quasi identifier */
-    public Data buffer;
+    public Data bufferGH;
     
     /**  The microaggregates */
-    public Data dataMA;
+    public Data bufferOT;
     
     /**  The statistics */
     public GroupStatistics statistics;
     
     /**
+     * Creates a new instance.
      * 
-     *
-     * @param data
+     * @param dataGH
+     * @param dataOT
      * @param statistics
      */
-    public TransformedData(Data data, Data dataMA, GroupStatistics statistics) {
-        this.buffer = data;
-        this.dataMA = dataMA;
+    public TransformedData(Data dataGH, Data dataOT, GroupStatistics statistics) {
+        this.bufferGH = dataGH;
+        this.bufferOT = dataOT;
         this.statistics = statistics;
     }
 }
