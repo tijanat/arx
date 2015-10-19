@@ -3,13 +3,13 @@ package org.deidentifer.arx.masking;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
 /**
@@ -19,7 +19,7 @@ import org.eclipse.swt.widgets.Text;
  *
  */
 
-public class ConfigGenerateRandomDataMasker {
+public class ConfigGenerateRandomDateMasker {
 
 	private boolean okDateTime = false;
 	private boolean okPeriod = false;
@@ -45,9 +45,9 @@ public class ConfigGenerateRandomDataMasker {
 	 * @param x
 	 * @param y
 	 */
-	public ConfigGenerateRandomDataMasker(Composite s, int x, int y) {
+	public ConfigGenerateRandomDateMasker(Composite s, int x, int y) {
 		group = new Group(s, SWT.SHADOW_IN | SWT.H_SCROLL | SWT.V_SCROLL);
-		group.setText("ConfigGenerateRandomDataMasker");
+		group.setText("Generate Random Date ");
 		GridLayout gridLayout = new GridLayout(2, true);
 		gridLayout.verticalSpacing = 0;
 		group.setLayout(gridLayout);
@@ -204,13 +204,17 @@ public class ConfigGenerateRandomDataMasker {
 		}
 
 	}
-	
 	public void hide(){
-		group.setVisible(false);
+		 ((GridData)group.getLayoutData()).exclude = true;
+		group.setVisible(false);  
 	}
 	
 	public void show(){
+		((GridData)group.getLayoutData()).exclude = false; 
 		group.setVisible(true);
 	}
 
+	public Point getSize(){
+		return group.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+	}
 }

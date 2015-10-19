@@ -30,6 +30,7 @@ import org.deidentifier.arx.DataHandle;
 import org.deidentifier.arx.DataType;
 import org.deidentifier.arx.DataType.DataTypeDescription;
 import org.deidentifier.arx.gui.Controller;
+import org.deidentifier.arx.gui.masking.DialogMaskingSelection;
 import org.deidentifier.arx.gui.model.Model;
 import org.deidentifier.arx.gui.model.Model.Perspective;
 import org.deidentifier.arx.gui.model.ModelAuditTrailEntry;
@@ -65,6 +66,7 @@ import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
@@ -613,7 +615,7 @@ public class MainWindow implements IView {
         items.add(new MainMenuItem(Resources.getMessage("MainWindow.2"), //$NON-NLS-1$
                                    controller.getResources().getImage("perspective_define.png"), //$NON-NLS-1$
                                    false) {
-            public void action(Controller controller) { 
+            public void action(Controller controller) {             	
                 root.setSelection(0);
                 controller.getModel().setPerspective(Perspective.CONFIGURATION);
                 controller.update(new ModelEvent(controller, ModelPart.PERSPECTIVE, controller.getModel().getPerspective()));
@@ -643,6 +645,26 @@ public class MainWindow implements IView {
             public boolean isEnabled(Model model) { return model != null && model.getPerspective() != Perspective.ANALYSIS; }
         });
 
+        items.add(new MainMenuItem(Resources.getMessage("MainWindow.4"), 
+        						   controller.getResources().getImage("perspective_explore.png"), 
+        						   false) {
+			
+			@Override
+			public boolean isEnabled(Model model) { 
+				return true;
+			}
+			
+			
+			@Override
+			public void action(Controller controller) {
+            	Shell shell = Display.getDefault().getActiveShell();
+            	DialogMaskingSelection dialog = new DialogMaskingSelection(shell) ;
+            	dialog.create();
+            	dialog.open();
+
+			}
+		});
+        
         items.add(new MainMenuSeparator());
 
         items.add(new MainMenuItem(Resources.getMessage("MainMenu.34") + " " + Resources.getMessage("ExploreView.0"), //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$

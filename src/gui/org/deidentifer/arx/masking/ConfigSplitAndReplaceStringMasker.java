@@ -6,9 +6,9 @@ import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
 /**
@@ -41,9 +41,9 @@ public class ConfigSplitAndReplaceStringMasker {
 	 * @param y
 	 */
 
-	public ConfigSplitAndReplaceStringMasker(Shell s, int x, int y) {
+	public ConfigSplitAndReplaceStringMasker(Composite s, int x, int y) {
 		group = new Group(s, SWT.SHADOW_IN | SWT.H_SCROLL | SWT.V_SCROLL);
-		group.setText("ConfigSplitAndReplaceString");
+		group.setText("Split and Replace String");
 		GridLayout gridLayout = new GridLayout(2, false);
 		group.setLayout(gridLayout);
 		GridData gridData = new GridData(GridData.FILL, GridData.FILL, true,
@@ -143,5 +143,13 @@ public class ConfigSplitAndReplaceStringMasker {
 			txt1.setVisible(true);
 		}
 	}
-
+	public void hide(){
+		 ((GridData)group.getLayoutData()).exclude = true;
+		group.setVisible(false);  
+	}
+	
+	public void show(){
+		((GridData)group.getLayoutData()).exclude = false; 
+		group.setVisible(true);
+	}
 }

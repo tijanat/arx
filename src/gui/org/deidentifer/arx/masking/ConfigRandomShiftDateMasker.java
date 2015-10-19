@@ -6,6 +6,7 @@ import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
@@ -40,9 +41,9 @@ public class ConfigRandomShiftDateMasker {
 	 * @param y
 	 */
 
-	public ConfigRandomShiftDateMasker(Shell s, int x, int y) {
+	public ConfigRandomShiftDateMasker(Composite s, int x, int y) {
 		group = new Group(s, SWT.SHADOW_IN|SWT.H_SCROLL|SWT.V_SCROLL);
-		group.setText("ConfigRandomShiftDateMasker");
+		group.setText("Random Shift Date");
 		GridLayout gridLayout = new GridLayout(2,true);
 		group.setLayout(gridLayout);
 		GridData gridData = new GridData(GridData.FILL, GridData.FILL, true,
@@ -185,5 +186,14 @@ public class ConfigRandomShiftDateMasker {
 			lbl1.setVisible(true);
 			txt1.setVisible(true);
 		}
+	}
+	
+	public void hide(){
+		group.setVisible(false);
+		group.pack();
+	}
+	
+	public void show(){
+		group.setVisible(true);
 	}
 }
