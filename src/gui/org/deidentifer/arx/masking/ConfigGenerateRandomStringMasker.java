@@ -20,10 +20,9 @@ import org.eclipse.swt.widgets.Text;
  * @author Kathrin
  *
  */
-public class ConfigGenerateRandomStringMasker {
+public class ConfigGenerateRandomStringMasker extends ChangeableComposite {
 
 	private boolean okInt = false;
-	private Group group;
 	private Label lblInt;
 	private Label lblBooleanAlphabetic;
 	private Label lblBooleanNumeric;
@@ -48,8 +47,9 @@ public class ConfigGenerateRandomStringMasker {
 	 * @param y
 	 */
 	public ConfigGenerateRandomStringMasker(Composite s, int x, int y) {
-		group = new Group(s, SWT.SHADOW_IN | SWT.H_SCROLL | SWT.V_SCROLL);
-		group.setText("Generate Random String");
+		super(s);
+	//	group = new Group(s, SWT.SHADOW_IN | SWT.H_SCROLL | SWT.V_SCROLL);
+		group.setText("Generate random string");
 		GridLayout gridLayout = new GridLayout(2, true);
 		group.setLayout(gridLayout);
 		GridData gridData = new GridData(GridData.FILL, GridData.FILL, true,
@@ -64,7 +64,7 @@ public class ConfigGenerateRandomStringMasker {
 		txtInt.setLayoutData(new GridData(GridData.FILL, GridData.CENTER,
 				false, false));
 
-		setLabelText(lblInt, txtInt, "Int:", "-1", 0);
+		setLabelText(lblInt, txtInt, "Integer:", "-1", 0);
 
 		lblBooleanAlphabetic = new Label(group, SWT.NONE);
 		lblBooleanAlphabetic.setText("Alphabetic characters?");
@@ -148,6 +148,7 @@ public class ConfigGenerateRandomStringMasker {
 		btnOK.setText("OK");
 		gridData = new GridData(GridData.FILL, GridData.END, true, true);
 		btnOK.setLayoutData(gridData);
+		hide();
 
 	}
 
@@ -210,14 +211,5 @@ public class ConfigGenerateRandomStringMasker {
 			lbl1.setVisible(true);
 			txt1.setVisible(true);
 		}
-	}
-	public void hide(){
-		 ((GridData)group.getLayoutData()).exclude = true;
-		group.setVisible(false);  
-	}
-	
-	public void show(){
-		((GridData)group.getLayoutData()).exclude = false; 
-		group.setVisible(true);
 	}
 }

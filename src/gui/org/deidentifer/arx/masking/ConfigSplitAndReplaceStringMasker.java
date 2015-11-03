@@ -17,10 +17,9 @@ import org.eclipse.swt.widgets.Text;
  * @author Kathrin
  *
  */
-public class ConfigSplitAndReplaceStringMasker {
+public class ConfigSplitAndReplaceStringMasker extends ChangeableComposite{
 
 	private boolean okReplaceGroup = false;
-	private Group group;
 	private Label lblSplitAtOccurrenceOf;
 	private Label lblReplacementString;
 	private Label lblReplaceGroup;
@@ -42,8 +41,9 @@ public class ConfigSplitAndReplaceStringMasker {
 	 */
 
 	public ConfigSplitAndReplaceStringMasker(Composite s, int x, int y) {
-		group = new Group(s, SWT.SHADOW_IN | SWT.H_SCROLL | SWT.V_SCROLL);
-		group.setText("Split and Replace String");
+		super(s);
+	//	group = new Group(s, SWT.SHADOW_IN | SWT.H_SCROLL | SWT.V_SCROLL);
+		group.setText("Split and replace string");
 		GridLayout gridLayout = new GridLayout(2, false);
 		group.setLayout(gridLayout);
 		GridData gridData = new GridData(GridData.FILL, GridData.FILL, true,
@@ -68,7 +68,7 @@ public class ConfigSplitAndReplaceStringMasker {
 		setLabelText(lblSplitAtOccurrenceOf, txtSplitAtOccurrenceOf,
 				"Split at occurrences of:", "@", 5);
 		setLabelText(lblReplacementString, txtReplacementString,
-				"Replacement String:", "*", 5);
+				"Replacement string:", "*", 5);
 		setLabelText(lblReplaceGroup, txtReplaceGroup,
 				"Replace group with index:", "0", 0);
 
@@ -88,6 +88,8 @@ public class ConfigSplitAndReplaceStringMasker {
 		btnOK.setText("OK");
 		gridData = new GridData(GridData.FILL, GridData.END, true, true);
 		btnOK.setLayoutData(gridData);
+		hide();
+
 	}
 
 	private void checkInt() {
@@ -142,14 +144,5 @@ public class ConfigSplitAndReplaceStringMasker {
 			lbl1.setVisible(true);
 			txt1.setVisible(true);
 		}
-	}
-	public void hide(){
-		 ((GridData)group.getLayoutData()).exclude = true;
-		group.setVisible(false);  
-	}
-	
-	public void show(){
-		((GridData)group.getLayoutData()).exclude = false; 
-		group.setVisible(true);
 	}
 }

@@ -20,12 +20,11 @@ import org.eclipse.swt.widgets.Text;
  *
  */
 
-public class ConfigConstantShiftDecimalMasker {
+public class ConfigConstantShiftDecimalMasker extends ChangeableComposite{
 
 	private boolean okShiftDistance = false;
 	private Button btnCancel;
 	private Button btnOK;
-	private Group group;
 	protected Label lblShiftDistance;
 	protected Text txtShiftDistance;
 	public double shiftDistance;
@@ -40,9 +39,10 @@ public class ConfigConstantShiftDecimalMasker {
 	 * @param y
 	 */
 	public ConfigConstantShiftDecimalMasker(Shell s,int x, int y) {
-		group = new Group(s, SWT.SHADOW_IN | SWT.H_SCROLL | SWT.V_SCROLL);
+		super(s);
+		//group = new Group(s, SWT.SHADOW_IN | SWT.H_SCROLL | SWT.V_SCROLL);
 
-		group.setText("ConfigConstantShiftDecimalMasker");
+		group.setText("Constant shift decimal");
 		GridLayout gridLayout = new GridLayout(2, true);
 		group.setLayout(gridLayout);
 		GridData gridData = new GridData(GridData.FILL, GridData.FILL, true,
@@ -52,7 +52,7 @@ public class ConfigConstantShiftDecimalMasker {
 		lblShiftDistance = new Label(group, SWT.NONE);
 		txtShiftDistance = new Text(group, SWT.BORDER);
 
-		setLabelText(lblShiftDistance, txtShiftDistance, "ShiftDistance:",
+		setLabelText(lblShiftDistance, txtShiftDistance, "Shift distance:",
 				"0.0", 1);
 
 		txtShiftDistance.addModifyListener(new ModifyListener() {
@@ -85,6 +85,8 @@ public class ConfigConstantShiftDecimalMasker {
 				
 			}
 		});
+		hide();
+
 		
 	}
 	private void getResult(String i){

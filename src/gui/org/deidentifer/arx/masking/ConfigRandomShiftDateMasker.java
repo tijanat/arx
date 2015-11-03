@@ -18,12 +18,11 @@ import org.eclipse.swt.widgets.Text;
  * @author Kathrin
  *
  */
-public class ConfigRandomShiftDateMasker {
+public class ConfigRandomShiftDateMasker extends ChangeableComposite {
 
 	private boolean okShiftConstant=false;
 	private boolean okPeriod=false;
 	private boolean okDiscreteDistribution=false;
-	private Group group;
 	private DiscreteDistributionSelection disc1;
 	private Label lblShiftConstant;
 	private Label lblPeriod;
@@ -42,8 +41,9 @@ public class ConfigRandomShiftDateMasker {
 	 */
 
 	public ConfigRandomShiftDateMasker(Composite s, int x, int y) {
-		group = new Group(s, SWT.SHADOW_IN|SWT.H_SCROLL|SWT.V_SCROLL);
-		group.setText("Random Shift Date");
+		super(s);
+		//group = new Group(s, SWT.SHADOW_IN|SWT.H_SCROLL|SWT.V_SCROLL);
+		group.setText("Random shift date");
 		GridLayout gridLayout = new GridLayout(2,true);
 		group.setLayout(gridLayout);
 		GridData gridData = new GridData(GridData.FILL, GridData.FILL, true,
@@ -63,7 +63,7 @@ public class ConfigRandomShiftDateMasker {
 		gridData = new GridData();
 		txtPeriod.setLayoutData(gridData);
 
-		setLabelText(lblShiftConstant,txtShiftConstant,"ShiftConstant:","0",
+		setLabelText(lblShiftConstant,txtShiftConstant,"Shift constant:","0",
 				0);
 		setLabelText(lblPeriod, txtPeriod, "Period:", "05y 04m 03d 01h", 3);
 		
@@ -108,6 +108,8 @@ public class ConfigRandomShiftDateMasker {
 		checkDiscreteDistribution();
 		checkPeriod();
 		checkOK();
+		hide();
+
 	}
 	
 	private void checkDiscreteDistribution() {
@@ -186,14 +188,5 @@ public class ConfigRandomShiftDateMasker {
 			lbl1.setVisible(true);
 			txt1.setVisible(true);
 		}
-	}
-	
-	public void hide(){
-		group.setVisible(false);
-		group.pack();
-	}
-	
-	public void show(){
-		group.setVisible(true);
 	}
 }

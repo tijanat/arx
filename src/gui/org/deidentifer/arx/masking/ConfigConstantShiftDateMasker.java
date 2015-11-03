@@ -9,7 +9,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
@@ -19,12 +18,11 @@ import org.eclipse.swt.widgets.Text;
  * @author Kathrin
  *
  */
-public class ConfigConstantShiftDateMasker {
+public class ConfigConstantShiftDateMasker extends ChangeableComposite {
 
 	private boolean okShiftPeriod = false;
 	private Button btnOK;
 	private Button btnCancel;
-	private Group group;
 	private Label lblShiftPeriod;
 	private Text txtShiftPeriod;
 	private ResultConstantShiftDateMasker returnwert = new ResultConstantShiftDateMasker();
@@ -38,8 +36,9 @@ public class ConfigConstantShiftDateMasker {
 	 * @param y
 	 */
 	public ConfigConstantShiftDateMasker(Composite s,int x, int y) {
-		group = new Group(s, SWT.SHADOW_IN | SWT.H_SCROLL | SWT.V_SCROLL);
-		group.setText("Shift Constant Date");
+		super(s);
+	//	group = new Group(s, SWT.SHADOW_IN | SWT.H_SCROLL | SWT.V_SCROLL);
+		group.setText("Shift constant date");
 		GridLayout gridLayout = new GridLayout(2, true);
 		group.setLayout(gridLayout);
 		GridData gridData = new GridData(SWT.H_SCROLL | SWT.V_SCROLL);
@@ -52,7 +51,7 @@ public class ConfigConstantShiftDateMasker {
 		lblShiftPeriod = new Label(group, SWT.NONE);
 		txtShiftPeriod = new Text(group, SWT.BORDER);
 
-		setLabelText(lblShiftPeriod, txtShiftPeriod, "ShiftPeriod:",
+		setLabelText(lblShiftPeriod, txtShiftPeriod, "Shift period:",
 				"05y 04m 03d 01h", 3);
 
 		txtShiftPeriod.addModifyListener(new ModifyListener() {
@@ -91,6 +90,7 @@ public class ConfigConstantShiftDateMasker {
 	
 		
 		checkShiftPeriod();
+		hide();
 
 	}
 
@@ -160,16 +160,6 @@ public class ConfigConstantShiftDateMasker {
 			lbl1.setVisible(true);
 			txt1.setVisible(true);
 		}
-	}
-
-	public void hide(){
-		((GridData)group.getLayoutData()).exclude = true;
-		group.setVisible(false);  
-	}
-
-	public void show(){
-		((GridData)group.getLayoutData()).exclude = false; 
-		group.setVisible(true);
 	}
 
 }

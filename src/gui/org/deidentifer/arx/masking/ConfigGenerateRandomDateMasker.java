@@ -8,7 +8,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
@@ -19,7 +18,7 @@ import org.eclipse.swt.widgets.Text;
  *
  */
 
-public class ConfigGenerateRandomDateMasker {
+public class ConfigGenerateRandomDateMasker extends ChangeableComposite{
 
 	private boolean okDateTime = false;
 	private boolean okPeriod = false;
@@ -28,7 +27,6 @@ public class ConfigGenerateRandomDateMasker {
 	private Button btnCancel;
 	private Button btnOK;
 	private DiscreteDistributionSelection disc1;
-	private Group group;
 	private Label lblShiftConstant;
 	private Label lblDateTime;
 	private Label lblPeriod;
@@ -46,15 +44,15 @@ public class ConfigGenerateRandomDateMasker {
 	 * @param y
 	 */
 	public ConfigGenerateRandomDateMasker(Composite s, int x, int y) {
-		group = new Group(s, SWT.SHADOW_IN | SWT.H_SCROLL | SWT.V_SCROLL);
-		group.setText("Generate Random Date ");
+		super(s);
+		group.setText("Generate random date ");
 		GridLayout gridLayout = new GridLayout(2, true);
 		gridLayout.verticalSpacing = 0;
 		group.setLayout(gridLayout);
 		GridData gridData = new GridData(GridData.FILL, GridData.FILL, true,
 				true);
 		gridData.grabExcessVerticalSpace = true;
-		// gridData.horizontalSpan = 1;
+		gridData.horizontalSpan = 1;
 		group.setLayoutData(gridData);
 
 		lblShiftConstant = new Label(group, SWT.NONE);
@@ -64,9 +62,9 @@ public class ConfigGenerateRandomDateMasker {
 		lblPeriod = new Label(group, SWT.NONE);
 		txtPeriod = new Text(group, SWT.BORDER);
 
-		setLabelText(lblShiftConstant, txtShiftConstant, "ShiftConstant:", "0",
+		setLabelText(lblShiftConstant, txtShiftConstant, "Shift constant:", "0",
 				0);
-		setLabelText(lblDateTime, txtDateTime, "DateTime:", "2015-06-03 20:15",
+		setLabelText(lblDateTime, txtDateTime, "Date and time:", "2015-06-03 20:15",
 				2);
 		setLabelText(lblPeriod, txtPeriod, "Period:", "05y 04m 03d 01h", 3);
 
@@ -117,6 +115,7 @@ public class ConfigGenerateRandomDateMasker {
 		checkPeriod();
 		checkDiscreteDistribution();
 		checkOK();
+		hide();
 	}
 
 	private void checkDateTime() {
@@ -204,16 +203,6 @@ public class ConfigGenerateRandomDateMasker {
 		}
 
 	}
-	public void hide(){
-		 ((GridData)group.getLayoutData()).exclude = true;
-		group.setVisible(false);  
-	}
-	
-	public void show(){
-		((GridData)group.getLayoutData()).exclude = false; 
-		group.setVisible(true);
-	}
-
 	public Point getSize(){
 		return group.computeSize(SWT.DEFAULT, SWT.DEFAULT);
 	}

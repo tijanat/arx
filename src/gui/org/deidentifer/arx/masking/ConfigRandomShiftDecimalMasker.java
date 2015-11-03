@@ -18,14 +18,13 @@ import org.eclipse.swt.widgets.Text;
  *
  */
 
-public class ConfigRandomShiftDecimalMasker {
+public class ConfigRandomShiftDecimalMasker extends ChangeableComposite {
 
 	private boolean okShiftConstant = false;
 	private boolean okContinousDistribution = false;
 	private Button btnCancel;
 	private Button btnOK;
 	private ContinousDistributionSelection cont1;
-	private Group group;
 	private Label lblShiftConstant;
 	private Text txtShiftConstant;
 	
@@ -40,8 +39,9 @@ public class ConfigRandomShiftDecimalMasker {
 	 */
 
 	public ConfigRandomShiftDecimalMasker(Shell s, int x, int y) {
-		group = new Group(s, SWT.SHADOW_IN | SWT.H_SCROLL | SWT.V_SCROLL);
-		group.setText("ConfigRandomShiftDecimalMasker");
+		super(s);
+	//	group = new Group(s, SWT.SHADOW_IN | SWT.H_SCROLL | SWT.V_SCROLL);
+		group.setText("Random shift decimal");
 		GridLayout gridLayout = new GridLayout(2, true);
 		group.setLayout(gridLayout);
 		GridData gridData = new GridData(GridData.FILL, GridData.FILL, true,
@@ -56,7 +56,7 @@ public class ConfigRandomShiftDecimalMasker {
 		 gridData = new GridData();
 		 txtShiftConstant.setLayoutData(gridData);
 
-		setLabelText(lblShiftConstant, txtShiftConstant, "ShiftConstant:",
+		setLabelText(lblShiftConstant, txtShiftConstant, "Shift constant:",
 				"0.0", 1);
 		
 		txtShiftConstant.addModifyListener(new ModifyListener() {
@@ -92,6 +92,8 @@ public class ConfigRandomShiftDecimalMasker {
 		checkShiftConstant();
 		checkContinousDistribution();
 		checkOK();
+		hide();
+
 	}
 
 	private void checkContinousDistribution() {

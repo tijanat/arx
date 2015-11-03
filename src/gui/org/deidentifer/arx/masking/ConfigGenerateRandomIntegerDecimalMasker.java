@@ -17,15 +17,13 @@ import org.eclipse.swt.widgets.Text;
  * @author Kathrin
  *
  */
-public class ConfigGenerateRandomIntegerDecimalMasker {
-
+public class ConfigGenerateRandomIntegerDecimalMasker extends ChangeableComposite{
 
 	private boolean okShiftConstant = false;
 	private boolean okDiscreteDistribution = false;
 	private Button btnCancel;
 	private Button btnOK;
 	private DiscreteDistributionSelection disc1;
-	private Group group;
 	private Label lblShiftConstant;
 	private Text txtShiftConstant;
 
@@ -38,8 +36,9 @@ public class ConfigGenerateRandomIntegerDecimalMasker {
 	 * @param y
 	 */
 	public ConfigGenerateRandomIntegerDecimalMasker(Composite s, int x, int y) {
-		group = new Group(s, SWT.SHADOW_IN | SWT.H_SCROLL | SWT.V_SCROLL);
-		group.setText("Generate Random Integer Decimal");
+		super(s);
+	//	group = new Group(s, SWT.SHADOW_IN | SWT.H_SCROLL | SWT.V_SCROLL);
+		group.setText("Generate random integer decimal");
 		GridLayout gridLayout = new GridLayout(2, true);
 		group.setLayout(gridLayout);
 		GridData gridData = new GridData(GridData.FILL, GridData.FILL, true,
@@ -50,7 +49,7 @@ public class ConfigGenerateRandomIntegerDecimalMasker {
 		lblShiftConstant = new Label(group, SWT.NONE);
 		txtShiftConstant = new Text(group, SWT.BORDER);
 
-		setLabelText(lblShiftConstant, txtShiftConstant, "ShiftConstant:",
+		setLabelText(lblShiftConstant, txtShiftConstant, "Shift constant:",
 				"0", 0);
 
 		txtShiftConstant.addModifyListener(new ModifyListener() {
@@ -85,6 +84,7 @@ public class ConfigGenerateRandomIntegerDecimalMasker {
 		checkShiftConstant();
 		checkDiscreteDistribution();
 		checkOK();
+		hide();
 
 	}
 
@@ -149,15 +149,5 @@ public class ConfigGenerateRandomIntegerDecimalMasker {
 			lbl1.setVisible(true);
 			txt1.setVisible(true);
 		}
-	}
-
-	public void hide(){
-		 ((GridData)group.getLayoutData()).exclude = true;
-		group.setVisible(false);  
-	}
-	
-	public void show(){
-		((GridData)group.getLayoutData()).exclude = false; 
-		group.setVisible(true);
 	}
 }

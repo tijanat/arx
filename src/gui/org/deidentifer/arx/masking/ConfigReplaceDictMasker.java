@@ -16,9 +16,8 @@ import org.eclipse.swt.widgets.Text;
  *
  */
 
-public class ConfigReplaceDictMasker {
+public class ConfigReplaceDictMasker extends ChangeableComposite {
 
-	private Group group;
 	private Label lblReplacementList;
 	private Text txtReplacementList;
 	private Button btnCancel;
@@ -33,8 +32,9 @@ public class ConfigReplaceDictMasker {
 	 */
 
 	public ConfigReplaceDictMasker(Composite s, int x, int y) {
-		group = new Group(s, SWT.SHADOW_IN | SWT.H_SCROLL | SWT.V_SCROLL);
-		group.setText("Replace Dictionary");
+		super(s);
+	//	group = new Group(s, SWT.SHADOW_IN | SWT.H_SCROLL | SWT.V_SCROLL);
+		group.setText("Replace dictionary");
 		GridLayout gridLayout = new GridLayout(2, true);
 		group.setLayout(gridLayout);
 		GridData gridData = new GridData(GridData.FILL, GridData.FILL, true,
@@ -60,7 +60,8 @@ public class ConfigReplaceDictMasker {
 		btnOK.setText("OK");
 		gridData = new GridData(GridData.FILL, GridData.END, true, true);
 		btnOK.setLayoutData(gridData);
-		
+		hide();
+
 	}
 
 	/**
@@ -101,14 +102,5 @@ public class ConfigReplaceDictMasker {
 			lbl1.setVisible(true);
 			txt1.setVisible(true);
 		}
-	}
-	public void hide(){
-		 ((GridData)group.getLayoutData()).exclude = true;
-		group.setVisible(false);  
-	}
-	
-	public void show(){
-		((GridData)group.getLayoutData()).exclude = false; 
-		group.setVisible(true);
 	}
 }

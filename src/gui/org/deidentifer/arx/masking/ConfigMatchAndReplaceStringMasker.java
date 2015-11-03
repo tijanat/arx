@@ -15,9 +15,8 @@ import org.eclipse.swt.widgets.Text;
  * @author Kathrin
  *
  */
-public class ConfigMatchAndReplaceStringMasker {
+public class ConfigMatchAndReplaceStringMasker extends ChangeableComposite {
 
-	private Group group;
 	private Label lblRegExPattern;
 	private Label lblReplacementString;
 	private Label lblReplacingAllMatches;
@@ -38,8 +37,8 @@ public class ConfigMatchAndReplaceStringMasker {
 	 * @param y
 	 */
 	public ConfigMatchAndReplaceStringMasker(Composite s, int x, int y) {
-		group = new Group(s, SWT.SHADOW_IN | SWT.H_SCROLL | SWT.V_SCROLL);
-		group.setText("Match and Replace String");
+		super(s);
+		group.setText("Match and replace string");
 		GridLayout gridLayout = new GridLayout(2, true);
 		group.setLayout(gridLayout);
 		GridData gridData = new GridData(GridData.FILL, GridData.FILL, true,
@@ -76,10 +75,10 @@ public class ConfigMatchAndReplaceStringMasker {
 		gridData = new GridData();
 		btnReplacingAllChars.setLayoutData(gridData);
 
-		setLabelText(lblRegExPattern, txtRegExPattern, "RegExPattern:",
+		setLabelText(lblRegExPattern, txtRegExPattern, "RegEx pattern:",
 				"^.{0,5}", 5);
 		setLabelText(lblReplacementString, txtReplacementString,
-				"ReplacementString:", "*", 5);
+				"Replacement string:", "*", 5);
 
 		btnCancel = new Button (group, SWT.PUSH);
 		btnCancel.setText("Cancel");
@@ -90,6 +89,7 @@ public class ConfigMatchAndReplaceStringMasker {
 		btnOK.setText("OK");
 		gridData = new GridData(GridData.FILL, GridData.END, true, true);
 		btnOK.setLayoutData(gridData);
+		hide();
 
 	}
 
@@ -131,14 +131,5 @@ public class ConfigMatchAndReplaceStringMasker {
 			lbl1.setVisible(true);
 			txt1.setVisible(true);
 		}
-	}
-	public void hide(){
-		 ((GridData)group.getLayoutData()).exclude = true;
-		group.setVisible(false);  
-	}
-	
-	public void show(){
-		((GridData)group.getLayoutData()).exclude = false; 
-		group.setVisible(true);
 	}
 }
