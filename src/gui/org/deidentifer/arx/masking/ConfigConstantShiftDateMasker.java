@@ -37,7 +37,6 @@ public class ConfigConstantShiftDateMasker extends ChangeableComposite {
 	 */
 	public ConfigConstantShiftDateMasker(Composite s,int x, int y) {
 		super(s);
-	//	group = new Group(s, SWT.SHADOW_IN | SWT.H_SCROLL | SWT.V_SCROLL);
 		group.setText("Shift constant date");
 		GridLayout gridLayout = new GridLayout(2, true);
 		group.setLayout(gridLayout);

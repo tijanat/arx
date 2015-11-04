@@ -8,9 +8,8 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
 /**
@@ -38,10 +37,9 @@ public class ConfigConstantShiftDecimalMasker extends ChangeableComposite{
 	 * @param x
 	 * @param y
 	 */
-	public ConfigConstantShiftDecimalMasker(Shell s,int x, int y) {
+	public ConfigConstantShiftDecimalMasker(Composite s,int x, int y) {
 		super(s);
-		//group = new Group(s, SWT.SHADOW_IN | SWT.H_SCROLL | SWT.V_SCROLL);
-
+	    
 		group.setText("Constant shift decimal");
 		GridLayout gridLayout = new GridLayout(2, true);
 		group.setLayout(gridLayout);

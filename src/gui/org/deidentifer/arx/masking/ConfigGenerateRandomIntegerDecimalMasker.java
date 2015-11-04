@@ -7,7 +7,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
@@ -37,7 +36,6 @@ public class ConfigGenerateRandomIntegerDecimalMasker extends ChangeableComposit
 	 */
 	public ConfigGenerateRandomIntegerDecimalMasker(Composite s, int x, int y) {
 		super(s);
-	//	group = new Group(s, SWT.SHADOW_IN | SWT.H_SCROLL | SWT.V_SCROLL);
 		group.setText("Generate random integer decimal");
 		GridLayout gridLayout = new GridLayout(2, true);
 		group.setLayout(gridLayout);

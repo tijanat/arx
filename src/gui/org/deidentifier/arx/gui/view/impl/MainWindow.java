@@ -646,7 +646,7 @@ public class MainWindow implements IView {
         });
 
         items.add(new MainMenuItem(Resources.getMessage("MainWindow.4"), 
-        						   controller.getResources().getImage("perspective_explore.png"), 
+        						   controller.getResources().getImage("MaskingMethod.png"), 
         						   false) {
 			
 			@Override

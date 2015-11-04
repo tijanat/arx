@@ -40,7 +40,7 @@ public class TestShell {
 		ConfigConstantShiftDecimalMasker g2 = new ConfigConstantShiftDecimalMasker(
 				s,400,50);
 
-		ConfigGenerateRandomDataMasker g3 = new ConfigGenerateRandomDataMasker(
+		ConfigGenerateRandomDateMasker g3 = new ConfigGenerateRandomDateMasker(
 				s, 400, 50);
 
 		ConfigGenerateRandomDecimalMasker g4 = new ConfigGenerateRandomDecimalMasker(

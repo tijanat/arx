@@ -6,9 +6,8 @@ import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
 /**
@@ -38,9 +37,8 @@ public class ConfigRandomShiftDecimalMasker extends ChangeableComposite {
 	 * @param y
 	 */
 
-	public ConfigRandomShiftDecimalMasker(Shell s, int x, int y) {
+	public ConfigRandomShiftDecimalMasker(Composite s, int x, int y) {
 		super(s);
-	//	group = new Group(s, SWT.SHADOW_IN | SWT.H_SCROLL | SWT.V_SCROLL);
 		group.setText("Random shift decimal");
 		GridLayout gridLayout = new GridLayout(2, true);
 		group.setLayout(gridLayout);
