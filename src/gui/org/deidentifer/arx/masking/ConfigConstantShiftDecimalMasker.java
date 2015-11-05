@@ -40,7 +40,7 @@ public class ConfigConstantShiftDecimalMasker extends ChangeableComposite{
 	public ConfigConstantShiftDecimalMasker(Composite s,int x, int y) {
 		super(s);
 	    
-		group.setText("Constant shift decimal");
+		group.setText("Shift decimal constantly");
 		GridLayout gridLayout = new GridLayout(2, true);
 		group.setLayout(gridLayout);
 		GridData gridData = new GridData(GridData.FILL, GridData.FILL, true,

@@ -46,11 +46,11 @@ public class DecimalTabControl extends Composite {
 		item1.setImage(resources.getImage("RandomDec.png"));
         
 		TableItem item2 = new TableItem(stringTabTable, SWT.NONE);
-		item2.setText("Constant shift");
+		item2.setText("Shift decimal constantly");
 		item2.setImage(resources.getImage("constant_shift.png"));
 
 		TableItem item3 = new TableItem(stringTabTable, SWT.NONE);
-		item3.setText("Random shift");
+		item3.setText("Shift decimal randomly");
 		item3.setImage(resources.getImage("random_shift.png"));
 		
 		stringTabTable.addSelectionListener(new SelectionListener() {
@@ -68,10 +68,10 @@ public class DecimalTabControl extends Composite {
 					if(selectedName.equals("Generate random decimal")){
 						showStringComponentAndHideOthers(configGenerateRandomDecimal);
 						
-					} else if (selectedName.equals("Constant shift")){
+					} else if (selectedName.equals("Shift decimal constantly")){
 						showStringComponentAndHideOthers(configConstantShiftDecimalMasker);
 						
-					} else if (selectedName.equals("Random shift")){
+					} else if (selectedName.equals("Shift decimal randomly")){
 						showStringComponentAndHideOthers(configRandomShiftDecimalMasker);	
 							
 					} else {

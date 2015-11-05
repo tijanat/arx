@@ -46,11 +46,11 @@ public class DateTabControl extends Composite {
 		item1.setImage(resources.getImage("RandomDate.png"));
         
 		TableItem item2 = new TableItem(stringTabTable, SWT.NONE);
-		item2.setText("Constant shift");
+		item2.setText("Shift date constantly");
 		item2.setImage(resources.getImage("constant_shift.png"));
 
 		TableItem item3 = new TableItem(stringTabTable, SWT.NONE);
-		item3.setText("Random shift");
+		item3.setText("Shift date randomly");
 		item3.setImage(resources.getImage("random_shift.png"));
 		
 		stringTabTable.addSelectionListener(new SelectionListener() {
@@ -68,10 +68,10 @@ public class DateTabControl extends Composite {
 					if(selectedName.equals("Generate random date")){
 						showStringComponentAndHideOthers(configGenerateRandomDate);
 						
-					} else if (selectedName.equals("Constant shift")){
+					} else if (selectedName.equals("Shift date constantly")){
 						showStringComponentAndHideOthers(configConstantShiftDateMasker);
 						
-					} else if (selectedName.equals("Random shift")){
+					} else if (selectedName.equals("Shift date randomly")){
 						showStringComponentAndHideOthers(configRandomShiftDateMasker);	
 							
 					} else {

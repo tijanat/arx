@@ -41,7 +41,7 @@ public class ConfigRandomShiftDateMasker extends ChangeableComposite {
 	public ConfigRandomShiftDateMasker(Composite s, int x, int y) {
 		super(s);
 		//group = new Group(s, SWT.SHADOW_IN|SWT.H_SCROLL|SWT.V_SCROLL);
-		group.setText("Random shift date");
+		group.setText("Shift date randomly");
 		GridLayout gridLayout = new GridLayout(2,true);
 		group.setLayout(gridLayout);
 		GridData gridData = new GridData(GridData.FILL, GridData.FILL, true,

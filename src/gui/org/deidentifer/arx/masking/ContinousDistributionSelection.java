@@ -52,25 +52,25 @@ public class ContinousDistributionSelection extends Composite {
 		 * Dropdownmenü zur Auswahl der verschiedenen Verteilungen wird erstellt
 		 */
 		cmb3 = new Combo(group, SWT.DROP_DOWN);
-		cmb3.add("BetaDistribution");
-		cmb3.add("CauchyDistribution");
-		cmb3.add("ChiSquaredDistribution");
-		cmb3.add("ConstantRealDistribution");
-		cmb3.add("EnumeratedRealDistribution");
-		cmb3.add("FDistribution");
-		cmb3.add("GammaDistribution");
-		cmb3.add("GumbelDistribution");
-		cmb3.add("LaplaceDistribution");
-		cmb3.add("LevyDistribution");
-		cmb3.add("LogisticDistribution");
-		cmb3.add("LogNormalDistribution");
-		cmb3.add("NakagamiDistribution");
-		cmb3.add("NormalDistribution");
-		cmb3.add("ParetoDistribution");
-		cmb3.add("TDistribution");
-		cmb3.add("TriangularDistribution");
-		cmb3.add("UniformRealDistribution");
-		cmb3.add("WeilbullDistribution");
+		cmb3.add("Beta distribution");
+		cmb3.add("Cauchy distribution");
+		cmb3.add("ChiSquared distribution");
+		cmb3.add("Constant real distribution");
+		cmb3.add("Enumerated real distribution");
+		cmb3.add("F distribution");
+		cmb3.add("Gamma distribution");
+		cmb3.add("Gumbel distribution");
+		cmb3.add("Laplace distribution");
+		cmb3.add("Levy distribution");
+		cmb3.add("Logistic distribution");
+		cmb3.add("Log normal distribution");
+		cmb3.add("Nakagami distribution");
+		cmb3.add("Normal distribution");
+		cmb3.add("Pareto distribution");
+		cmb3.add("T distribution");
+		cmb3.add("Triangular distribution");
+		cmb3.add("Uniform real distribution");
+		cmb3.add("Weilbull distribution");
 		gridData = new GridData();
 		gridData.horizontalSpan = 2;
 		cmb3.setLayoutData(gridData);
@@ -127,7 +127,7 @@ public class ContinousDistributionSelection extends Composite {
 			txtType3 = 1;
 			setLabelText(lblParam1, txtParam1, "Alpha:", "0");
 			setLabelText(lblParam2, txtParam2, "Beta:", "0.0");
-			setLabelText(lblParam3, txtParam3, "InverseCumAccuracy:",
+			setLabelText(lblParam3, txtParam3, "Inverse cumulative accuracy:",
 					"0.0");
 			System.out.println(txtType1);
 			System.out.println(txtType2);
@@ -138,15 +138,15 @@ public class ContinousDistributionSelection extends Composite {
 			txtType3 = 1;
 			setLabelText(lblParam1, txtParam1, "Median:", "1.0");
 			setLabelText(lblParam2, txtParam2, "Scale:", "1.0");
-			setLabelText(lblParam3, txtParam3, "InverseCumAccuracy:",
+			setLabelText(lblParam3, txtParam3, "Inverse cumulative accuracy:",
 					"0.0");
 		} else if (j == 2) {
 			txtType1 = 0;
 			txtType2 = 1;
 			txtType3 = -1;
-			setLabelText(lblParam1, txtParam1, "DegreesOfFreedom:",
+			setLabelText(lblParam1, txtParam1, "Degrees of freedom:",
 					"5");
-			setLabelText(lblParam2, txtParam2, "InverseCumAccuracy:",
+			setLabelText(lblParam2, txtParam2, "Inverse cumulative accuracy:",
 					"0.0");
 			setLabelText(lblParam3, txtParam3, "", "");
 		} else if (j == 3) {
@@ -168,16 +168,16 @@ public class ContinousDistributionSelection extends Composite {
 			txtType2 = 1;
 			txtType3 = -1;
 			setLabelText(lblParam1, txtParam1, "Mean:", "0.0");
-			setLabelText(lblParam2, txtParam2, "InverseCumAccuracy:",
+			setLabelText(lblParam2, txtParam2, "Inverse cumulative accuracy:",
 					"1.0");
 			setLabelText(lblParam3, txtParam3, "", "");
 		} else if (j == 6) {
 			txtType1 = 0;
 			txtType2 = 0;
 			txtType3 = 0;
-			setLabelText(lblParam1, txtParam1, "NumeratorDegreesOfFreedom:", "10");
-			setLabelText(lblParam2, txtParam2, "DenumeratorDegreesOfFreedom:", "50");
-			setLabelText(lblParam3, txtParam3, "InverseCumAccuracy:",
+			setLabelText(lblParam1, txtParam1, "Numerator degrees of freedom:", "10");
+			setLabelText(lblParam2, txtParam2, "Denumerator degrees of freedom:", "50");
+			setLabelText(lblParam3, txtParam3, "Inverse cumulative accuracy:",
 					"0");
 		} else if (j == 7) {
 			txtType1 = 0;
@@ -185,7 +185,7 @@ public class ContinousDistributionSelection extends Composite {
 			txtType3 = 0;
 			setLabelText(lblParam1, txtParam1, "Shape:", "50");
 			setLabelText(lblParam2, txtParam2, "Scale:", "2");
-			setLabelText(lblParam3, txtParam3, "InverseCumAccuracy:",
+			setLabelText(lblParam3, txtParam3, "Inverse cumulative accuracy:",
 					"0");
 		}
 		if (j == 8) {
@@ -222,7 +222,7 @@ public class ContinousDistributionSelection extends Composite {
 			txtType3 = 1;
 			setLabelText(lblParam1, txtParam1, "Scale:", "1.0");
 			setLabelText(lblParam2, txtParam2, "Shape:", "0.5");
-			setLabelText(lblParam3, txtParam3, "InverseCumAccuracy:",
+			setLabelText(lblParam3, txtParam3, "Inverse cumulative accuracy:",
 					"0.0");
 		} else if (j == 13) {
 			txtType1 = 1;
@@ -230,14 +230,14 @@ public class ContinousDistributionSelection extends Composite {
 			txtType3 = 1;
 			setLabelText(lblParam1, txtParam1, "Mu:", "0.0");
 			setLabelText(lblParam2, txtParam2, "Omega:", "1.0");
-			setLabelText(lblParam3, txtParam3, "InCumAccuracy:", "0.0");
+			setLabelText(lblParam3, txtParam3, "Inverse cumulative accuracy:", "0.0");
 		} else if (j == 14) {
 			txtType1 = 0;
 			txtType2 = 0;
 			txtType3 = 0;
 			setLabelText(lblParam1, txtParam1, "Mean:", "0");
 			setLabelText(lblParam2, txtParam2, "Sd:", "1");
-			setLabelText(lblParam3, txtParam3, "InverseCumAccuracy:",
+			setLabelText(lblParam3, txtParam3, "Inverse cumulative accuracy:",
 					"0");
 		} else if (j == 15) {
 			txtType1 = 0;
@@ -245,15 +245,15 @@ public class ContinousDistributionSelection extends Composite {
 			txtType3 = 0;
 			setLabelText(lblParam1, txtParam1, "Scale:", "1");
 			setLabelText(lblParam2, txtParam2, "Shape:", "1");
-			setLabelText(lblParam3, txtParam3, "InverseCumAccuracy:",
+			setLabelText(lblParam3, txtParam3, "Inverse cumulative accuracy:",
 					"0");
 		} else if (j == 16) {
 			txtType1 = 0;
 			txtType2 = 1;
 			txtType3 = -1;
-			setLabelText(lblParam1, txtParam1, "DegreesOfFreedom:",
+			setLabelText(lblParam1, txtParam1, "Degrees of freedom:",
 					"0");
-			setLabelText(lblParam2, txtParam2, "InverseCumAccuracy:",
+			setLabelText(lblParam2, txtParam2, "Inverse cumulative accuracy:",
 					"0.0");
 			setLabelText(lblParam3, txtParam3, "", "");
 		} else if (j == 17) {
@@ -276,7 +276,7 @@ public class ContinousDistributionSelection extends Composite {
 			txtType3 = 0;
 			setLabelText(lblParam1, txtParam1, "Shape:", "0");
 			setLabelText(lblParam2, txtParam2, "Scale:", "0");
-			setLabelText(lblParam3, txtParam3, "InverseCumAccuracy:",
+			setLabelText(lblParam3, txtParam3, "Inverse cumulative accuracy:",
 					"0");
 		}
 		group.layout();

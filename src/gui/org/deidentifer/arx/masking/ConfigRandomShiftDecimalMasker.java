@@ -39,7 +39,7 @@ public class ConfigRandomShiftDecimalMasker extends ChangeableComposite {
 
 	public ConfigRandomShiftDecimalMasker(Composite s, int x, int y) {
 		super(s);
-		group.setText("Random shift decimal");
+		group.setText("Shift decimal randomly");
 		GridLayout gridLayout = new GridLayout(2, true);
 		group.setLayout(gridLayout);
 		GridData gridData = new GridData(GridData.FILL, GridData.FILL, true,

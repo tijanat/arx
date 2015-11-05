@@ -48,7 +48,7 @@ public class ConfigReplaceDictMasker extends ChangeableComposite {
 		txtReplacementList.setLayoutData(gridData);
 
 		setLabelText(lblReplacementList, txtReplacementList,
-				"ReplacementList:", "1,2,3,4", 5);
+				"Replacement list:", "1,2,3,4", 5);
 
 		btnCancel = new Button (group, SWT.PUSH);
 		btnCancel.setText("Cancel");

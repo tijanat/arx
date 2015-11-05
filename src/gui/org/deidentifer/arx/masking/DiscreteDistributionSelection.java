@@ -52,14 +52,14 @@ public class DiscreteDistributionSelection extends Composite {
 		 */
 
 		cmb2 = new Combo(group, SWT.DROP_DOWN);
-		cmb2.add("BinomialDistribution");
-		cmb2.add("EnumeratedIntegerDistribution");
-		cmb2.add("GeometricDistribution");
-		cmb2.add("HypergeometricDistribution");
-		cmb2.add("PascalDistribution");
-		cmb2.add("PoissonDistribution");
-		cmb2.add("UniformIntegerDistribution");
-		cmb2.add("ZipfDistribution");
+		cmb2.add("Binomial distribution");
+		cmb2.add("Enumerated integer distribution");
+		cmb2.add("Geometric distribution");
+		cmb2.add("Hypergeometric distribution");
+		cmb2.add("Pascal distribution");
+		cmb2.add("Poisson distribution");
+		cmb2.add("UniformInteger distribution");
+		cmb2.add("Zipf distribution");
 		gridData = new GridData();
 		gridData.horizontalSpan = 2;
 		cmb2.setLayoutData(gridData);
@@ -229,7 +229,7 @@ public class DiscreteDistributionSelection extends Composite {
 			setLabelText(lblParam1, txtParam1, "Mean:", "0.0");
 			setLabelText(lblParam2, txtParam2, "Convergence:", "1.0");
 			setLabelText(lblParam3, txtParam3,
-					"Max Number of iterations:", "50");
+					"Max number of iterations:", "50");
 
 		} else if (j == 6) {
 			txtType1 = 0;

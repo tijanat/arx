@@ -36,7 +36,7 @@ public class ConfigGenerateRandomIntegerDecimalMasker extends ChangeableComposit
 	 */
 	public ConfigGenerateRandomIntegerDecimalMasker(Composite s, int x, int y) {
 		super(s);
-		group.setText("Generate random integer decimal");
+		group.setText("Generate random integer");
 		GridLayout gridLayout = new GridLayout(2, true);
 		group.setLayout(gridLayout);
 		GridData gridData = new GridData(GridData.FILL, GridData.FILL, true,
