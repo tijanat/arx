@@ -96,7 +96,7 @@ public class IntegerTabControl extends Composite {
 //		rightColumn.setBackground(Display.getCurrent().getSystemColor(SWT.COLOR_BLUE));
         GridData rightData = new GridData(SWT.LEFT, SWT.TOP, true, true, 1, 1);
         rightData.minimumHeight = 350;
-        rightData.minimumWidth = 300;
+        rightData.minimumWidth = 320;
         rightColumn.setLayoutData(rightData);   
         
         configGenerateRandomIntegerDecimalMasker = new ConfigGenerateRandomIntegerDecimalMasker(rightColumn, 0, 0);

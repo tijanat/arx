@@ -47,11 +47,11 @@ public class StringTabControl extends Composite {
 		item1.setImage(resources.getImage("Random.png"));
         
 		TableItem item2 = new TableItem(stringTabTable, SWT.NONE);
-		item2.setText("Match & replace");
+		item2.setText("Match and replace string");
 		item2.setImage(resources.getImage("Match.png"));
 
 		TableItem item3 = new TableItem(stringTabTable, SWT.NONE);
-		item3.setText("Split & replace");
+		item3.setText("Split and replace string");
 		item3.setImage(resources.getImage("Split.png"));
 		
 		stringTabTable.addSelectionListener(new SelectionListener() {
@@ -69,10 +69,10 @@ public class StringTabControl extends Composite {
 					if(selectedName.equals("Generate random string")){
 						showStringComponentAndHideOthers(configGenerateRandomStringMasker);
 						
-					} else if (selectedName.equals("Match & replace")){
+					} else if (selectedName.equals("Match and replace string")){
 						showStringComponentAndHideOthers(configMatchAndReplaceStringMasker);
 						
-					} else if (selectedName.equals("Split & replace")){
+					} else if (selectedName.equals("Split and replace string")){
 						showStringComponentAndHideOthers(configSplitAndReplaceStringMasker);	
 							
 					} else {

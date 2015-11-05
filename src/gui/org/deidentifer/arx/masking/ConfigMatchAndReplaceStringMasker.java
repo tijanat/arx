@@ -74,7 +74,7 @@ public class ConfigMatchAndReplaceStringMasker extends ChangeableComposite {
 		gridData = new GridData();
 		btnReplacingAllChars.setLayoutData(gridData);
 
-		setLabelText(lblRegExPattern, txtRegExPattern, "RegEx pattern:",
+		setLabelText(lblRegExPattern, txtRegExPattern, "Regular expression pattern:",
 				"^.{0,5}", 5);
 		setLabelText(lblReplacementString, txtReplacementString,
 				"Replacement string:", "*", 5);
