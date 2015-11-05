@@ -36,10 +36,10 @@ public class StringTabControl extends Composite {
         leftColumn.setLayoutData(leftData);    
   
         stringTabTable = new Table(leftColumn,SWT.BORDER);
-        GridData treeData = new GridData(SWT.LEFT, SWT.TOP, true, true, 1, 1);
-        treeData.minimumHeight = 270;
-        treeData.minimumWidth = 200;
-        stringTabTable.setLayoutData(treeData);
+        GridData tableData = new GridData(SWT.LEFT, SWT.TOP, true, true, 1, 1);
+        tableData.minimumHeight = 270;
+        tableData.minimumWidth = 200;
+        stringTabTable.setLayoutData(tableData);
         stringTabTable.setHeaderVisible(false);
 
         TableItem item1 = new TableItem(stringTabTable, SWT.NONE);
@@ -47,11 +47,11 @@ public class StringTabControl extends Composite {
 		item1.setImage(resources.getImage("Random.png"));
         
 		TableItem item2 = new TableItem(stringTabTable, SWT.NONE);
-		item2.setText("Match & Replace");
+		item2.setText("Match & replace");
 		item2.setImage(resources.getImage("Match.png"));
 
 		TableItem item3 = new TableItem(stringTabTable, SWT.NONE);
-		item3.setText("Split & Replace");
+		item3.setText("Split & replace");
 		item3.setImage(resources.getImage("Split.png"));
 		
 		stringTabTable.addSelectionListener(new SelectionListener() {
@@ -69,10 +69,10 @@ public class StringTabControl extends Composite {
 					if(selectedName.equals("Generate random string")){
 						showStringComponentAndHideOthers(configGenerateRandomStringMasker);
 						
-					} else if (selectedName.equals("Match & Replace")){
+					} else if (selectedName.equals("Match & replace")){
 						showStringComponentAndHideOthers(configMatchAndReplaceStringMasker);
 						
-					} else if (selectedName.equals("Split & Replace")){
+					} else if (selectedName.equals("Split & replace")){
 						showStringComponentAndHideOthers(configSplitAndReplaceStringMasker);	
 							
 					} else {

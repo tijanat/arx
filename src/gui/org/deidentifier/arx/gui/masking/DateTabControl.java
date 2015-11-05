@@ -35,10 +35,10 @@ public class DateTabControl extends Composite {
         leftColumn.setLayoutData(leftData);    
   
         stringTabTable = new Table(leftColumn,SWT.BORDER);
-        GridData treeData = new GridData(SWT.LEFT, SWT.TOP, true, true, 1, 1);
-        treeData.minimumHeight = 270;
-        treeData.minimumWidth = 200;
-        stringTabTable.setLayoutData(treeData);
+        GridData tableData = new GridData(SWT.LEFT, SWT.TOP, true, true, 1, 1);
+        tableData.minimumHeight = 270;
+        tableData.minimumWidth = 200;
+        stringTabTable.setLayoutData(tableData);
         stringTabTable.setHeaderVisible(false);
 
         TableItem item1 = new TableItem(stringTabTable, SWT.NONE);
