@@ -28,15 +28,14 @@ public class StringTabControl extends Composite {
 		
 		Composite leftColumn = new Composite(this, SWT.NONE);
 		leftColumn.setLayout(new GridLayout(1, false));
-		
-        GridData leftData = new GridData(SWT.LEFT, SWT.TOP, false, true, 1, 1);
+        GridData leftData = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
         leftData.minimumHeight = 300;
-        leftData.minimumWidth = 200;
+	    leftData.minimumWidth = 200;
         leftColumn.setLayoutData(leftData);    
   
         stringTabTable = new Table(leftColumn,SWT.BORDER);
-        GridData tableData = new GridData(SWT.LEFT, SWT.TOP, true, true, 1, 1);
-        tableData.minimumHeight = 270;
+        GridData tableData = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+        tableData.minimumHeight = 200;
         tableData.minimumWidth = 200;
         stringTabTable.setLayoutData(tableData);
         stringTabTable.setHeaderVisible(false);
@@ -96,7 +95,7 @@ public class StringTabControl extends Composite {
 //		rightColumn.setBackground(Display.getCurrent().getSystemColor(SWT.COLOR_BLUE));
         GridData rightData = new GridData(SWT.LEFT, SWT.TOP, true, true, 1, 1);
         rightData.minimumHeight = 350;
-        rightData.minimumWidth = 300;
+        rightData.minimumWidth = 320;
         rightColumn.setLayoutData(rightData);   
         
 		configGenerateRandomStringMasker = new ConfigGenerateRandomStringMasker(rightColumn, 0, 0);

@@ -16,7 +16,7 @@ import org.eclipse.swt.widgets.TableItem;
 
 public class DecimalTabControl extends Composite {
 
-	private Table stringTabTable;
+	private Table decimalTabTable;
 	private Composite rightColumn;
 	private ConfigGenerateRandomDecimalMasker configGenerateRandomDecimal;
 	private ConfigConstantShiftDecimalMasker configConstantShiftDecimalMasker;
@@ -28,36 +28,35 @@ public class DecimalTabControl extends Composite {
 		
 		Composite leftColumn = new Composite(this, SWT.NONE);
 		leftColumn.setLayout(new GridLayout(1, false));
-		
-        GridData leftData = new GridData(SWT.LEFT, SWT.TOP, false, true, 1, 1);
+        GridData leftData = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
         leftData.minimumHeight = 300;
-        leftData.minimumWidth = 200;
+	    leftData.minimumWidth = 200;
         leftColumn.setLayoutData(leftData);    
   
-        stringTabTable = new Table(leftColumn,SWT.BORDER);
-        GridData tableData = new GridData(SWT.LEFT, SWT.TOP, true, true, 1, 1);
-        tableData.minimumHeight = 270;
+        decimalTabTable = new Table(leftColumn,SWT.BORDER);
+        GridData tableData = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+        tableData.minimumHeight = 200;
         tableData.minimumWidth = 200;
-        stringTabTable.setLayoutData(tableData);
-        stringTabTable.setHeaderVisible(false);
+        decimalTabTable.setLayoutData(tableData);
+        decimalTabTable.setHeaderVisible(false);
 
-        TableItem item1 = new TableItem(stringTabTable, SWT.NONE);
+        TableItem item1 = new TableItem(decimalTabTable, SWT.NONE);
 		item1.setText("Generate random decimal");
 		item1.setImage(resources.getImage("RandomDec.png"));
         
-		TableItem item2 = new TableItem(stringTabTable, SWT.NONE);
+		TableItem item2 = new TableItem(decimalTabTable, SWT.NONE);
 		item2.setText("Shift decimal constantly");
 		item2.setImage(resources.getImage("constant_shift.png"));
 
-		TableItem item3 = new TableItem(stringTabTable, SWT.NONE);
+		TableItem item3 = new TableItem(decimalTabTable, SWT.NONE);
 		item3.setText("Shift decimal randomly");
 		item3.setImage(resources.getImage("random_shift.png"));
 		
-		stringTabTable.addSelectionListener(new SelectionListener() {
+		decimalTabTable.addSelectionListener(new SelectionListener() {
 
 			@Override
 			public void widgetSelected(SelectionEvent arg0) {
-				TableItem selectedItems[] = stringTabTable.getSelection();
+				TableItem selectedItems[] = decimalTabTable.getSelection();
 				if (selectedItems.length == 1){
 					TableItem selected = selectedItems[0];
 					
@@ -96,7 +95,7 @@ public class DecimalTabControl extends Composite {
 //		rightColumn.setBackground(Display.getCurrent().getSystemColor(SWT.COLOR_BLUE));
         GridData rightData = new GridData(SWT.LEFT, SWT.TOP, true, true, 1, 1);
         rightData.minimumHeight = 350;
-        rightData.minimumWidth = 300;
+        rightData.minimumWidth = 320;
         rightColumn.setLayoutData(rightData);   
         
         configGenerateRandomDecimal = new ConfigGenerateRandomDecimalMasker(rightColumn, 0, 0);

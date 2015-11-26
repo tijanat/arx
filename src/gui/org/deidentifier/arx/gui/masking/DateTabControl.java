@@ -16,7 +16,7 @@ import org.eclipse.swt.widgets.TableItem;
 
 public class DateTabControl extends Composite {
 	
-	private Table stringTabTable;
+	private Table dateTabTable;
 	private Composite rightColumn;
 	private ConfigGenerateRandomDateMasker configGenerateRandomDate;
 	private ConfigConstantShiftDateMasker configConstantShiftDateMasker;
@@ -28,36 +28,36 @@ public class DateTabControl extends Composite {
 		
 		Composite leftColumn = new Composite(this, SWT.NONE);
 		leftColumn.setLayout(new GridLayout(1, false));
-		
-        GridData leftData = new GridData(SWT.LEFT, SWT.TOP, false, true, 1, 1);
+        GridData leftData = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
         leftData.minimumHeight = 300;
         leftData.minimumWidth = 200;
-        leftColumn.setLayoutData(leftData);    
+        leftColumn.setLayoutData(leftData);  
+        
   
-        stringTabTable = new Table(leftColumn,SWT.BORDER);
-        GridData tableData = new GridData(SWT.LEFT, SWT.TOP, true, true, 1, 1);
-        tableData.minimumHeight = 270;
+        dateTabTable = new Table(leftColumn,SWT.BORDER);
+        GridData tableData = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+        tableData.minimumHeight = 200;
         tableData.minimumWidth = 200;
-        stringTabTable.setLayoutData(tableData);
-        stringTabTable.setHeaderVisible(false);
+        dateTabTable.setLayoutData(tableData);
+        dateTabTable.setHeaderVisible(false);
 
-        TableItem item1 = new TableItem(stringTabTable, SWT.NONE);
+        TableItem item1 = new TableItem(dateTabTable, SWT.NONE);
 		item1.setText("Generate random date");
 		item1.setImage(resources.getImage("RandomDate.png"));
         
-		TableItem item2 = new TableItem(stringTabTable, SWT.NONE);
+		TableItem item2 = new TableItem(dateTabTable, SWT.NONE);
 		item2.setText("Shift date constantly");
 		item2.setImage(resources.getImage("constant_shift.png"));
 
-		TableItem item3 = new TableItem(stringTabTable, SWT.NONE);
+		TableItem item3 = new TableItem(dateTabTable, SWT.NONE);
 		item3.setText("Shift date randomly");
 		item3.setImage(resources.getImage("random_shift.png"));
 		
-		stringTabTable.addSelectionListener(new SelectionListener() {
+		dateTabTable.addSelectionListener(new SelectionListener() {
 
 			@Override
 			public void widgetSelected(SelectionEvent arg0) {
-				TableItem selectedItems[] = stringTabTable.getSelection();
+				TableItem selectedItems[] = dateTabTable.getSelection();
 				if (selectedItems.length == 1){
 					TableItem selected = selectedItems[0];
 					
@@ -96,7 +96,7 @@ public class DateTabControl extends Composite {
 //		rightColumn.setBackground(Display.getCurrent().getSystemColor(SWT.COLOR_BLUE));
         GridData rightData = new GridData(SWT.LEFT, SWT.TOP, true, true, 1, 1);
         rightData.minimumHeight = 350;
-        rightData.minimumWidth = 300;
+        rightData.minimumWidth = 320;
         rightColumn.setLayoutData(rightData);   
         
         configGenerateRandomDate = new ConfigGenerateRandomDateMasker(rightColumn, 0, 0);

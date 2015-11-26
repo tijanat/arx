@@ -44,31 +44,31 @@ public class ConfigSplitAndReplaceStringMasker extends ChangeableComposite{
 		group.setText("Split and replace string");
 		GridLayout gridLayout = new GridLayout(2, false);
 		group.setLayout(gridLayout);
-		GridData gridData = new GridData(GridData.FILL, GridData.FILL, true,
-				true);
+		GridData gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
 		group.setLayoutData(gridData);
 
 		lblSplitAtOccurrenceOf = new Label(group, SWT.NONE);
-		txtSplitAtOccurrenceOf = new Text(group, SWT.BORDER);
+		txtSplitAtOccurrenceOf = new Text(group, SWT.BORDER);	
 		lblReplacementString = new Label(group, SWT.NONE);
 		txtReplacementString = new Text(group, SWT.BORDER);
-		lblReplaceGroup = new Label(group, SWT.NONE);
+		lblReplaceGroup = new Label(group, SWT.NONE);		
 		txtReplaceGroup = new Text(group, SWT.BORDER);
 
 		lblReplaceEachChar = new Label(group, SWT.NONE);
 		lblReplaceEachChar.setText("Replace each character?");
 		gridData = new GridData();
 		lblReplaceEachChar.setLayoutData(gridData);
+		
 		btnReplaceEchChar = new Button(group, SWT.CHECK);
 		gridData = new GridData();
 		btnReplaceEchChar.setLayoutData(gridData);
 
 		setLabelText(lblSplitAtOccurrenceOf, txtSplitAtOccurrenceOf,
-				"Split at occurrences of:", "@", 5);
+				"Split at occurrences of: ", "@", 5);
 		setLabelText(lblReplacementString, txtReplacementString,
-				"Replacement string:", "*", 5);
+				"Replacement string: ", "*", 5);
 		setLabelText(lblReplaceGroup, txtReplaceGroup,
-				"Replace group with index:", "0", 0);
+				"Replace group with index: ", "0", 0);
 
 		txtReplaceGroup.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
@@ -80,8 +80,8 @@ public class ConfigSplitAndReplaceStringMasker extends ChangeableComposite{
 		btnCancel = new Button (group, SWT.PUSH);
 		btnCancel.setText("Cancel");
 		gridData = new GridData (GridData.FILL, GridData.END,true,true);
-		
 		btnCancel.setLayoutData(gridData);
+		
 		btnOK = new Button(group, SWT.PUSH);
 		btnOK.setText("OK");
 		gridData = new GridData(GridData.FILL, GridData.END, true, true);

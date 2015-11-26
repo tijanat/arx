@@ -31,8 +31,8 @@ public class DialogMaskingSelection extends TitleAreaDialog implements IDialog {
 	@Override
 	public void create() {
 		super.create();
-		this.getShell().setSize(600, 500);
-		this.getShell().setMinimumSize(600, 500);
+		this.getShell().setSize(600, 600);
+		this.getShell().setMinimumSize(600, 600);
 		this.setTitle("Masking Method Selection");
    
 	}
@@ -66,7 +66,7 @@ public class DialogMaskingSelection extends TitleAreaDialog implements IDialog {
 		
 		Composite dateControl = new DateTabControl(tabFolder, SWT.NONE, resources);
 		dateTab.setControl(dateControl);
-		
+//		
 		return parent;
 	}
 

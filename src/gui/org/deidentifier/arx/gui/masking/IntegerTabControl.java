@@ -14,7 +14,7 @@ import org.eclipse.swt.widgets.TableItem;
 
 public class IntegerTabControl extends Composite {
 	
-	private Table stringTabTable;
+	private Table integerTabTable;
 	private Composite rightColumn;
 	private ConfigGenerateRandomIntegerDecimalMasker configGenerateRandomIntegerDecimalMasker;
 	
@@ -24,28 +24,27 @@ public class IntegerTabControl extends Composite {
 		
 		Composite leftColumn = new Composite(this, SWT.NONE);
 		leftColumn.setLayout(new GridLayout(1, false));
-		
-        GridData leftData = new GridData(SWT.LEFT, SWT.TOP, false, true, 1, 1);
+        GridData leftData = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
         leftData.minimumHeight = 300;
-        leftData.minimumWidth = 200;
+	    leftData.minimumWidth = 200;
         leftColumn.setLayoutData(leftData);    
   
-        stringTabTable = new Table(leftColumn,SWT.BORDER);
-        GridData tableData = new GridData(SWT.LEFT, SWT.TOP, true, true, 1, 1);
-        tableData.minimumHeight = 270;
+        integerTabTable = new Table(leftColumn,SWT.BORDER);
+        GridData tableData = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+        tableData.minimumHeight = 200;
         tableData.minimumWidth = 200;
-        stringTabTable.setLayoutData(tableData);
-        stringTabTable.setHeaderVisible(false);
+        integerTabTable.setLayoutData(tableData);
+        integerTabTable.setHeaderVisible(false);
 
-		TableItem item = new TableItem(stringTabTable, SWT.NONE);
+		TableItem item = new TableItem(integerTabTable, SWT.NONE);
 		item.setText("Generate random integer");
 		item.setImage(resources.getImage("IntDec.png"));
 
-		stringTabTable.addSelectionListener(new SelectionListener() {
+		integerTabTable.addSelectionListener(new SelectionListener() {
 
 			@Override
 			public void widgetSelected(SelectionEvent arg0) {
-				TableItem selectedItems[] = stringTabTable.getSelection();
+				TableItem selectedItems[] = integerTabTable.getSelection();
 				if (selectedItems.length == 1){
 					TableItem selected = selectedItems[0];
 					

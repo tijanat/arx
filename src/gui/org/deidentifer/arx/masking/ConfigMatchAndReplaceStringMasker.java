@@ -40,28 +40,30 @@ public class ConfigMatchAndReplaceStringMasker extends ChangeableComposite {
 		group.setText("Match and replace string");
 		GridLayout gridLayout = new GridLayout(2, true);
 		group.setLayout(gridLayout);
-		GridData gridData = new GridData(GridData.FILL, GridData.FILL, true,
-				true);
+		GridData gridData = new GridData(GridData.FILL, GridData.FILL, true, true);
 		group.setLayoutData(gridData);
 
 		lblRegExPattern = new Label(group, SWT.NONE);
 		gridData = new GridData();
 		lblRegExPattern.setLayoutData(gridData);
+		
 		txtRegExPattern = new Text(group, SWT.BORDER);
 		gridData = new GridData();
 		txtRegExPattern.setLayoutData(gridData);
-
+		
 		lblReplacementString = new Label(group, SWT.NONE);
 		gridData = new GridData();
 		lblReplacementString.setLayoutData(gridData);
+		
 		txtReplacementString = new Text(group, SWT.BORDER);
 		gridData = new GridData();
 		txtReplacementString.setLayoutData(gridData);
-
+		
 		lblReplacingAllMatches = new Label(group, SWT.NONE);
 		lblReplacingAllMatches.setText("Replace all matches?");
 		gridData = new GridData();
 		lblReplacingAllMatches.setLayoutData(gridData);
+		
 		gridData = new GridData();
 		btnReplacingAllMatches = new Button(group, SWT.CHECK);
 		btnReplacingAllMatches.setLayoutData(gridData);
@@ -70,6 +72,7 @@ public class ConfigMatchAndReplaceStringMasker extends ChangeableComposite {
 		lblReplacingAllChars.setText("Replace all characters?");
 		gridData = new GridData();
 		lblReplacingAllChars.setLayoutData(gridData);
+		
 		btnReplacingAllChars = new Button(group, SWT.CHECK);
 		gridData = new GridData();
 		btnReplacingAllChars.setLayoutData(gridData);
