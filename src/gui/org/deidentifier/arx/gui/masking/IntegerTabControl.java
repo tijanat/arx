@@ -3,8 +3,6 @@ package org.deidentifier.arx.gui.masking;
 import org.eclipse.swt.widgets.Composite;
 import org.deidentifer.arx.masking.ChangeableComposite;
 import org.deidentifer.arx.masking.ConfigGenerateRandomIntegerDecimalMasker;
-import org.deidentifer.arx.masking.ConfigReplaceDictMasker;
-import org.deidentifer.arx.masking.ConfigReplaceInstMasker;
 import org.deidentifier.arx.gui.resources.Resources;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
@@ -15,10 +13,6 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 
 public class IntegerTabControl extends Composite {
-
-	
-	//private ConfigReplaceDictMasker configReplaceDictMasker;
-	//private ConfigReplaceInstMasker configReplaceInstMasker;
 	
 	private Table stringTabTable;
 	private Composite rightColumn;
@@ -47,12 +41,6 @@ public class IntegerTabControl extends Composite {
 		item.setText("Generate random integer");
 		item.setImage(resources.getImage("IntDec.png"));
 
-//		TableItem item2 = new TableItem(stringTabTable, SWT.NONE);
-//		item2.setText("Replace dic masker");
-//		
-//		TableItem item3 = new TableItem(stringTabTable, SWT.NONE);
-//		item3.setText("Replace inst masker");
-
 		stringTabTable.addSelectionListener(new SelectionListener() {
 
 			@Override
@@ -66,14 +54,7 @@ public class IntegerTabControl extends Composite {
 					String selectedName = selected.toString().substring(indexFrom, length);
 					
 					if(selectedName.equals("Generate random integer")){
-						showStringComponentAndHideOthers(configGenerateRandomIntegerDecimalMasker);
-						
-//					}else if(selectedName.equals("Replace dic masker")){
-//							showStringComponentAndHideOthers(configReplaceDictMasker);
-//							
-//					}else if(selectedName.equals("Replace inst masker")){
-//						showStringComponentAndHideOthers(configReplaceInstMasker);
-						
+						showStringComponentAndHideOthers(configGenerateRandomIntegerDecimalMasker);	
 							
 					} else {
 						showStringComponentAndHideOthers(null);
@@ -100,8 +81,6 @@ public class IntegerTabControl extends Composite {
         rightColumn.setLayoutData(rightData);   
         
         configGenerateRandomIntegerDecimalMasker = new ConfigGenerateRandomIntegerDecimalMasker(rightColumn, 0, 0);
-//        configReplaceDictMasker = new ConfigReplaceDictMasker(rightColumn, 0, 0);
-//        configReplaceInstMasker = new ConfigReplaceInstMasker(rightColumn, 0, 0);
         
 		GridData parentData = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
 		this.setLayoutData(parentData);
@@ -109,8 +88,6 @@ public class IntegerTabControl extends Composite {
 	
 	private void showStringComponentAndHideOthers(ChangeableComposite component){
 		configGenerateRandomIntegerDecimalMasker.hide();
-//		configReplaceDictMasker.hide();
-//		configReplaceInstMasker.hide();
 		component.show();
 	
 	}

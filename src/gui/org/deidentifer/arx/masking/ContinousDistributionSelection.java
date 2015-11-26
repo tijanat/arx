@@ -127,7 +127,7 @@ public class ContinousDistributionSelection extends Composite {
 			txtType3 = 1;
 			setLabelText(lblParam1, txtParam1, "Alpha:", "0");
 			setLabelText(lblParam2, txtParam2, "Beta:", "0.0");
-			setLabelText(lblParam3, txtParam3, "Inverse cumulative accuracy:",
+			setLabelText(lblParam3, txtParam3, "Inverse cumulative accuracy:                   ",
 					"0.0");
 			System.out.println(txtType1);
 			System.out.println(txtType2);
@@ -175,8 +175,8 @@ public class ContinousDistributionSelection extends Composite {
 			txtType1 = 0;
 			txtType2 = 0;
 			txtType3 = 0;
-			setLabelText(lblParam1, txtParam1, "Numerator degrees of freedom:", "10");
-			setLabelText(lblParam2, txtParam2, "Denumerator degrees of freedom:", "50");
+			setLabelText(lblParam1, txtParam1, "Numerator degrees of freedom:                ", "10");
+			setLabelText(lblParam2, txtParam2, "Denumerator degrees of freedom:              ", "50");
 			setLabelText(lblParam3, txtParam3, "Inverse cumulative accuracy:",
 					"0");
 		} else if (j == 7) {

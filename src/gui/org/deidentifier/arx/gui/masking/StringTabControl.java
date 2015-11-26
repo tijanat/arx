@@ -18,7 +18,6 @@ public class StringTabControl extends Composite {
 	
 	private Table stringTabTable;
 	private Composite rightColumn;
-	//private Resources resources;
 	private ConfigGenerateRandomStringMasker configGenerateRandomStringMasker;
 	private ConfigSplitAndReplaceStringMasker configSplitAndReplaceStringMasker;
 	private ConfigMatchAndReplaceStringMasker configMatchAndReplaceStringMasker;

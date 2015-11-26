@@ -3,6 +3,7 @@ import org.deidentifier.arx.gui.resources.Resources;
 import org.deidentifier.arx.gui.view.def.IDialog;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -16,9 +17,6 @@ import org.eclipse.swt.widgets.TabItem;
  */
 public class DialogMaskingSelection extends TitleAreaDialog implements IDialog {
 
-//	private ConfigReplaceDictMasker configReplaceDictMasker;
-//	private ConfigReplaceInstMasker configReplaceInstMasker;
-
 	/**
 	 * @param parentShell
 	 */
@@ -26,7 +24,6 @@ public class DialogMaskingSelection extends TitleAreaDialog implements IDialog {
 	
 	public DialogMaskingSelection(Shell parentShell) {
 		super(parentShell);
-		//parentShell.setMinimumSize(500, 500);
 		this.setShellStyle(this.getShellStyle() | SWT.RESIZE);
 		this.resources = new Resources(parentShell);
 	}
@@ -34,6 +31,8 @@ public class DialogMaskingSelection extends TitleAreaDialog implements IDialog {
 	@Override
 	public void create() {
 		super.create();
+		this.getShell().setSize(600, 500);
+		this.getShell().setMinimumSize(600, 500);
 		this.setTitle("Masking Method Selection");
    
 	}
@@ -42,9 +41,11 @@ public class DialogMaskingSelection extends TitleAreaDialog implements IDialog {
 	protected Control createDialogArea(final Composite parent) {
 		
 		parent.setLayout(new GridLayout(1, false));
-		
-        TabFolder tabFolder = new TabFolder(parent, SWT.NONE);
-    
+		TabFolder tabFolder = new TabFolder(parent, SWT.NONE);
+	    tabFolder.setLayout(new GridLayout());
+	    GridData resizableData = new GridData(GridData.FILL_BOTH);
+	    tabFolder.setLayoutData(resizableData);
+        
         TabItem stringTab = new TabItem(tabFolder, SWT.NONE);
         stringTab.setText("String");
         TabItem intTab = new TabItem(tabFolder, SWT.NONE);
@@ -53,7 +54,7 @@ public class DialogMaskingSelection extends TitleAreaDialog implements IDialog {
         decimalTab.setText("Decimal");
         TabItem dateTab = new TabItem(tabFolder, SWT.NONE); 
         dateTab.setText("Date");
-        
+ 
 		Composite stringControl = new StringTabControl(tabFolder, SWT.NONE, resources);
 		stringTab.setControl(stringControl);
 		
